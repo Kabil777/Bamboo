@@ -12,58 +12,58 @@ import {
 import { cn } from "@/lib/utils"
 import { Book } from 'lucide-react';
 
-interface Props {
+interface linksContent {
     title: string
     href: string
     description: string
 }
+
+interface NavigationMenuBarItem {
+    key: string
+    href?: string
+    links?: linksContent[]
+}
+
 interface NavigationMenuBarProps {
-    components: Props[]
+    navLinks: NavigationMenuBarItem[]
 }
 
 
-export const NavigationMenuBar = ({ components }: NavigationMenuBarProps) => {
+export const NavigationMenuBar = ({ navLinks }: NavigationMenuBarProps) => {
 
     return (
         <>
             <NavigationMenu>
                 <NavigationMenuList>
 
-                    <NavigationMenuItem>
-                        <Link href="/" legacyBehavior passHref>
-                            <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-                                Home
-                            </NavigationMenuLink>
-                        </Link>
-                    </NavigationMenuItem>
-
-                    <NavigationMenuItem>
-                        <Link href="/blog" legacyBehavior passHref>
-                            <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-                                Blog
-                            </NavigationMenuLink>
-                        </Link>
-                    </NavigationMenuItem>
-
-                    <NavigationMenuItem>
-                        <NavigationMenuTrigger>Resources</NavigationMenuTrigger>
-                        <NavigationMenuContent>
-                            <ul className="grid w-[300px] gap-4 p-1">
-                                {components.map((component) => (
-                                    <ListItem
-                                        key={component.title}
-                                        title={component.title}
-                                        href={component.href}
-                                    >
-                                        {component.description}
-                                    </ListItem>
-                                ))}
-                            </ul>
-                        </NavigationMenuContent>
-                    </NavigationMenuItem>
-
-
-
+                    {navLinks.map((navLink) => (
+                        navLink.links && navLink.links.length > 0 ? (
+                            <NavigationMenuItem key={navLink.key}>
+                                <NavigationMenuTrigger>{navLink.key}</NavigationMenuTrigger>
+                                <NavigationMenuContent>
+                                    <ul className="grid w-[300px] gap-4 p-1">
+                                        {navLink.links.map((link) => (
+                                            <ListItem
+                                                key={link.href ?? link.title} // safer key
+                                                title={link.title}
+                                                href={link.href}
+                                            >
+                                                {link.description}
+                                            </ListItem>
+                                        ))}
+                                    </ul>
+                                </NavigationMenuContent>
+                            </NavigationMenuItem>
+                        ) : (
+                            <NavigationMenuItem key={navLink.key}>
+                                <Link href={navLink.href || "/"} legacyBehavior passHref>
+                                    <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+                                        {navLink.key}
+                                    </NavigationMenuLink>
+                                </Link>
+                            </NavigationMenuItem>
+                        )
+                    ))}
                 </NavigationMenuList>
             </NavigationMenu>
         </>
