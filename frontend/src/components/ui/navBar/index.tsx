@@ -1,96 +1,120 @@
-'use client'
-import React from 'react'
+'use client';
+import React from 'react';
+import { Book, CirclePlay, File, LifeBuoy, Zap } from "lucide-react";
 
-import { User } from 'lucide-react';
-import Icon from '@/app/favicon.ico';
+import { DropDownMenu, DropDownProfileMenu, Logo, NavigationMenuBar, SearchBox, SideNavBarMenu } from "@/components/atomsComponents";
+import { StaticImageData } from 'next/image';
 
-
-import { DropDownMenu, NavigationMenuBar } from '@/components/atomsComponents';
-import Image from 'next/image';
-import { Agbalumo } from 'next/font/google'
-import Link from 'next/link';
-interface linksContent {
+interface MenuItem {
     title: string;
-    href: string;
-    description: string;
+    url: string;
+    description?: string;
+    icon?: React.ReactNode;
+    items?: MenuItem[];
 }
 
-const agbalumo = Agbalumo({ subsets: ['latin'], weight: '400' })
-const navBarLinks: { key: string; href?: string; links?: linksContent[] }[] = [
-    {
-        key: 'Home',
-        href: '/',
+interface NavbarProps {
+    logo?: {
+        url: string;
+        src: string | StaticImageData;
+        alt: string;
+        title: string;
+    };
+    menu?: MenuItem[];
+    auth?: {
+        login: {
+            title: string;
+            url: string;
+        };
+        signup: {
+            title: string;
+            url: string;
+        };
+    };
+    profile?: {
+        profiledetails?: {
+            title?: string;
+            url?: string;
+        };
+    };
+}
 
-    }, {
-        key: 'Blog',
-        href: '/blog',
+const NavBar = ({
+    menu = [
+        { title: "Home", url: "/" },
+        {
+            title: "Blog", url: "/blog",
+        },
+        {
+            title: "Resources",
+            url: "#",
+            items: [
+                {
+                    title: "Blog",
+                    description: "The latest industry news, updates and info.",
+                    icon: <Book className="size-5 shrink-0" />,
+                    url: "/blog",
+                },
+                {
+                    title: "Customer stories",
+                    description: "Learn how our customers are making big changes.",
+                    icon: <Zap className="size-5 shrink-0" />,
+                    url: "/",
+                },
+                {
+                    title: "Video tutorials",
+                    description: "Get up and running on new features and techniques.",
+                    icon: <CirclePlay className="size-5 shrink-0" />,
+                    url: "/",
+                },
+                {
+                    title: "Documentation",
+                    description: "All the boring stuff that you (hopefully won’t) need.",
+                    icon: <File className="size-5 shrink-0" />,
+                    url: "/",
+                },
+                {
+                    title: "Help and support",
+                    description: "Learn, fix a problem, and get answers to your questions.",
+                    icon: <LifeBuoy className="size-5 shrink-0" />,
+                    url: "/",
+                }
+            ],
+        }
+    ],
+    auth = {
+        login: { title: "Login", url: "#" },
+        signup: { title: "Sign up", url: "#" },
     },
-    {
-        key: 'Resources',
-        links: [
-            {
-                title: "Blog",
-                href: "/blog",
-                description:
-                    "The latest industry news, updates and info.",
-            },
-            {
-                title: "Customer stories",
-                href: "/",
-                description:
-                    "Learn how our customers are making big changes.",
-            },
-            {
-                title: "Video tutorials",
-                href: "/",
-                description:
-                    "Get up and running on new features and techniques.",
-            },
-            {
-                title: "Documentation",
-                href: "/docs/primitives/scroll-area",
-                description: "All the boring stuff that you (hopefully won’t) need.",
-            },
-            {
-                title: "Help and support",
-                href: "/docs/primitives/tabs",
-                description:
-                    "Learn, fix a problem, and get answers to your questions.",
-            },
-        ],
-    },
-];
-
-export const NavBar = () => {
-
+    profile = {
+        profiledetails: { title: "Profile", url: "https://github.com/shadcn.png" },
+    }
+}: NavbarProps) => {
     return (
-        <nav>
-            <div className="flex items-center justify-around py-3 px-13 bg-background border-b ">
-
-                <div className='flex justify-start items-center w-full'>
-
-                    <div >
-                        <Link href="/" legacyBehavior passHref>
-                            <div className={`${agbalumo.className} cursor-pointer gap-3 text-primary h-9 inline-flex w-max items-center justify-center rounded-md px-4 py-2 text-sm font-medium  disabled:opacity-50 transition-[color,box-shadow] focus-visible:ring-[3px] focus-visible:outline-1 pointer hover:bg-accent hover:text-accent-foreground`}>
-                                <Image src={Icon} alt="logo" className='w-7 h-7' />
-                                <h1 className="text-xl font-normal text-[#374151]">Bamboo</h1>
+        <section className="py-2 border border-acent sticky top-0 bg-background shadow-2xs w-full">
+            <div className="w-full">
+                <nav className="justify-between md:px-12 px-5 flex">
+                    <div className="flex items-center ">
+                        <div className="flex items-center gap-1">
+                            <div className="md:hidden flex items-center">
+                                <SideNavBarMenu auth={auth} menu={menu} />
                             </div>
-                        </Link>
+                            <Logo />
+                        </div>
+                        <div className="hidden items-center md:flex">
+                            <NavigationMenuBar menu={menu} />
+                        </div>
                     </div>
-                    <div>
-                        <NavigationMenuBar navLinks={navBarLinks} />
-                    </div>
-                </div>
-                <div>
-                    <div className='flex items-center gap-4'>
-
-                        <User />
+                    <div className="flex gap-5 items-center">
+                        <SearchBox />
+                        <DropDownProfileMenu profile={profile} />
                         <DropDownMenu />
-
                     </div>
-                </div>
+                </nav>
+
             </div>
-        </nav>
+        </section>
     );
 };
 
+export { NavBar };

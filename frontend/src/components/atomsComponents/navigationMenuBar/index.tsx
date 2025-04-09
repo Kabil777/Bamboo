@@ -1,5 +1,4 @@
 import React from 'react'
-import Link from "next/link"
 import {
     NavigationMenu,
     NavigationMenuContent,
@@ -7,97 +6,81 @@ import {
     NavigationMenuLink,
     NavigationMenuList,
     NavigationMenuTrigger,
-    navigationMenuTriggerStyle,
 } from "@/components/shadcnUI/navigation-menu"
-import { cn } from "@/lib/utils"
-import { Book } from 'lucide-react';
-
-interface linksContent {
-    title: string
-    href: string
-    description: string
+import Link from 'next/link';
+interface MenuItem {
+    title: string;
+    url: string;
+    description?: string;
+    icon?: React.ReactNode;
+    items?: MenuItem[];
 }
-
-interface NavigationMenuBarItem {
-    key: string
-    href?: string
-    links?: linksContent[]
-}
-
-interface NavigationMenuBarProps {
-    navLinks: NavigationMenuBarItem[]
+interface Navbar1Props {
+    menu?: MenuItem[];
 }
 
 
-export const NavigationMenuBar = ({ navLinks }: NavigationMenuBarProps) => {
+export const NavigationMenuBar = ({ menu }: Navbar1Props) => {
 
     return (
         <>
-            <NavigationMenu>
+            <NavigationMenu >
                 <NavigationMenuList>
-
-                    {navLinks.map((navLink) => (
-                        navLink.links && navLink.links.length > 0 ? (
-                            <NavigationMenuItem key={navLink.key}>
-                                <NavigationMenuTrigger>{navLink.key}</NavigationMenuTrigger>
-                                <NavigationMenuContent>
-                                    <ul className="grid w-[300px] gap-4 p-1">
-                                        {navLink.links.map((link) => (
-                                            <ListItem
-                                                key={link.href ?? link.title} // safer key
-                                                title={link.title}
-                                                href={link.href}
-                                            >
-                                                {link.description}
-                                            </ListItem>
-                                        ))}
-                                    </ul>
-                                </NavigationMenuContent>
-                            </NavigationMenuItem>
-                        ) : (
-                            <NavigationMenuItem key={navLink.key}>
-                                <Link href={navLink.href || "/"} legacyBehavior passHref>
-                                    <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-                                        {navLink.key}
-                                    </NavigationMenuLink>
-                                </Link>
-                            </NavigationMenuItem>
-                        )
-                    ))}
+                    {menu?.map((item) => renderMenuItem(item))}
                 </NavigationMenuList>
             </NavigationMenu>
         </>
     )
 }
 
-
-
-const ListItem = React.forwardRef<
-    React.ElementRef<"a">,
-    React.ComponentPropsWithoutRef<"a">
->(({ className, title, children, ...props }, ref) => {
-    return (
-        <li>
-            <NavigationMenuLink asChild>
-
-                <a
-                    ref={ref}
-                    className={cn(
-                        "flex flex-row select-none rounded-md no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground",
-                        className
-                    )}
-                    {...props}
+const renderMenuItem = (item: MenuItem) => {
+    if (item.items) {
+        return (
+            <NavigationMenuItem key={item.title}>
+                <NavigationMenuTrigger
+                    className="group !text-primary !font-semibold inline-flex h-10 w-max items-center justify-center rounded-md bg-none px-4 py-2 text-sm transition-colors hover:bg-muted hover:!text-accent-foreground"
                 >
-                    < Book size={24} className='!w-[24px] !h-[24px]' />
-                    <div className="font-semibold text-[16px]"> {title}
-                        <p className="text-sm font-normal text-muted-foreground">
-                            {children}
-                        </p>
-                    </div>
+                    {item.title}
+                </NavigationMenuTrigger>
+                <NavigationMenuContent className="bg-popover text-popover-foreground !w-[334px]">
+                    {item.items.map((subItem) => (
+                        <NavigationMenuLink asChild key={subItem.title} className='w-full'>
+                            <SubMenuLink item={subItem} />
+                        </NavigationMenuLink>
+                    ))}
+                </NavigationMenuContent>
+            </NavigationMenuItem>
+        );
+    }
 
-                </a>
+    return (
+        <NavigationMenuItem key={item.title}>
+            <NavigationMenuLink
+
+                href={item.url}
+                className="group text-primary !font-semibold inline-flex h-10 w-max items-center justify-center rounded-md bg-none px-4 py-2 text-sm transition-colors hover:bg-muted hover:text-accent-foreground"
+            >
+                {item.title}
             </NavigationMenuLink>
-        </li>
-    )
-})
-ListItem.displayName = "ListItem"
+        </NavigationMenuItem>
+    );
+};
+const SubMenuLink = ({ item }: { item: MenuItem }) => {
+    return (
+        <Link
+            className="flex flex-row gap-4 rounded-md p-3 leading-none no-underline transition-colors outline-none select-none hover:bg-muted hover:text-foreground"
+            href={item.url}
+        >
+
+            <div  className="[&_svg:not([class*='text-'])]:!text-foreground">{item.icon}</div>
+            <div>
+                <div className="text-sm font-semibold">{item.title}</div>
+                {item.description && (
+                    <p className="text-sm leading-snug text-muted-foreground">
+                        {item.description}
+                    </p>
+                )}
+            </div>
+        </Link >
+    );
+};

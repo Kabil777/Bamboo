@@ -3,9 +3,6 @@ import "@/styles/globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { NavBar } from "@/components/ui";
 
-
-
-
 export const metadata: Metadata = {
   title: "Bamboo",
   description: "Bamboo app help getting things done"
@@ -20,15 +17,16 @@ export default function RootLayout({
 }>) {
   return (
     <>
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="light"
-            enableSystem
-            disableTransitionOnChange
-          >
-            <NavBar />
-            {children}
-          </ThemeProvider>
+      <ThemeProvider
+        attribute="class"
+        defaultTheme="light"
+        enableSystem
+        disableTransitionOnChange
+        
+      >
+        <NavBar />
+        {children}
+      </ThemeProvider>
     </>
 
   );
