@@ -55,13 +55,12 @@ const renderMenuItem = (item: MenuItem) => {
 
     return (
         <NavigationMenuItem key={item.title}>
-            <NavigationMenuLink
-
+            <Link
                 href={item.url}
                 className="group text-primary !font-semibold inline-flex h-10 w-max items-center justify-center rounded-md bg-none px-4 py-2 text-sm transition-colors hover:bg-muted hover:text-accent-foreground"
             >
                 {item.title}
-            </NavigationMenuLink>
+            </Link>
         </NavigationMenuItem>
     );
 };

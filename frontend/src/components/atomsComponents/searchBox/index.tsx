@@ -50,7 +50,7 @@ export function SearchBox() {
         <Button
           onClick={() => setOpen(true)}
           variant="outline"
-          className="flex items-center transition-all delay-75 justify-between md:pl-3 pl-2 pr-2 py-1 text-sm text-muted-foreground border border-input bg-accent rounded-md hover:bg-accent hover:text-accent-foreground"
+          className="flex items-center transition-all delay-75 justify-between md:pl-3 pl-2 pr-2 py-1 text-sm text-muted-foreground border border-input bg-accent rounded-md hover:bg-accent hover:text-foreground"
         >
 
           <span className="font-medium flex gap-1 items-center transition-all delay-75">

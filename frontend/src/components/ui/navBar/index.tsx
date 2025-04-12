@@ -2,7 +2,7 @@
 import React from 'react';
 import { Book, CirclePlay, File, LifeBuoy, Zap } from "lucide-react";
 
-import { DropDownMenu, DropDownProfileMenu, Logo, NavigationMenuBar, SearchBox, SideNavBarMenu } from "@/components/atomsComponents";
+import { DropDownProfileMenu, Logo, NavigationMenuBar, SearchBox, SideNavBarMenu } from "@/components/atomsComponents";
 import { StaticImageData } from 'next/image';
 
 interface MenuItem {
@@ -59,7 +59,7 @@ const NavBar = ({
                     title: "Customer stories",
                     description: "Learn how our customers are making big changes.",
                     icon: <Zap className="size-5 shrink-0" />,
-                    url: "/",
+                    url: "/customerStories",
                 },
                 {
                     title: "Video tutorials",
@@ -83,7 +83,7 @@ const NavBar = ({
         }
     ],
     auth = {
-        login: { title: "Login", url: "#" },
+        login: { title: "Login", url: "/login" },
         signup: { title: "Sign up", url: "#" },
     },
     profile = {
@@ -93,11 +93,11 @@ const NavBar = ({
     return (
         <section className="py-2 border border-acent sticky top-0 bg-background shadow-2xs w-full">
             <div className="w-full">
-                <nav className="justify-between md:px-12 px-5 flex">
+                <nav className="justify-between md:px-12 px-2 sm:px-6 flex">
                     <div className="flex items-center ">
                         <div className="flex items-center gap-1">
                             <div className="md:hidden flex items-center">
-                                <SideNavBarMenu auth={auth} menu={menu} />
+                                <SideNavBarMenu {...(profile ? { profile } : { auth })} menu={menu} />
                             </div>
                             <Logo />
                         </div>
@@ -107,8 +107,7 @@ const NavBar = ({
                     </div>
                     <div className="flex gap-5 items-center">
                         <SearchBox />
-                        <DropDownProfileMenu profile={profile} />
-                        <DropDownMenu />
+                        <DropDownProfileMenu {...(auth ? { auth } : { profile })}     />
                     </div>
                 </nav>
 
