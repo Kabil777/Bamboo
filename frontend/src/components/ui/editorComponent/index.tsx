@@ -1,9 +1,7 @@
-import React, { useEffect, useRef, useState } from "react";
-import EditorJS from "@editorjs/editorjs";
+import React, { useEffect, useRef } from "react";
+import EditorJS, { ToolConstructable } from "@editorjs/editorjs";
 import CheckList from "@editorjs/checklist";
-import Code from "@editorjs/code";
 import Delimiter from "@editorjs/delimiter";
-import Image from "@editorjs/image";
 import InlineCode from "@editorjs/inline-code";
 import List from "@editorjs/list";
 import Quote from "@editorjs/quote";
@@ -12,20 +10,14 @@ import Paragraph from "@editorjs/paragraph";
 import Header from "@editorjs/header";
 import editorjsCodeFlask from "@calumk/editorjs-codeflask";
 
-const EDITOR_TOOLS = {
+const EDITOR_TOOLS: { [toolName: string]: any } = {
 	code: editorjsCodeFlask,
 	header: {
-		class: Header,
-		shortcut: "CMD+H",
+		class: Header as unknown as ToolConstructable,
 		inlineToolbar: true,
-		config: {
-			placeholder: "Enter a Header",
-			levels: [2, 3, 4],
-			defaultLevel: 2,
-		},
 	},
 	paragraph: {
-		class: Paragraph,
+		class: Paragraph as unknown as ToolConstructable,
 		// shortcut: 'CMD+P',
 		inlineToolbar: true,
 	},
@@ -38,13 +30,11 @@ const EDITOR_TOOLS = {
 };
 
 interface editorProps {
-	data: any;
-	onChange: Function;
 	holder: string | HTMLElement | undefined;
 }
-function Editor({ data, onChange, holder }: editorProps) {
+function Editor({ holder }: editorProps) {
 	//add a reference to editor
-	const ref = useRef();
+	const ref = useRef<EditorJS | null>(null);
 	//initialize editorjs
 	useEffect(() => {
 		//initialize editor if we don't have a reference
@@ -52,12 +42,10 @@ function Editor({ data, onChange, holder }: editorProps) {
 			const editor = new EditorJS({
 				holder: holder,
 				placeholder: "Start writting here..",
-				tools: EDITOR_TOOLS as any,
-				data,
-				async onChange(api, event) {
+				tools: EDITOR_TOOLS,
+				async onChange(api) {
 					const content = await api.saver.save();
 					console.log(content);
-					onChange(content);
 				},
 			});
 			ref.current = editor;
@@ -69,14 +57,13 @@ function Editor({ data, onChange, holder }: editorProps) {
 				ref.current.destroy();
 			}
 		};
-	}, []);
+	}, [holder]);
 
 	return (
 		<>
 			<div
 				id={holder as string}
 				style={{
-					width: "100%",
 					minHeight: 500,
 					borderRadius: " 7px",
 					background: "fff",

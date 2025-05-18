@@ -99,8 +99,7 @@ const NavBar = ({
 	},
 }: NavbarProps) => {
 	return (
-		<section className="py-2 z-10 border border-acent sticky top-0 bg-background shadow-2xs w-full">
-			<div className="w-full">
+			<header className="py-2 z-10 border border-acent sticky top-0 bg-background shadow-none w-full ">
 				<nav className="justify-between md:px-12 px-2 sm:px-6 flex">
 					<div className="flex items-center ">
 						<div className="flex items-center gap-1">
@@ -121,8 +120,7 @@ const NavBar = ({
 						<DropDownProfileMenu {...(auth ? { auth } : { profile })} />
 					</div>
 				</nav>
-			</div>
-		</section>
+			</header>
 	);
 };
 
