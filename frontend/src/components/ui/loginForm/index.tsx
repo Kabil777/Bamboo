@@ -18,7 +18,7 @@ import Image from "next/image"
 import { Card, CardContent } from "@/components/shadcnUI/card"
 import { cn } from "@/lib/utils"
 import { toast } from "sonner"
-import { useRouter } from 'next/navigation'
+import { useRouter } from "nextjs-toploader/app";
 const formSchema = z.object({
     email: z.string().email("Please enter a valid email"),
     password: z
@@ -129,7 +129,7 @@ export function LoginForm({
                             <Image
                                 width={500}
                                 height={500}
-                                src="/"
+                                src="https://modii.org/wp-content/uploads/2020/12/random.png"
                                 alt=""
                                 className="absolute inset-0 h-full w-full object-cover dark:brightness-[0.2] dark:grayscale"
                             />

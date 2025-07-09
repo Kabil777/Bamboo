@@ -2,11 +2,11 @@
 
 import {
   BlogCard,
-  DocsCard,
   MoreAbout,
   TabChips,
 } from "@/components/atomsComponents";
 import { Separator } from "@/components/shadcnUI/separator";
+import { DocsHome } from "@/components/ui";
 import * as React from "react";
 const tabs = [
   { label: "All", value: "all" },
@@ -68,7 +68,7 @@ export default function Home() {
             <BlogCard />
           </div>
           <div className="hidden xl:flex flex-col xl:col-span-1 line-clamp-2 p-2 gap-4 xl:sticky top-[140px] z-8 max-h-[calc(100vh-150px)] overflow-y-auto custom-scroll">
-            <DocsCard />
+            <DocsHome />
             <Separator orientation="horizontal" />
             <MoreAbout />
           </div>

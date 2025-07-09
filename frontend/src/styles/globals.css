@@ -122,8 +122,8 @@
   }
 
   ::selection {
-    color: var(--background);
-    background-color: var(--foreground);
+    color: var(--background) !important;
+    background-color: var(--foreground) !important;
   }
 
   button:not(:disabled),

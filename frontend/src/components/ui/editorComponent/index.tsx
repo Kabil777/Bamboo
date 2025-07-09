@@ -43,6 +43,8 @@ function Editor({ holder }: editorProps) {
 				holder: holder,
 				placeholder: "Start writting here..",
 				tools: EDITOR_TOOLS,
+				autofocus: true,
+				style:{},
 				async onChange(api) {
 					const content = await api.saver.save();
 					console.log(content);
@@ -66,7 +68,7 @@ function Editor({ holder }: editorProps) {
 				style={{
 					minHeight: 500,
 					borderRadius: " 7px",
-					background: "fff",
+					
 				}}
 			/>
 		</>
