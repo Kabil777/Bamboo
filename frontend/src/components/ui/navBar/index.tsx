@@ -12,7 +12,6 @@ import {
 import { StaticImageData } from "next/image";
 import { Button } from "@/components/shadcnUI/button";
 import { useRouter } from "nextjs-toploader/app";
-import Link from "next/link";
 
 interface MenuItem {
   title: string;
@@ -103,7 +102,7 @@ const NavBar = ({
 }: NavbarProps) => {
   const router = useRouter();
   return (
-    <header className="py-2 z-10 border border-acent sticky top-0 bg-background shadow-none w-full ">
+    <header className="py-2 z-10 border border-accent sticky top-0 bg-background shadow-none w-full ">
       <nav className="justify-between md:px-12 px-2 sm:px-6 flex">
         <div className="flex items-center ">
           <div className="flex items-center gap-1">

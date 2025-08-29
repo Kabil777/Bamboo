@@ -1,7 +1,9 @@
 @import "tailwindcss";
 @import "tw-animate-css";
-
 @custom-variant dark (&:is(.dark *));
+
+@import "./_variables.scss";
+@import "./_keyframe-animations.scss";
 
 @theme inline {
   --color-background: var(--background);
@@ -119,8 +121,24 @@
 
   body {
     @apply bg-background text-foreground;
+
+    /* Firefox scrollbar */
+    scrollbar-width: thin;
+    scrollbar-color: var(--sidebar-ring) transparent;
+  }
+  ::-webkit-scrollbar {
+    display: block;
+    width: 0.45rem;
   }
 
+  ::-webkit-scrollbar-track {
+    background: transparent ;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background-color: var(--sidebar-ring);
+    border-radius: 5px;
+  }
   ::selection {
     color: var(--background) !important;
     background-color: var(--foreground) !important;
@@ -137,7 +155,11 @@
     -ms-overflow-style: none; /* IE and Edge */
     scrollbar-width: none; /* Firefox */
   }
-  .codeflask.codeflask--has-line-numbers:before{
+  .codeflask.codeflask--has-line-numbers:before {
     z-index: 0 !important;
   }
+.is-active {
+    background-color: black !important ;
+    color: white !important;
+}
 }

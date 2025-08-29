@@ -1,6 +1,7 @@
 "use client";
 import { Button } from "@/components/shadcnUI/button";
 import { Input } from "@/components/shadcnUI/input";
+import { DocsCards } from "@/components/ui";
 import { useSearchParams } from "next/navigation";
 import { useRouter } from "nextjs-toploader/app";
 import * as React from "react";
@@ -34,15 +35,14 @@ export default function Search() {
         <p className="text-base md:text-2xl font-bold break-words whitespace-normal">
           {query ? `Search Result - '${query}'` : "Bamboo's Search"}
         </p>
-
-        <div className="flex items-center gap-2 md:gap-3 sticky top-[58px] z-9 py-3 w-full">
+        <div className="flex items-center gap-2 md:gap-3 sticky top-[58px] z-9 py-3 w-full bg-background">
           <div className="relative w-full">
             <Input
               placeholder="Search..."
               autoFocus
               ref={inputRef}
               type="search"
-              className="flex h-12 items-center transition-all delay-75 justify-between md:pl-10 pl-8 pr-2 md:pr-15 font-medium md:flex py-1 text-sm text-muted-foreground border border-input bg-accent/95 rounded-md hover:bg-accent hover:text-foreground backdrop-blur supports-[backdrop-filter]:bg-accent/60" 
+              className="flex h-12 items-center transition-all delay-75 justify-between md:pl-10 pl-8 pr-2 md:pr-15 font-medium md:flex py-1 text-sm text-muted-foreground border border-input  rounded-md hover:bg-accent hover:text-foreground "
             />
 
             <span className="font-medium flex gap-1 items-center transition-all delay-75 absolute left-3 md:left-4 top-1/2 -translate-y-1/2 ">
@@ -57,12 +57,12 @@ export default function Search() {
               router.push(`/search?query=${inputRef.current?.value}`)
             }
             variant="outline"
-            className="h-12 backdrop-blur supports-[backdrop-filter]:bg-background/60"
+            className="h-12"
           >
             Search
           </Button>
         </div>
-        <div className="break-words">{query}</div>
+        <div className="break-words">{query ? query : <DocsCards />}</div>
       </main>
     </>
   );

@@ -1,14 +1,9 @@
 "use client";
-import dynamic from "next/dynamic";
-const Editor = dynamic(() => import("@/components/ui/editorComponent"), {
-	ssr: false,
-});
+import Editor from "@/components/ui/editorComponent";
 
 const CreateNewBlog = () => {
 	return (
-		<Editor
-			holder="editor_create"
-		/>
+		<Editor/>
 	);
 };
 export default CreateNewBlog;
