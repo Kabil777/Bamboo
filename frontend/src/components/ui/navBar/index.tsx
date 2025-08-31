@@ -1,17 +1,15 @@
 "use client";
 import React from "react";
 import { Book, CirclePlay, File, LifeBuoy, Zap } from "lucide-react";
-import { FiEdit3 } from "react-icons/fi";
 import {
   DropDownProfileMenu,
+  EditorModel,
   Logo,
   NavigationMenuBar,
   SearchBox,
   SideNavBarMenu,
 } from "@/components/atomsComponents";
 import { StaticImageData } from "next/image";
-import { Button } from "@/components/shadcnUI/button";
-import { useRouter } from "nextjs-toploader/app";
 
 interface MenuItem {
   title: string;
@@ -100,7 +98,6 @@ const NavBar = ({
     profiledetails: { title: "Profile", url: "https://github.com/shadcn.png" },
   },
 }: NavbarProps) => {
-  const router = useRouter();
   return (
     <header className="py-2 z-10 border border-accent sticky top-0 bg-background shadow-none w-full ">
       <nav className="justify-between md:px-12 px-2 sm:px-6 flex">
@@ -120,15 +117,7 @@ const NavBar = ({
         </div>
         <div className="flex gap-5 items-center">
           <SearchBox />
-          <Button
-            onClick={() => {
-              router.push("/editor");
-            }}
-            variant="outline"
-            className="flex items-center transition-all delay-75 justify-between text-sm text-muted-foreground border border-input bg-accent rounded-md hover:bg-accent hover:text-foreground"
-          >
-            <FiEdit3 className="pointer-events-none" />
-          </Button>
+          <EditorModel />
           <DropDownProfileMenu {...(auth ? { auth } : { profile })} />
         </div>
       </nav>

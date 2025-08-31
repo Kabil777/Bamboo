@@ -57,8 +57,10 @@ import { handleImageUpload, MAX_FILE_SIZE } from "@/lib/tiptap-utils";
 
 // --- Styles ---
 import { Button } from "@/components/shadcnUI/button";
-
-const MainToolbarContent = () => {
+interface MainToolbarContentProp {
+  onSave: () => void;
+}
+const MainToolbarContent = ({ onSave }: MainToolbarContentProp) => {
   return (
     <>
       <Spacer />
@@ -85,7 +87,7 @@ const MainToolbarContent = () => {
         <MarkButton type="strike" />
         <MarkButton type="code" />
         <MarkButton type="underline" />
-       
+
         <ColorHighlightPopover />
 
         <LinkPopover />
@@ -112,7 +114,7 @@ const MainToolbarContent = () => {
       <ToolbarGroup>
         <ImageUploadButton text="Add" />
       </ToolbarGroup>
-
+      <Button onClick={onSave} >Save</Button>
       <Spacer />
     </>
   );
@@ -121,6 +123,8 @@ const MainToolbarContent = () => {
 export default function Editor() {
   const [word, setWord] = React.useState(0);
   const toolbarRef = React.useRef<HTMLDivElement>(null);
+  const [save, setSave] = React.useState<boolean>(false);
+
   //limit
   const limit = 10000;
   const lowlight = createLowlight(all);
@@ -190,17 +194,19 @@ export default function Editor() {
     ],
     onUpdate({ editor }) {
       const count = editor.storage.characterCount.characters();
-      const dataContent=editor.getJSON();
+      const dataContent = editor.getJSON();
       console.log(dataContent);
       setWord(count);
     },
   });
-
+  const onSave = () => {
+    setSave(true);
+  }
   return (
     <EditorContext.Provider value={{ editor }}>
       <div className="content-wrapper">
         <Toolbar ref={toolbarRef}>
-          <MainToolbarContent />
+          <MainToolbarContent onSave={onSave} />
         </Toolbar>
         {editor && (
           <BubbleMenu
@@ -234,7 +240,7 @@ export default function Editor() {
               >
                 Strike
               </Button>
-               
+
             </div>
           </BubbleMenu>
         )}

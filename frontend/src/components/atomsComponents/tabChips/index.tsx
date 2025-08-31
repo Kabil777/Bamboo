@@ -1,27 +1,21 @@
 'use client';
 import React from "react";
-import { AnimatePresence, motion } from 'framer-motion';
 import { useTabs, type Tab } from '@/hooks/UseTabs';
 import { cn } from '@/lib/utils';
 
-interface AnimatedTabsProps {
+
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/shadcnUI/carousel"
+
+interface TabsProps {
   tabs: Tab[];
   onTabChange?: (value: string) => void;
 }
-
-const transition = {
-  type: 'tween',
-  ease: 'easeOut',
-  duration: 0.15
-};
-
-const getHoverAnimationProps = (hoveredRect: DOMRect, navRect: DOMRect) => ({
-  x: hoveredRect.left - navRect.left - 10,
-  y: hoveredRect.top - navRect.top - 4,
-  width: hoveredRect.width + 20,
-  height: hoveredRect.height + 10
-});
-
 const Tabs = ({
   tabs,
   selectedTabIndex,
@@ -31,86 +25,39 @@ const Tabs = ({
   selectedTabIndex: number;
   setSelectedTab: (input: [number, number]) => void;
 }): React.ReactElement => {
-  const [buttonRefs, setButtonRefs] = React.useState<Array<HTMLButtonElement | null>>([]);
-
-  React.useEffect(() => {
-    setButtonRefs((prev) => prev.slice(0, tabs.length));
-  }, [tabs.length]);
-
-  const navRef = React.useRef<HTMLDivElement>(null);
-  const navRect = navRef.current?.getBoundingClientRect();
-  const selectedRect = buttonRefs[selectedTabIndex]?.getBoundingClientRect();
-
-  const [hoveredTabIndex, setHoveredTabIndex] = React.useState<number | null>(null);
-  const hoveredRect = buttonRefs[hoveredTabIndex ?? -1]?.getBoundingClientRect();
 
   return (
-    <nav
-      ref={navRef}
-      className="flex flex-shrink-0 justify-center items-center relative z-0 py-2"
-      onPointerLeave={() => setHoveredTabIndex(null)}
-    >
+    <CarouselContent className="sm:py-2 -ml-0">
       {tabs.map((item, i) => {
         const isActive = selectedTabIndex === i;
-
         return (
-          <button
+          <CarouselItem
             key={item.value}
             className={cn(
-              'text-sm font-medium sm:text-base relative rounded-md flex items-center h-8 px-4 z-20 cursor-pointer select-none transition-colors',
+              'text-sm font-medium sm:text-base relative rounded-md flex  items-center h-8 px-4 cursor-pointer select-none transition-all duration-1000 ease-in-out basis-auto',
               {
-                'font-medium': isActive
+                'font-medium bg-foreground text-background': isActive,
+                'hover:bg-accent text-foreground': !isActive
               }
             )}
-            onPointerEnter={() => setHoveredTabIndex(i)}
-            onFocus={() => setHoveredTabIndex(i)}
-            onClick={() => setSelectedTab([i, i > selectedTabIndex ? 1 : -1])}
+            onClick={() => setSelectedTab([i, i > selectedTabIndex ? 1 : 1])}
+            title={item.label}
           >
-            <motion.span
-              ref={(el) => {
-                buttonRefs[i] = el as HTMLButtonElement;
-              }}
-              className={cn('block', {
-                'text-foreground': !isActive,
-                'text-background font-medium': isActive
-              })}
+            <div
+
             >
               <small className={item.value === 'danger-zone' ? 'text-red-500' : ''}>
                 {item.label}
               </small>
-            </motion.span>
-          </button>
+            </div>
+          </CarouselItem>
         );
       })}
-
-      <AnimatePresence>
-        {hoveredRect && navRect && (
-          <motion.div
-            key="hover"
-            className="absolute z-10 top-0 left-0 rounded-md bg-accent"
-            initial={{ ...getHoverAnimationProps(hoveredRect, navRect), opacity: 0 }}
-            animate={{ ...getHoverAnimationProps(hoveredRect, navRect), opacity: 1 }}
-            exit={{ ...getHoverAnimationProps(hoveredRect, navRect), opacity: 0 }}
-            transition={transition}
-          />
-        )}
-      </AnimatePresence>
-
-      <AnimatePresence>
-        {selectedRect && navRect && (
-          <motion.div
-            className="absolute z-10 top-0 left-0 rounded-md bg-foreground"
-            initial={false}
-            animate={{ ...getHoverAnimationProps(selectedRect, navRect), opacity: 1 }}
-            transition={transition}
-          />
-        )}
-      </AnimatePresence>
-    </nav>
+    </CarouselContent>  
   );
 };
 
-export function TabChips({ tabs, onTabChange }: AnimatedTabsProps) {
+export function TabChips({ tabs, onTabChange }:TabsProps) {
   const [hookProps] = React.useState(() => {
     const initialTabId = tabs[0].value;
     return {
@@ -133,14 +80,18 @@ export function TabChips({ tabs, onTabChange }: AnimatedTabsProps) {
 
   return (
     <div className="w-full">
-      <div
-        className="relative flex w-full items-center justify-between overflow-x-auto overflow-y-hidden"
-        style={{
-          scrollbarWidth: "none"
+      <Carousel
+        className="relative w-full p-2"
+        opts={{
+          align: "start",
+          loop: false,
+          dragFree: true,
         }}
       >
+        <CarouselPrevious />
         <Tabs {...framer.tabProps} />
-      </div>
+        <CarouselNext />
+      </Carousel>
     </div>
   );
 }

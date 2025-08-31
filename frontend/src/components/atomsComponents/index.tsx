@@ -8,3 +8,4 @@ export { BlogCard } from './blogCard'
 export {ProfileTag} from'./profileTag'
 export { DocsCard } from "./docsCard"
 export { MoreAbout } from "./moreAbout"
+export {EditorModel} from "./editorModel"
