@@ -264,7 +264,7 @@ export default function Blog() {
   const toc = extractToc(md);
   console.log(md);
   return (
-   <>
+    <>
       <main className="flex flex-col md:flex-row p-5 md:py-10 md:px-24 gap-10">
         <article className="prose max-w-none flex-1 reactMarkdown">
           <ReactMarkdown
@@ -275,7 +275,7 @@ export default function Blog() {
                 const text = String(children);
                 return (
                   <h1 id={slugify(text)} {...props}
-                  className="text-3xl font-bold text-foreground mb-4">
+                    className="text-3xl font-bold text-foreground mb-4">
                     {children}
                   </h1>
                 );
@@ -343,11 +343,14 @@ export default function Blog() {
               p: ({ ...props }) => <p className="leading-relaxed text-foreground font-normal mb-4 hyphens-auto" {...props} />,
               code: (props) => {
                 const { className, children, ...rest } = props;
-                const language = className?.split("language-")[1];
+                const rawLang = className?.split("language-")[1];
+                const language = rawLang
+                  ? rawLang.charAt(0).toUpperCase() + rawLang.slice(1)
+                  : null;
                 return (language) ? (
                   <div className={`relative mb-4 ${jetBrains_Mono.className}`}>
-                    <div className="bg-[#1a1b26] rounded-t-xl py-3 px-3 font-normal flex justify-between items-center sticky top-15 border-border border-b">
-                      <p className="text-white">{language}</p>
+                    <div className="bg-[#1a1b26] rounded-t-xl py-2 px-3 font-normal flex justify-between items-center sticky top-15 border-border border-b">
+                      <p className="text-white text-xs">{language}</p>
                       <Button
                         variant="outline"
                         onClick={() => {
