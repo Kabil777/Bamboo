@@ -1,6 +1,5 @@
 "use client";
 
-
 import "@/components/tiptap-node/code-block-node/code-block-node.scss";
 import "@/components/tiptap-node/list-node/list-node.scss";
 import "@/components/tiptap-node/image-node/image-node.scss";
@@ -32,6 +31,7 @@ const jetBrains_Mono = JetBrains_Mono({
 import { unified } from "unified";
 import remarkParse from "remark-parse";
 import { visit } from "unist-util-visit";
+import { useAppState } from "@/hooks/ReduxHooks";
 
 const springBootJson = {
   type: "doc",
@@ -259,12 +259,15 @@ function extractToc(markdown: string) {
 
 export default function Blog() {
   const extensions = [StarterKit];
-  const md = renderToMarkdown({ content: springBootJson, extensions });
+  const md = renderToMarkdown({
+    content: useAppState((state) => state.postReducer.content),
+    extensions,
+  });
 
   const toc = extractToc(md);
   console.log(md);
   return (
-   <>
+    <>
       <main className="flex flex-col md:flex-row p-5 md:py-10 md:px-24 gap-10">
         <article className="prose max-w-none flex-1 reactMarkdown">
           <ReactMarkdown
@@ -274,8 +277,11 @@ export default function Blog() {
               h1: ({ children, ...props }) => {
                 const text = String(children);
                 return (
-                  <h1 id={slugify(text)} {...props}
-                  className="text-3xl font-bold text-foreground mb-4">
+                  <h1
+                    id={slugify(text)}
+                    {...props}
+                    className="text-3xl scroll-m-60 font-bold text-foreground mb-4"
+                  >
                     {children}
                   </h1>
                 );
@@ -297,7 +303,7 @@ export default function Blog() {
                 return (
                   <h3
                     id={slugify(text)}
-                    className="text-xl font-semibold text-foreground mt-6 mb-2"
+                    className="text-xl scroll-m-36 font-semibold text-foreground mt-6 mb-2"
                     {...props}
                   >
                     {children}
@@ -340,11 +346,16 @@ export default function Blog() {
                   </h6>
                 );
               },
-              p: ({ ...props }) => <p className="leading-relaxed text-foreground font-normal mb-4 hyphens-auto" {...props} />,
+              p: ({ ...props }) => (
+                <p
+                  className="leading-relaxed text-foreground font-normal mb-4 hyphens-auto"
+                  {...props}
+                />
+              ),
               code: (props) => {
                 const { className, children, ...rest } = props;
                 const language = className?.split("language-")[1];
-                return (language) ? (
+                return language ? (
                   <div className={`relative mb-4 ${jetBrains_Mono.className}`}>
                     <div className="bg-[#1a1b26] rounded-t-xl py-3 px-3 font-normal flex justify-between items-center sticky top-15 border-border border-b">
                       <p className="text-white">{language}</p>
@@ -352,26 +363,36 @@ export default function Blog() {
                         variant="outline"
                         onClick={() => {
                           navigator.clipboard.writeText(children + "");
-
                         }}
                         className="transition-all delay-75 justify-between px-1 !py-1 !h-fit text-xs text-muted-foreground border border-muted-foreground bg-[oklch(0.269 0 0)] rounded-md hover:bg-[oklch(0.269 0 0)] hover:text-white tracking-tight "
                       >
-                        Copy<Copy />
+                        Copy
+                        <Copy />
                       </Button>
                     </div>
-                    <pre className={`overflow-x-auto custom-scroll rounded-b-xl bg-background`}>
-                      <code className={`text-sm custom-scroll ${className} ${jetBrains_Mono.className}`} {...rest}>
+                    <pre
+                      className={`overflow-x-auto custom-scroll rounded-b-xl bg-background`}
+                    >
+                      <code
+                        className={`text-sm custom-scroll ${className} ${jetBrains_Mono.className}`}
+                        {...rest}
+                      >
                         {children}
                       </code>
                     </pre>
                   </div>
                 ) : (
-                  <code className={`px-2 rounded-lg bg-[#0f16241d] text-[#23252ade] ${jetBrains_Mono.className}`} {...rest}>
+                  <code
+                    className={`px-2 rounded-lg bg-[#0f16241d] text-[#23252ade] ${jetBrains_Mono.className}`}
+                    {...rest}
+                  >
                     {children}
                   </code>
                 );
               },
-              hr: ({ ...props }) => <hr className="my-6 border border-border" {...props} />,
+              hr: ({ ...props }) => (
+                <hr className="my-6 border border-border" {...props} />
+              ),
               ul: ({ ...props }) => (
                 <ul className="list-disc pl-6 my-4" {...props} />
               ),
@@ -379,15 +400,45 @@ export default function Blog() {
                 <ol className="list-decimal pl-6 my-4" {...props} />
               ),
               li: ({ ...props }) => (
-                <li className="mb-2 leading-relaxed marker:text-foreground" {...props} />
+                <li
+                  className="mb-2 leading-relaxed marker:text-foreground"
+                  {...props}
+                />
               ),
-              table: ({ ...props }) => <table className="w-full my-6 border-collapse border border-border" {...props} />,
-              tbody: ({ ...props }) => <tbody className="divide-y divide-border" {...props} />,
-              tr: ({ ...props }) => <tr className="hover:bg-muted-foreground/10 transition-colors" {...props} />,
-              td: ({ ...props }) => <td className="p-4 border-b border-border" {...props} />,
-              th: ({ ...props }) => <th className="p-4 border-b border-border" {...props} />,
-              a: ({ ...props }) => <a className="text-foreground underline" target="_blank" {...props} />,
-              blockquote: ({ ...props }) => <blockquote className="border-l-4 border-foreground pl-4 italic my-4 text-muted-foreground rounded-md" {...props} />,
+              table: ({ ...props }) => (
+                <table
+                  className="w-full my-6 border-collapse border border-border"
+                  {...props}
+                />
+              ),
+              tbody: ({ ...props }) => (
+                <tbody className="divide-y divide-border" {...props} />
+              ),
+              tr: ({ ...props }) => (
+                <tr
+                  className="hover:bg-muted-foreground/10 transition-colors"
+                  {...props}
+                />
+              ),
+              td: ({ ...props }) => (
+                <td className="p-4 border-b border-border" {...props} />
+              ),
+              th: ({ ...props }) => (
+                <th className="p-4 border-b border-border" {...props} />
+              ),
+              a: ({ ...props }) => (
+                <a
+                  className="text-foreground underline"
+                  target="_blank"
+                  {...props}
+                />
+              ),
+              blockquote: ({ ...props }) => (
+                <blockquote
+                  className="border-l-4 border-foreground pl-4 italic my-4 text-muted-foreground rounded-md"
+                  {...props}
+                />
+              ),
             }}
           >
             {md}
