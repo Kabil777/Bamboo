@@ -21,10 +21,10 @@ import { Link } from "@/components/tiptap-extension/link-extension";
 import { Selection } from "@/components/tiptap-extension/selection-extension";
 import { TrailingNode } from "@/components/tiptap-extension/trailing-node-extension";
 import { all, createLowlight } from "lowlight";
-import css from 'highlight.js/lib/languages/css'
-import js from 'highlight.js/lib/languages/javascript'
-import ts from 'highlight.js/lib/languages/typescript'
-import html from 'highlight.js/lib/languages/xml'
+import css from "highlight.js/lib/languages/css";
+import js from "highlight.js/lib/languages/javascript";
+import ts from "highlight.js/lib/languages/typescript";
+import html from "highlight.js/lib/languages/xml";
 // --- UI Primitives ---
 import { Spacer } from "@/components/tiptap-ui-primitive/spacer";
 import {
@@ -54,13 +54,21 @@ import { UndoRedoButton } from "@/components/tiptap-ui/undo-redo-button";
 
 // --- Lib ---
 import { handleImageUpload, MAX_FILE_SIZE } from "@/lib/tiptap-utils";
+import "highlight.js/styles/tokyo-night-dark.css";
 
 // --- Styles ---
 import { Button } from "@/components/shadcnUI/button";
+import { useAppDispatch } from "@/hooks/ReduxHooks";
+import { setContent } from "@/store/reducers/PostContent";
+import { MenuBar } from "./customBlock";
+import "./syntax.css";
 interface MainToolbarContentProp {
   onSave: () => void;
+  editor: ReturnType<typeof useEditor> | null;
 }
-const MainToolbarContent = ({ onSave }: MainToolbarContentProp) => {
+
+//syntax highlighting
+const MainToolbarContent = ({ onSave, editor }: MainToolbarContentProp) => {
   return (
     <>
       <Spacer />
@@ -100,6 +108,7 @@ const MainToolbarContent = ({ onSave }: MainToolbarContentProp) => {
         <MarkButton type="subscript" />
       </ToolbarGroup>
 
+      <MenuBar editor={editor} />
       <ToolbarSeparator />
 
       <ToolbarGroup>
@@ -114,7 +123,7 @@ const MainToolbarContent = ({ onSave }: MainToolbarContentProp) => {
       <ToolbarGroup>
         <ImageUploadButton text="Add" />
       </ToolbarGroup>
-      <Button onClick={onSave} >Save</Button>
+      <Button onClick={onSave}>Save</Button>
       <Spacer />
     </>
   );
@@ -123,7 +132,7 @@ const MainToolbarContent = ({ onSave }: MainToolbarContentProp) => {
 export default function Editor() {
   const [word, setWord] = React.useState(0);
   const toolbarRef = React.useRef<HTMLDivElement>(null);
-  const [save, setSave] = React.useState<boolean>(false);
+  const dispatch = useAppDispatch();
 
   //limit
   const limit = 10000;
@@ -132,6 +141,7 @@ export default function Editor() {
   lowlight.register("css", css);
   lowlight.register("js", js);
   lowlight.register("ts", ts);
+
   const editor = useEditor({
     immediatelyRender: false,
     editorProps: {
@@ -188,25 +198,28 @@ export default function Editor() {
           }
         },
       }),
+
       CodeBlockLowlight.configure({
         lowlight,
       }),
     ],
     onUpdate({ editor }) {
       const count = editor.storage.characterCount.characters();
-      const dataContent = editor.getJSON();
-      console.log(dataContent);
       setWord(count);
     },
   });
   const onSave = () => {
-    setSave(true);
-  }
+    dispatch(
+      setContent({
+        content: editor?.getJSON() || {},
+      }),
+    );
+  };
   return (
     <EditorContext.Provider value={{ editor }}>
       <div className="content-wrapper">
         <Toolbar ref={toolbarRef}>
-          <MainToolbarContent onSave={onSave} />
+          <MainToolbarContent onSave={onSave} editor={editor} />
         </Toolbar>
         {editor && (
           <BubbleMenu
@@ -240,7 +253,6 @@ export default function Editor() {
               >
                 Strike
               </Button>
-
             </div>
           </BubbleMenu>
         )}

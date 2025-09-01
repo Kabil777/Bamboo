@@ -15,11 +15,11 @@ interface LogoProps {
 export function Logo({ logo = {
     url: "/",
     src: Icon,
-    alt: "Banboo",
+    alt: "Bamboo",
     title: "Bamboo",
 }, }: LogoProps) {
     return (
-            <Link href={logo.url} legacyBehavior passHref className="flex items-center md:gap-1 transition-all delay-75">
+            <Link href={logo.url} className="flex items-center md:gap-1 transition-all delay-75">
                 <div className={`${agbalumo.className} select-none cursor-pointer gap-1 md:gap-2 text-primary h-9 inline-flex w-max items-center justify-center rounded-md p-2 text-sm font-medium  disabled:opacity-50 transition-[color,box-shadow] focus-visible:ring-[3px] focus-visible:outline-1 pointer `}>
                     <Image src={logo.src} alt={logo.alt} className='w-8 max-h-8 dark:invert-[75%]' />
                     <h1 className="text-xl pb-1 font-normal text-[#374151] dark:invert tracking-tighter">{logo.title}</h1>

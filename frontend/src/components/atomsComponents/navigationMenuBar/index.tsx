@@ -26,7 +26,7 @@ export const NavigationMenuBar = ({ menu }: Navbar1Props) => {
         <>
             <NavigationMenu >
                 <NavigationMenuList>
-                    {menu?.map((item) => renderMenuItem(item))}
+                    {menu?.map((item) => <span key={item.title}>{renderMenuItem(item)}</span>)}
                 </NavigationMenuList>
             </NavigationMenu>
         </>

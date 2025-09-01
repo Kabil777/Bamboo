@@ -73,7 +73,11 @@ export function SideNavBarMenu({
               collapsible
               className="flex w-full flex-col gap-4"
             >
-              {menu?.map((item) => renderMobileMenuItem(item))}
+              {menu?.map((item) => (
+                <React.Fragment key={item.title}>
+                  {renderMobileMenuItem(item)}
+                </React.Fragment>
+              ))}
             </Accordion>
           </div>
           <DrawerFooter>

@@ -1,9 +1,8 @@
-import './CodeBlockComponent.scss'
-
+// components/tiptap-node/code-block-node/CodeBlockComponent.tsx
 import { NodeViewContent, NodeViewWrapper } from '@tiptap/react'
 import React from 'react'
 
-export default ({
+const CodeBlockComponent = ({
   node: {
     attrs: { language: defaultLanguage },
   },
@@ -29,3 +28,5 @@ export default ({
     </pre>
   </NodeViewWrapper>
 )
+
+export { CodeBlockComponent }

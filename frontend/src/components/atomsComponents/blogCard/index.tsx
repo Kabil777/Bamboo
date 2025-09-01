@@ -3,7 +3,7 @@ import { StaticImport } from 'next/dist/shared/lib/get-img-props';
 import Image from 'next/image';
 import { Card, CardContent, CardTitle, CardDescription } from "@/components/shadcnUI/card"
 import { Badge } from "@/components/shadcnUI/badge"
-    import { ProfileTag } from '@/components/atomsComponents';
+import { ProfileTag } from '@/components/atomsComponents';
 interface BlogCardProps {
     title?: string;
     description?: string;

@@ -146,7 +146,7 @@ export function ColorHighlightPopoverContent({
       <div className="tiptap-button-group" data-orientation="horizontal">
         {colors.map((color, index) => (
           <ColorHighlightButton
-            key={color.value}
+            key={index}
             editor={editor}
             color={color.value}
             aria-label={`${color.label} highlight color`}
