@@ -8,8 +8,6 @@ import {
   Carousel,
   CarouselContent,
   CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
 } from "@/components/shadcnUI/carousel"
 
 interface TabsProps {
@@ -27,14 +25,14 @@ const Tabs = ({
 }): React.ReactElement => {
 
   return (
-    <CarouselContent className=" -ml-0">
+    <CarouselContent className=" -ml-0 gap-3">
       {tabs.map((item, i) => {
         const isActive = selectedTabIndex === i;
         return (
           <CarouselItem
             key={item.value}
             className={cn(
-              'text-sm font-semibold sm:text-base relative rounded-md flex  items-center h-8 px-4 cursor-pointer select-none transition-all duration-1000 ease-in-out basis-auto',
+              'font-semibold text-base relative rounded-md flex  items-center h-8 px-4 cursor-pointer select-none transition-all duration-1000 ease-in-out basis-auto',
               {
                 'bg-foreground text-background': isActive,
                 'hover:bg-accent text-foreground': !isActive
@@ -57,7 +55,7 @@ const Tabs = ({
   );
 };
 
-export function TabChips({ tabs, onTabChange }:TabsProps) {
+export function ProfileRoutes({ tabs, onTabChange }:TabsProps) {
   const [hookProps] = React.useState(() => {
     const initialTabId = tabs[0].value;
     return {
@@ -88,9 +86,7 @@ export function TabChips({ tabs, onTabChange }:TabsProps) {
           dragFree: true,
         }}
       >
-        <CarouselPrevious />
         <Tabs {...framer.tabProps} />
-        <CarouselNext />
       </Carousel>
     </div>
   );

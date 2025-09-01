@@ -5,7 +5,9 @@ export { Logo } from "./logo"
 export { SideNavBarMenu } from "./SideNavBarMenu"
 export { TabChips } from "./tabChips"
 export { BlogCard } from './blogCard'
-export {ProfileTag} from'./profileTag'
+export { ProfileTag } from './profileTag'
 export { DocsCard } from "./docsCard"
 export { MoreAbout } from "./moreAbout"
-export {EditorModel} from "./editorModel"
+export { EditorModel } from "./editorModel"
+export { ProfileRoutes } from "./profileRoutes"
+export { SharePopover } from "./sharePopover"
