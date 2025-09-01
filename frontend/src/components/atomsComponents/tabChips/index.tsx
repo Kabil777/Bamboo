@@ -1,60 +1,97 @@
 'use client';
-import { Button } from "@/components/shadcnUI/button";
-import React, { useState } from "react";
+import React from "react";
+import { useTabs, type Tab } from '@/hooks/UseTabs';
+import { cn } from '@/lib/utils';
 
-export function TabChips() {
-    const [activeButton, setActiveButton] = useState(0);
-    const handleClick = (index: number) => {
-        if (activeButton !== index) {
-            setActiveButton(index);
-        }
+
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/shadcnUI/carousel"
+
+interface TabsProps {
+  tabs: Tab[];
+  onTabChange?: (value: string) => void;
+}
+const Tabs = ({
+  tabs,
+  selectedTabIndex,
+  setSelectedTab
+}: {
+  tabs: Tab[];
+  selectedTabIndex: number;
+  setSelectedTab: (input: [number, number]) => void;
+}): React.ReactElement => {
+
+  return (
+    <CarouselContent className=" -ml-0">
+      {tabs.map((item, i) => {
+        const isActive = selectedTabIndex === i;
+        return (
+          <CarouselItem
+            key={item.value}
+            className={cn(
+              'text-sm font-semibold sm:text-base relative rounded-md flex  items-center h-8 px-4 cursor-pointer select-none transition-all duration-1000 ease-in-out basis-auto',
+              {
+                'bg-foreground text-background': isActive,
+                'hover:bg-accent text-foreground': !isActive
+              }
+            )}
+            onClick={() => setSelectedTab([i, i > selectedTabIndex ? 1 : 1])}
+            title={item.label}
+          >
+            <div
+
+            >
+              <small className={item.value === 'danger-zone' ? 'text-red-500' : ''}>
+                {item.label}
+              </small>
+            </div>
+          </CarouselItem>
+        );
+      })}
+    </CarouselContent>  
+  );
+};
+
+export function TabChips({ tabs, onTabChange }:TabsProps) {
+  const [hookProps] = React.useState(() => {
+    const initialTabId = tabs[0].value;
+    return {
+      tabs: tabs.map(({ label, value, subRoutes }) => ({
+        label,
+        value,
+        subRoutes
+      })),
+      initialTabId
     };
+  });
 
-    const buttons = [
-        { label: "All" },
-        { label: "Design" },
-        { label: "Development" },
-        { label: "UX" },
-        { label: "Marketing" },
-        { label: "Java" },
-        { label: "C++" },
-        { label: "Type Script" },
-        { label: "C" },
-        { label: "Ruby" },
-        { label: "Go" },
-        { label: "Next JS" },
-        { label: "Development" },
-        { label: "Ruby" },
-        { label: "Type Script" },
-        { label: "C" },
-        { label: "Ruby" },
-        { label: "Go" },
-        { label: "Next JS" },
-        { label: "Development" },
-        { label: "Ruby" },
+  const framer = useTabs(hookProps);
 
+  React.useEffect(() => {
+    if (onTabChange) {
+      onTabChange(framer.selectedTab.value);
+    }
+  }, [framer.selectedTab, onTabChange]);
 
-    ];
-
-    return (
-        <div
-            className="overflow-x-auto shrink-0 flex max-w-[100%] gap-1 sm:gap-2 md:gap-4 p-1"
-            style={
-                {
-                    scrollbarWidth: "none",
-                }
-            }
-        >
-            {buttons.map((button, index) => (
-                <Button
-                    key={index}
-                    className={`${activeButton === index ? "bg-foreground text-background hover:!bg-foreground hover:!text-background" : "text-foreground hover:text-foreground"} lg:text-base text-xs md:px-6 md:py-3 md:rounded-xl !w-fit !h-fit transition-all duration-200 ease-linear`}
-                    variant="ghost"
-                    onClick={() => handleClick(index)}
-                >
-                    {button.label}
-                </Button>
-            ))}
-        </div>
-    );
+  return (
+    <div className="w-full">
+      <Carousel
+        className="relative w-full p-2"
+        opts={{
+          align: "start",
+          loop: false,
+          dragFree: true,
+        }}
+      >
+        <CarouselPrevious />
+        <Tabs {...framer.tabProps} />
+        <CarouselNext />
+      </Carousel>
+    </div>
+  );
 }

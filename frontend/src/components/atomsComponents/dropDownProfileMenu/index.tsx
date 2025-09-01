@@ -68,9 +68,11 @@ export function DropDownProfileMenu(props: ProfileProps) {
         <DropdownMenuLabel>My Account</DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
-          <DropdownMenuItem>
-            Profile
-          </DropdownMenuItem>
+          <Link href={"/profile"}>
+            <DropdownMenuItem >
+              Profile
+            </DropdownMenuItem>
+            </Link>
           <DropdownMenuItem>
             My Wishlist
           </DropdownMenuItem>

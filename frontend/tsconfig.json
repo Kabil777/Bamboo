@@ -22,6 +22,6 @@
       "@/*": ["./src/*"]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "src/components/atomsComponents/searchBox"],
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "src/components/atomsComponents/searchBox", "src/components/ui/editorComponent/codeFlask/codeflask.js", "src/components/tiptap-ui/code-block-button/code-block-button.tsx"],
   "exclude": ["node_modules"]
 }
