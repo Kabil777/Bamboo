@@ -1,0 +1,30 @@
+.reactMarkdown pre {
+  color: #ffffff;
+
+  code {
+    line-height: 1.75;
+    font-family: "JetBrains Mono Nerd Font", monospace;
+  }
+}
+
+.cm-gutter {
+  align-items: center;
+  justify-content: center;
+}
+
+._codeMirrorWrapper_uazmk_391 {
+  font-family: "JetBrains Mono", monospace;
+}
+
+.cm-line > span {
+  font-family: "JetBrains Mono", monospace !important;
+}
+
+._toolbarRoot_uazmk_160 {
+  top: 80px !important;
+}
+
+pre code.hljs {
+  width: 1000px;
+  font-family: "JetBrains Mono", monospace !important;
+}

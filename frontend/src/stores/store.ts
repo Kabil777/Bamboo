@@ -1,2 +1,0 @@
- 
- const stoixfag = config
