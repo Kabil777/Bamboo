@@ -2,7 +2,7 @@ const languages = [
   { label: "JavaScript", value: "javascript" },
   { label: "TypeScript", value: "typescript" },
   { label: "Go", value: "go" },
-  { label: "Plain Text", value: "plaintext" },
+  { label: "Auto", value: "auto" },
 ];
 export function MenuBar({
   editor,
@@ -15,7 +15,10 @@ export function MenuBar({
     editor
       .chain()
       .focus()
-      .insertContent({ type: "codeBlock", attrs: { language } })
+      .insertContent({
+        type: "codeBlock",
+        attrs: { language: language === "auto" ? null : language },
+      })
       .run();
   };
 

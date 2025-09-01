@@ -3,28 +3,20 @@
 
   code {
     line-height: 1.75;
-    font-family: "JetBrains Mono Nerd Font", monospace;
+    font-family: "JetBrains Mono", monospace;
   }
-}
-
-.cm-gutter {
-  align-items: center;
-  justify-content: center;
-}
-
-._codeMirrorWrapper_uazmk_391 {
-  font-family: "JetBrains Mono", monospace;
-}
-
-.cm-line > span {
-  font-family: "JetBrains Mono", monospace !important;
-}
-
-._toolbarRoot_uazmk_160 {
-  top: 80px !important;
 }
 
 pre code.hljs {
   width: 1000px;
   font-family: "JetBrains Mono", monospace !important;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  scroll-margin-top: 70px; /* adjust to your header height */
 }
