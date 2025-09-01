@@ -5,32 +5,20 @@ pre {
 
   code {
     line-height: 1.75;
-    font-family: "JetBrains Mono Nerd Font", monospace;
+    font-family: "JetBrains Mono", monospace;
   }
 }
-.cm-gutter {
-  align-items: center;
-  justify-content: center;
-}
 
-._codeMirrorWrapper_uazmk_391 {
-  font-family: "JetBrains Mono", monospace;
-}
-
-span {
+pre code.hljs {
+  width: 1000px;
   font-family: "JetBrains Mono", monospace !important;
 }
 
-._toolbarRoot_uazmk_160 {
-  top: 80px !important;
-}
-.tiptap.ProseMirror code {
-    background-color: var(--tt-inline-code-bg-color);
-    color: var(--tt-inline-code-text-color);
-    border: 1px solid var(--tt-inline-code-border-color);
-    border-radius: 6px / .375rem;
-    padding: .1em .2em;
-    font-family: JetBrains Mono NL, monospace;
-    font-size: .875em;
-    line-height: 1.4;
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  scroll-margin-top: 70px; /* adjust to your header height */
 }

@@ -1,10 +1,10 @@
 import { useEditor } from "@tiptap/react";
 
 const languages = [
-  { label: "Any", value: "any" },
-  { label: "JavaScript", value: "js" },
-  { label: "TypeScript", value: "ts" },
-  { label: "Go", value: "go" }
+  { label: "JavaScript", value: "javascript" },
+  { label: "TypeScript", value: "typescript" },
+  { label: "Go", value: "go" },
+  { label: "Auto", value: "auto" },
 ];
 export function MenuBar({
   editor,
@@ -17,7 +17,10 @@ export function MenuBar({
     editor
       .chain()
       .focus()
-      .insertContent({ type: "codeBlock", attrs: { language } })
+      .insertContent({
+        type: "codeBlock",
+        attrs: { language: language === "auto" ? null : language },
+      })
       .run();
   };
 
