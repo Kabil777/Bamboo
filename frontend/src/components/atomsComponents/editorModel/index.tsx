@@ -14,8 +14,10 @@ import { Input } from "@/components/shadcnUI/input";
 import { Label } from "@/components/shadcnUI/label";
 import { useAppDispatch } from "@/hooks/ReduxHooks";
 import { setTitleAndDescription } from "@/store/reducers/PostContent";
+import { Loader, Loader2 } from "lucide-react";
 import { useRouter, usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
+import { set } from "react-hook-form";
 import { FiEdit3 } from "react-icons/fi";
 import { useDispatch } from "react-redux";
 
@@ -26,12 +28,25 @@ export const EditorModel = () => {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [open, setOpen] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(false);
   useEffect(() => {
+    setOpen(false);
     if (params === "/editor") {
+      setLoading(false);
       setOpen(false);
     }
   }, [params]);
-  const onSummit = () => {
+  interface OnSummitEvent extends React.MouseEvent<HTMLButtonElement, MouseEvent> {
+    preventDefault: () => void;
+  }
+
+  interface TitleAndDescriptionPayload {
+    title: string;
+    description: string;
+  }
+
+  const onSummit = (e: OnSummitEvent): void => {
+    e.preventDefault();
     if (title === "" || description === "") {
       console.log("Title empty");
     } else {
@@ -40,8 +55,9 @@ export const EditorModel = () => {
         setTitleAndDescription({
           title: title,
           description: description,
-        }),
+        } as TitleAndDescriptionPayload),
       );
+      setLoading(true);
       router.push("/editor");
     }
   };
@@ -101,8 +117,8 @@ export const EditorModel = () => {
           <DialogClose asChild>
             <Button variant="outline">Cancel</Button>
           </DialogClose>
-          <Button onClick={onSummit} type="submit">
-            Create
+          <Button onClick={(e) => onSummit(e)} type="submit">
+            Create {loading && <Loader2 className="animate-spin" />}
           </Button>
         </DialogFooter>
       </DialogContent>

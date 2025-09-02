@@ -13,12 +13,3 @@ pre code.hljs {
   width: 1000px;
   font-family: "JetBrains Mono", monospace !important;
 }
-
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
-  scroll-margin-top: 70px; /* adjust to your header height */
-}

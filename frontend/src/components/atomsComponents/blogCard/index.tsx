@@ -21,7 +21,7 @@ export const BlogCard: React.FC<BlogCardProps> = ({
     return (
         <div >
             <Card className="shadow-none rounded-none overflow-hidden items-center p-2 sm:p-4 gap-2 border-none transition duration-200 ease-in-out" >
-                <ProfileTag />
+                {/* <ProfileTag /> */}
 
                 <CardContent className="p-0 w-full grid grid-cols-5 items-center gap-2 md:gap-5 justify-between">
                     <div className="p-0 col-span-full sm:row-start-1 sm:col-span-3 flex flex-col gap-0 md:gap-2">

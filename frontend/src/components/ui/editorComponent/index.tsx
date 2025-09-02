@@ -15,6 +15,8 @@ import { Underline } from "@tiptap/extension-underline";
 import { BubbleMenu } from "@tiptap/react/menus";
 import { CharacterCount } from "@tiptap/extensions";
 import CodeBlockLowlight from "@tiptap/extension-code-block-lowlight";
+import { TableKit } from '@tiptap/extension-table'
+
 
 // --- Custom Extensions ---
 import { Link } from "@/components/tiptap-extension/link-extension";
@@ -62,6 +64,7 @@ import { useAppDispatch } from "@/hooks/ReduxHooks";
 import { setContent } from "@/store/reducers/PostContent";
 import { MenuBar } from "./customBlock";
 import "./syntax.css";
+import "./tiptapstyles.scss"
 interface MainToolbarContentProp {
   onSave: () => void;
   editor: ReturnType<typeof useEditor> | null;
@@ -123,6 +126,7 @@ const MainToolbarContent = ({ onSave, editor }: MainToolbarContentProp) => {
       <ToolbarGroup>
         <ImageUploadButton text="Add" />
       </ToolbarGroup>
+
       <Button onClick={onSave}>Save</Button>
       <Spacer />
     </>
@@ -164,6 +168,7 @@ export default function Editor() {
       Typography,
       Superscript,
       Subscript,
+      TableKit,
       Selection,
       ImageUploadNode.configure({
         accept: "image/*",
@@ -238,7 +243,9 @@ export default function Editor() {
               >
                 Bold
               </Button>
-
+              <button onClick={() => editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()}>
+                Insert table
+              </button>
               <Button
                 onClick={() => editor.chain().focus().toggleItalic().run()}
                 className="transition-all delay-75 py-1 px-2 font-semibold  rounded-xl text-sm text-muted-foreground bg-background hover:bg-accent hover:text-foreground"

@@ -27,14 +27,14 @@ const Tabs = ({
 }): React.ReactElement => {
 
   return (
-    <CarouselContent className=" -ml-0">
+    <CarouselContent className="ml-0 sm:mx-10">
       {tabs.map((item, i) => {
         const isActive = selectedTabIndex === i;
         return (
           <CarouselItem
             key={item.value}
             className={cn(
-              'text-sm font-semibold sm:text-base relative rounded-md flex  items-center h-8 px-4 cursor-pointer select-none transition-all duration-1000 ease-in-out basis-auto',
+              'text-sm font-semibold sm:text-base relative rounded-md flex items-center h-7 sm:h-8 px-4 sm:px-4 cursor-pointer select-none transition-all duration-1000 ease-in-out basis-auto',
               {
                 'bg-foreground text-background': isActive,
                 'hover:bg-accent text-foreground': !isActive
@@ -88,9 +88,9 @@ export function TabChips({ tabs, onTabChange }:TabsProps) {
           dragFree: true,
         }}
       >
-        <CarouselPrevious />
+        <CarouselPrevious className="hidden sm:flex absolute left-0 z-10" />
         <Tabs {...framer.tabProps} />
-        <CarouselNext />
+        <CarouselNext className="hidden sm:flex absolute right-0 z-10" />
       </Carousel>
     </div>
   );

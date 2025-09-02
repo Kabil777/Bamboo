@@ -88,7 +88,7 @@ const NavBar = ({
           url: "/",
         },
       ],
-    },
+    },  
   ],
   auth = {
     login: { title: "Login", url: "/login" },
@@ -99,7 +99,7 @@ const NavBar = ({
   },
 }: NavbarProps) => {
   return (
-    <header className="py-2 z-10 border border-accent sticky top-0 bg-background shadow-none w-full ">
+    <header className="py-2 z-50 border border-accent sticky top-0 bg-background shadow-none w-full ">
       <nav className="justify-between md:px-12 px-2 sm:px-6 flex">
         <div className="flex items-center ">
           <div className="flex items-center gap-1">
@@ -118,7 +118,7 @@ const NavBar = ({
         <div className="flex gap-5 items-center">
           <SearchBox />
           <EditorModel />
-          <DropDownProfileMenu {...(auth ? { auth } : { profile })} />
+          <DropDownProfileMenu {...(auth ? { profile } : { auth })} />
         </div>
       </nav>
     </header>

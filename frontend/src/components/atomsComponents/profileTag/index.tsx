@@ -62,12 +62,12 @@ export const ProfileTag = () => {
     <>
       <div className="w-full flex sm:gap-3 items-center justify-between">
         <div className="flex gap-1.5 sm:gap-3 items-center justify-between">
-          <Avatar className="sm:h-[40px] sm:w-[40px] h-[30px] w-[30px]">
+          <Avatar className="sm:h-[40px] sm:w-[40px] h-[35px] w-[35px]">
             <AvatarImage src="https://github.com/shadcn.png" alt="profile" />
           </Avatar>
           <div>
-            <div className="flex h-5 items-center space-x-1 sm:space-x-2 text-[8px] sm:text-xs font-medium text-accent-foreground">
-              <h3 className="text-[10px] sm:text-sm font-semibold tracking-wider space-x-2">
+            <div className="flex h-5 items-center space-x-1 sm:space-x-2 text-[10px] sm:text-xs font-medium text-accent-foreground">
+              <h3 className="text-xs sm:text-sm font-semibold tracking-wider space-x-2">
                 Example
               </h3>
               <motion.div
@@ -83,7 +83,7 @@ export const ProfileTag = () => {
               >
                 <Button
                   onClick={() => setFollow(!follow)}
-                  className="p-1 py-0.5 h-fit text-[8px] sm:text-xs font-normal "
+                  className="p-1 py-0.5 h-fit text-[10px] sm:text-xs font-normal "
                 >
                   <motion.span
                     key={follow ? "followed" : "follow"}
