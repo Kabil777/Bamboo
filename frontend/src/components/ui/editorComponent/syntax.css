@@ -3,8 +3,8 @@
   padding: 0.5rem 1rem;
   overflow-x: auto;
   border-radius: 6px;
-  background: #1a1b26; /* allow HLJS theme to apply */
-  color: unset; /* allow HLJS theme colors */
+  background: #1a1b26 !important; /* allow HLJS theme to apply */
+  color: #a9b1d6 !important;
 }
 
 .simple-editor-content pre {

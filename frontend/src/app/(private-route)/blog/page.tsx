@@ -9,6 +9,7 @@ import "@/components/tiptap-node/paragraph-node/paragraph-node.scss";
 
 // --- Lib ---
 import "highlight.js/styles/tokyo-night-dark.css";
+import { remark } from "remark";
 
 import { JetBrains_Mono } from "next/font/google";
 // import "./dummy.css";
@@ -232,7 +233,6 @@ public class LegacyController {
     },
   ],
 };
-
 function slugify(text: string) {
   return text
     .toLowerCase()
@@ -259,6 +259,7 @@ function extractToc(markdown: string) {
 
 export default function Blog() {
   const extensions = [StarterKit];
+
   const md = renderToMarkdown({
     content: useAppState((state) => state.postReducer.content),
     extensions,

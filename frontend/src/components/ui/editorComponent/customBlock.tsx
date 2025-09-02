@@ -4,6 +4,12 @@ const languages = [
   { label: "JavaScript", value: "javascript" },
   { label: "TypeScript", value: "typescript" },
   { label: "Go", value: "go" },
+  { label: "cpp", value: "cpp" },
+  { label: "java", value: "java" },
+  { label: "xml", value: "xml" },
+  { label: "yaml", value: "yaml" },
+  { label: "c", value: "c" },
+
   { label: "Auto", value: "auto" },
 ];
 export function MenuBar({
