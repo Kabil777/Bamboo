@@ -1,9 +1,13 @@
+"use client"
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/shadcnUI/collapsible"
 import {
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
   SidebarMenuSub
 } from "@/components/shadcnUI/sidebar"
+import { ChevronRight } from "lucide-react"
+import React, { useState } from "react"
 
 type TocItem = {
   id: string
@@ -33,19 +37,60 @@ function buildTocTree(flatItems: TocItem[]): TocItem[] {
   return root
 }
 function renderSidebarItems(items: TocItem[]) {
-  return items.map((item) => (
-    <SidebarMenuItem key={item.id} className="!w-full">
-      <SidebarMenuButton asChild>
-        <a href={`#${item.id}`} className="font-normal !text-sm h-fit !w-full">
-          {item.value}
-        </a>
-      </SidebarMenuButton>
+  return items.map((item) => {
+    const hasChildren = item.items && item.items.length > 0
+    const [open, setOpen] = useState<boolean>(true) 
 
-      {item.items?.length ? (
-        <SidebarMenuSub className="mr-0 pr-0">{renderSidebarItems(item.items)}</SidebarMenuSub>
-      ) : null}
-    </SidebarMenuItem>
-  ))
+    return (
+      <Collapsible
+        key={item.id}
+        asChild
+        open={open}
+        onOpenChange={setOpen}
+        className="group/collapsible"
+      >
+        <SidebarMenuItem className="!w-full">
+          <div className="flex items-center w-full">
+            {/* Text link (just navigates) */}
+            <SidebarMenuButton asChild className="flex-1 justify-start">
+              <a
+                href={`#${item.id}`}
+                className="font-normal !text-sm h-fit text-left w-full"
+              >
+                {item.value}
+              </a>
+            </SidebarMenuButton>
+
+            {/* Chevron (just toggles) */}
+            {hasChildren && (
+              <CollapsibleTrigger asChild>
+                <button
+                  type="button"
+                  className="p-1 ml-1"
+                  aria-label={open ? "Collapse" : "Expand"}
+                >
+                  <ChevronRight
+                    className={`transition-transform duration-200 ${
+                      open ? "rotate-90" : ""
+                    }`}
+                  />
+                </button>
+              </CollapsibleTrigger>
+            )}
+          </div>
+
+          {/* Children */}
+          {hasChildren && (
+            <CollapsibleContent>
+              <SidebarMenuSub className="mr-0 pr-0">
+                {renderSidebarItems(item.items!)}
+              </SidebarMenuSub>
+            </CollapsibleContent>
+          )}
+        </SidebarMenuItem>
+      </Collapsible>
+    )
+  })
 }
 export const ArticleTableContent = ({ toc }: { toc: TocItem[] }) => {
   const tocTree = buildTocTree(toc)

@@ -27,6 +27,12 @@ import css from "highlight.js/lib/languages/css";
 import js from "highlight.js/lib/languages/javascript";
 import ts from "highlight.js/lib/languages/typescript";
 import html from "highlight.js/lib/languages/xml";
+import java from "highlight.js/lib/languages/java";
+import yaml from "highlight.js/lib/languages/yaml";
+import xml from "highlight.js/lib/languages/xml";
+import c from "highlight.js/lib/languages/c";
+import cpp from "highlight.js/lib/languages/cpp";
+
 // --- UI Primitives ---
 import { Spacer } from "@/components/tiptap-ui-primitive/spacer";
 import {
@@ -65,6 +71,7 @@ import { setContent } from "@/store/reducers/PostContent";
 import { MenuBar } from "./customBlock";
 import "./syntax.css";
 import "./tiptapstyles.scss"
+import Popup from "./Popup";
 interface MainToolbarContentProp {
   onSave: () => void;
   editor: ReturnType<typeof useEditor> | null;
@@ -72,6 +79,8 @@ interface MainToolbarContentProp {
 
 //syntax highlighting
 const MainToolbarContent = ({ onSave, editor }: MainToolbarContentProp) => {
+  const [open, setOpen] = React.useState<boolean>(false);
+  const [content, saveContent] = React.useState<string>("");
   return (
     <>
       <Spacer />
@@ -127,6 +136,15 @@ const MainToolbarContent = ({ onSave, editor }: MainToolbarContentProp) => {
         <ImageUploadButton text="Add" />
       </ToolbarGroup>
 
+      <Popup
+        open={open}
+        setOpen={setOpen}
+        saveContent={saveContent}
+        onClick={() => {
+          setOpen(true);
+        }}
+        editor={editor}
+      />
       <Button onClick={onSave}>Save</Button>
       <Spacer />
     </>
@@ -139,12 +157,17 @@ export default function Editor() {
   const dispatch = useAppDispatch();
 
   //limit
-  const limit = 10000;
+  const limit = 20000;
   const lowlight = createLowlight(all);
-  lowlight.register("html", html);
-  lowlight.register("css", css);
   lowlight.register("js", js);
   lowlight.register("ts", ts);
+  lowlight.register("html", html);
+  lowlight.register("css", css);
+  lowlight.register("java", java);
+  lowlight.register("yaml", yaml);
+  lowlight.register("xml", xml);
+  lowlight.register("c", c);
+  lowlight.register("cpp", cpp);
 
   const editor = useEditor({
     immediatelyRender: false,

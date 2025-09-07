@@ -5,6 +5,7 @@ import "@/components/tiptap-node/list-node/list-node.scss";
 import "@/components/tiptap-node/image-node/image-node.scss";
 import "@/components/tiptap-node/paragraph-node/paragraph-node.scss";
 
+
 // --- Tiptap UI ---
 
 // --- Lib ---
@@ -24,13 +25,14 @@ import css from "highlight.js/lib/languages/css";
 import js from "highlight.js/lib/languages/javascript";
 import ts from "highlight.js/lib/languages/typescript";
 import html from "highlight.js/lib/languages/xml";
-import type { Heading, Text, InlineCode } from "mdast";
+import type { PhrasingContent, Heading, Text, InlineCode } from "mdast";
 // --- Custom Extensions ---
 import { Link } from "@/components/tiptap-extension/link-extension";
 import { Selection } from "@/components/tiptap-extension/selection-extension";
 import { TrailingNode } from "@/components/tiptap-extension/trailing-node-extension";
 import { Subscript } from "@tiptap/extension-subscript";
-import { Superscript } from "@tiptap/extension-superscript";
+import { Superscript } from "@tiptap/extension-superscript"; import { remark } from "remark";
+
 import { JetBrains_Mono } from "next/font/google";
 // import "./dummy.css";
 import { StarterKit } from "@tiptap/starter-kit";
@@ -55,206 +57,6 @@ import { visit } from "unist-util-visit";
 import { useAppState } from "@/hooks/ReduxHooks";
 import { ArticleTableContent } from "@/components/atomsComponents";
 
-const springBootJson = {
-  type: "doc",
-  content: [
-    {
-      type: "heading",
-      attrs: { level: 1 },
-      content: [
-        { type: "text", text: "Spring Boot Dependency Injection Examples" },
-      ],
-    },
-    {
-      type: "paragraph",
-      content: [
-        { type: "text", text: "This is a " },
-        { type: "text", text: "Markdown", marks: [{ type: "bold" }] },
-        {
-          type: "text",
-          text: " block demonstrating code highlighting for Spring Boot.",
-        },
-      ],
-    },
-    {
-      type: "paragraph",
-      content: [
-        {
-          type: "text",
-          text: "Dependency Injection (DI) decouples object creation from business logic, making applications easier to test, maintain, and extend.",
-        },
-      ],
-    },
-    {
-      type: "heading",
-      attrs: { level: 2 },
-      content: [{ type: "text", text: "1. IOC with XML configuration" }],
-    },
-    {
-      type: "codeBlock",
-      attrs: { language: "xml" },
-      content: [
-        {
-          type: "text",
-          text: `<!-- beans.xml -->
-<beans xmlns="http://www.springframework.org/schema/beans"
-       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-       xsi:schemaLocation="http://www.springframework.org/schema/beans
-           http://www.springframework.org/schema/beans/spring-beans.xsd">
-
-    <bean id="myService" class="com.example.MyService"/>
-    <bean id="myController" class="com.example.MyController">
-        <property name="service" ref="myService"/>
-    </bean>
-
-</beans>`,
-        },
-      ],
-    },
-    {
-      type: "heading",
-      attrs: { level: 2 },
-      content: [
-        { type: "text", text: "2. Java Configuration with @Configuration" },
-      ],
-    },
-    {
-      type: "codeBlock",
-      attrs: { language: "java" },
-      content: [
-        {
-          type: "text",
-          text: `@Configuration
-public class AppConfig {
-
-    @Bean
-    public MyService myService() {
-        return new MyService();
-    }
-
-    @Bean
-    public MyController myController(MyService service) {
-        return new MyController(service);
-    }
-}`,
-        },
-      ],
-    },
-    {
-      type: "heading",
-      attrs: { level: 2 },
-      content: [{ type: "text", text: "3. Using @Autowired for DI" }],
-    },
-    {
-      type: "codeBlock",
-      attrs: { language: "java" },
-      content: [
-        {
-          type: "text",
-          text: `@Component
-public class MyController {
-
-    private final MyService service;
-
-    @Autowired
-    public MyController(MyService service) {
-        this.service = service;
-    }
-
-    public void doSomething() {
-        service.perform();
-    }
-}`,
-        },
-      ],
-    },
-    {
-      type: "heading",
-      attrs: { level: 2 },
-      content: [
-        { type: "text", text: "4. Using @Qualifier for Multiple Beans" },
-      ],
-    },
-    {
-      type: "codeBlock",
-      attrs: { language: "java" },
-      content: [
-        {
-          type: "text",
-          text: `@Service("emailService")
-public class EmailService implements NotificationService {
-    public void send(String msg) {
-        System.out.println("Email: " + msg);
-    }
-}
-
-@Service("smsService")
-public class SmsService implements NotificationService {
-    public void send(String msg) {
-        System.out.println("SMS: " + msg);
-    }
-}
-
-@Component
-public class NotificationController {
-    private final NotificationService service;
-
-    @Autowired
-    public NotificationController(@Qualifier("smsService") NotificationService service) {
-        this.service = service;
-    }
-}`,
-        },
-      ],
-    },
-    {
-      type: "heading",
-      attrs: { level: 2 },
-      content: [{ type: "text", text: "5. Constructor vs Field Injection" }],
-    },
-    {
-      type: "codeBlock",
-      attrs: { language: "java" },
-      content: [
-        {
-          type: "text",
-          text: `// Constructor Injection (Recommended)
-@Component
-public class OrderController {
-    private final OrderService service;
-
-    @Autowired
-    public OrderController(OrderService service) {
-        this.service = service;
-    }
-}
-
-// Field Injection (Not Recommended)
-@Component
-public class LegacyController {
-    @Autowired
-    private LegacyService service;
-}`,
-        },
-      ],
-    },
-    {
-      type: "heading",
-      attrs: { level: 2 },
-      content: [{ type: "text", text: "Conclusion" }],
-    },
-    {
-      type: "paragraph",
-      content: [
-        {
-          type: "text",
-          text: "Spring Boot provides flexible ways to implement DI. Prefer constructor injection for better testability, and use @Qualifier when multiple beans of the same type exist.",
-        },
-      ],
-    },
-  ],
-};
-
 function slugify(text: string) {
   return text
     .toLowerCase()
@@ -262,27 +64,36 @@ function slugify(text: string) {
     .replace(/^-+|-+$/g, "");
 }
 
-function extractToc(markdown: string) {
+function extractTextFromNode(node: PhrasingContent): string {
+  if (node.type === "text") return node.value;
+  if (node.type === "inlineCode") return node.value;
+  if ("children" in node && Array.isArray(node.children)) {
+    return node.children.map(extractTextFromNode).join("");
+  }
+  return "";
+}
+function extractId(node: React.ReactNode): string {
+  if (typeof node === "string") return slugify(node);
+  if (Array.isArray(node)) return node.map(extractId).join("");
+  if (typeof node === "object" && node && "props" in node) {
+    return extractId((node as any).props.children);
+  }
+  return "";
+}
+export function extractToc(markdown: string) {
   const tree = unified().use(remarkParse).parse(markdown);
 
   const toc: { depth: number; value: string; id: string }[] = [];
 
-  visit(tree, "heading", (node: any) => {
-    const text = node.children
-      .filter(
-        (c: any) =>
-          c.type === "text" || c.type === "inlineCode"
-      )
-      .map((c: any) => c.value)
-      .join(" ");
+  visit(tree, "heading", (node: Heading) => {
+    const text = node.children.map(extractTextFromNode).join(" ").trim();
+    if (!text) return;
 
     const id = slugify(text);
     toc.push({ depth: node.depth, value: text, id });
   });
-  console.log(toc); 
   return toc;
 }
-
 export default function Blog() {
   const lowlight = createLowlight(all);
   lowlight.register("html", html);
@@ -339,10 +150,9 @@ export default function Blog() {
   });
 
   const toc = extractToc(md);
-  console.log(md);
   return (
     <>
-      <div className="container mx-auto">
+      <div className="container mx-auto bg-background">
         <main className="grid grid-cols-1 lg:grid-cols-4 p-5 gap-10 scroll-smooth relative">
           <article className="prose max-w-none flex-1 col-span-1 lg:col-span-3 reactMarkdown order-2 lg:order-1">
             <ReactMarkdown
@@ -350,10 +160,9 @@ export default function Blog() {
               rehypePlugins={[rehypeRaw, rehypeHighlight]}
               components={{
                 h1: ({ children, ...props }) => {
-                  const text = String(children);
                   return (
                     <h1
-                      id={slugify(text)}
+                      id={extractId(children)}
                       {...props}
                       className="text-2xl sm:text-4xl scroll-m-36 font-bold text-foreground mb-4"
                     >
@@ -362,10 +171,9 @@ export default function Blog() {
                   );
                 },
                 h2: ({ children, ...props }) => {
-                  const text = String(children);
                   return (
                     <h2
-                      id={slugify(text)}
+                      id={extractId(children)}
                       className="text-lg sm:text-2xl scroll-m-36 font-semibold text-foreground mt-6 mb-2"
                       {...props}
                     >
@@ -374,10 +182,9 @@ export default function Blog() {
                   );
                 },
                 h3: ({ children, ...props }) => {
-                  const text = String(children);
                   return (
                     <h3
-                      id={slugify(text)}
+                      id={extractId(children)}
                       className="text-base sm:text-xl scroll-m-36 font-semibold text-foreground mt-6 mb-2"
                       {...props}
                     >
@@ -386,10 +193,9 @@ export default function Blog() {
                   );
                 },
                 h4: ({ children, ...props }) => {
-                  const text = String(children);
                   return (
                     <h4
-                      id={slugify(text)}
+                      id={extractId(children)}
                       className="text-sm sm:text-lg font-semibold scroll-m-36 text-foreground mt-6 mb-2"
                       {...props}
                     >
@@ -398,10 +204,9 @@ export default function Blog() {
                   );
                 },
                 h5: ({ children, ...props }) => {
-                  const text = String(children);
                   return (
                     <h5
-                      id={slugify(text)}
+                      id={extractId(children)}
                       className="text-xs sm:text-base font-semibold scroll-m-36 text-foreground mt-6 mb-2"
                       {...props}
                     >
@@ -410,10 +215,9 @@ export default function Blog() {
                   );
                 },
                 h6: ({ children, ...props }) => {
-                  const text = String(children);
                   return (
                     <h6
-                      id={slugify(text)}
+                      id={extractId(children)}
                       className="text-[10px] sm:text-sm font-semibold scroll-m-36 text-foreground mt-6 mb-2"
                       {...props}
                     >
@@ -464,7 +268,7 @@ export default function Blog() {
                     </div>
                   ) : (
                     <code
-                      className={`px-2 mx-1 py-0.5 text-sm sm:text-base rounded-lg text-foreground border border-border bg-foreground/5 ${jetBrains_Mono.className}`}
+                      className={`px-2 mx-1 text-wrap py-0.5 text-sm sm:text-base rounded-lg text-foreground border border-border bg-foreground/5 ${jetBrains_Mono.className}`}
                       {...rest}
                     >
                       {children}
@@ -525,10 +329,12 @@ export default function Blog() {
               {md}
             </ReactMarkdown>
           </article>
-          <aside className="w-full col-span-1 shrink-0 order-1 lg:order-2 lg:sticky lg:top-31 self-start border-l-2 border-border pl-4 py-2 overflow-x-hidden max-h-150 overflow-y-auto">
-            <h2 className="text-lg font-bold mb-2">Table of Contents</h2>
-            <ArticleTableContent toc={toc} />
-          </aside>
+          {toc.length > 0 && (
+            <aside className="w-full col-span-1 shrink-0 order-1 lg:order-2 lg:sticky lg:top-31 self-start border-l-2 border-border pl-4 py-2 overflow-x-hidden max-h-150 overflow-y-auto">
+              <h2 className="text-lg font-bold mb-2">Table of Contents</h2>
+              <ArticleTableContent toc={toc} />
+            </aside>
+          )}
         </main>
       </div>
     </>

@@ -19,19 +19,21 @@ export function SectionCards() {
 
   useEffect(() => {
     setProfilePath(window.location.href);
-  }, []); 
-  
+  }, []);
+
   return (
-    <div className="flex gap-4 p-4 rounded-md w-full relative">
-      <img src="https://github.com/shadcn.png" className="aspect-square object-cover w-full max-w-50 border-4 border-border rounded-xl" />
+    <div className="flex items-center justify-center flex-col sm:flex-row gap-2 sm:gap-4 mb-3 sm:mb-0 sm:p-4 rounded-md w-full relative">
+      <span className="w-40 sm:w-fit sm:h-fit shrink-0 items-center justify-self-center ">
+        <img src="https://github.com/shadcn.png" className="aspect-square object-cover w-full h-full max-w-60 border-4 border-border rounded-xl" />
+      </span>
       <div className="font-semibold p-5 text-wrap space-y-1 border border-border rounded-md bg-muted/50 relative w-full">
         {/*Profile dashboard*/}
-        <div className="absolute top-4 right-4 flex gap-2 items-center text-muted-foreground ">
+        <div className="absolute top-2 right-2 sm:top-4 sm:right-4 flex gap-2 items-center text-muted-foreground ">
           <BiEdit className="cursor-pointer hover:text-foreground" size={20} />
           <SharePopover text={profilePath} ><IoIosShareAlt className="cursor-pointer hover:text-foreground" size={20} /></SharePopover>
         </div>
         <div className="flex space-x-2 flex-wrap items-center">
-          <h1 className="text-2xl">Kowsik Y</h1>
+          <h1 className="text-lg sm:text-2xl">Kowsik Y</h1>
           <motion.div
             initial={false}
             animate={{
@@ -45,21 +47,21 @@ export function SectionCards() {
           >
             <Button
               onClick={() => setFollow(!follow)}
-              className="p-1 py-0.5 h-fit text-[8px] sm:text-xs font-normal "
+              className="p-1 py-0.5 h-fit text-xs font-normal align-[4px]"
             >
               <motion.span
-                key={follow ? "followed" : "follow"}
+                key={follow ? "following" : "follow"}
                 initial={{ opacity: 0, y: -5 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 5 }}
                 transition={{ duration: 0.2 }}
               >
-                {follow ? "Followed" : "Follow"}
+                {follow ? "Following" : "Follow"}
               </motion.span>
             </Button>
           </motion.div>
         </div>
-        <Badge variant="outline" className="text-sm">Creator</Badge>
+        <Badge variant="outline" className="text-xs sm:text-sm">Creator</Badge>
         <p className="text-muted-foreground text-sm font-medium"><b>@kowsik</b> • 5B followers • <Button variant="link" size={"sm"} className="text-sm p-0">50 following
         </Button> • 10 posts • 15 docs</p>
 

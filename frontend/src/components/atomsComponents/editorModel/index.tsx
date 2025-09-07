@@ -12,12 +12,12 @@ import {
 } from "@/components/shadcnUI/dialog";
 import { Input } from "@/components/shadcnUI/input";
 import { Label } from "@/components/shadcnUI/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/shadcnUI/select";
 import { useAppDispatch } from "@/hooks/ReduxHooks";
 import { setTitleAndDescription } from "@/store/reducers/PostContent";
-import { Loader, Loader2 } from "lucide-react";
+import {  Loader2 } from "lucide-react";
 import { useRouter, usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { set } from "react-hook-form";
 import { FiEdit3 } from "react-icons/fi";
 import { useDispatch } from "react-redux";
 
@@ -73,18 +73,23 @@ export const EditorModel = () => {
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>New Post</DialogTitle>
+          <DialogTitle>New Blog/Docs</DialogTitle>
           <DialogDescription>
             Make new post and share your thoughts with the world.
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4">
           <div className="grid gap-3">
-            <Label htmlFor="theme">Post/Blog</Label>
-            <select id="theme" name="theme">
-              <option value="post">Post</option>
-              <option value="blog">Blog</option>
-            </select>
+            <Select>
+              <Label htmlFor="type">Type of Content</Label>
+              <SelectTrigger className="w-44">
+                <SelectValue placeholder="Type of Content" />
+                <SelectContent>
+                  <SelectItem value="file">Blog</SelectItem>
+                  <SelectItem value="content">Docs</SelectItem>
+                </SelectContent>
+              </SelectTrigger>
+            </Select>
           </div>
           <div className="grid gap-3">
             <Label htmlFor="title">Title</Label>

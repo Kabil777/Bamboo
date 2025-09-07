@@ -18,7 +18,7 @@ export default function Layout({
     };
     return (
         <>
-            <div className="container mx-auto p-4">
+            <div className="container mx-auto p-2 sm:p-4">
                 <div className="flex items-center space-x-4 w-full">
                     <SectionCards />
                 </div>
