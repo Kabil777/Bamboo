@@ -8,6 +8,8 @@ import {
 } from "@/components/shadcnUI/sidebar"
 import { ChevronRight } from "lucide-react"
 import React, { useState } from "react"
+import { motion } from "motion/react"
+import { AccordionTrigger } from "@radix-ui/react-accordion"
 
 type TocItem = {
   id: string
@@ -39,7 +41,7 @@ function buildTocTree(flatItems: TocItem[]): TocItem[] {
 function renderSidebarItems(items: TocItem[]) {
   return items.map((item) => {
     const hasChildren = item.items && item.items.length > 0
-    const [open, setOpen] = useState<boolean>(true) 
+    const [open, setOpen] = useState<boolean>(true)
 
     return (
       <Collapsible
@@ -49,45 +51,73 @@ function renderSidebarItems(items: TocItem[]) {
         onOpenChange={setOpen}
         className="group/collapsible"
       >
-        <SidebarMenuItem className="!w-full">
-          <div className="flex items-center w-full">
-            {/* Text link (just navigates) */}
-            <SidebarMenuButton asChild className="flex-1 justify-start">
-              <a
-                href={`#${item.id}`}
-                className="font-normal !text-sm h-fit text-left w-full"
-              >
-                {item.value}
-              </a>
-            </SidebarMenuButton>
+        <div >
+          <SidebarMenuItem className="!w-full">
+            <div className="flex items-center w-full ">
+              <SidebarMenuButton asChild className="hover:bg-transparent focus:!bg-transparent data-[active=true]:bg-transparent active:bg-transparent">
+                <span className="group !p-1 !gap-1" >
+                  <a
+                    href={`#${item.id}`}
+                    className="font-medium !text-xs h-fit text-left group-hover:text-muted-foreground transition-colors"
 
-            {/* Chevron (just toggles) */}
+                  >
+
+                    {item.value}
+
+                  </a>
+                  {/* Chevron (just toggles) */}
+                  {hasChildren && (
+                    <CollapsibleTrigger asChild>
+                      <button
+                        type="button"
+                        className="p-0 m-0"
+                        aria-label={open ? "Collapse" : "Expand"}
+                      >
+                        <ChevronRight
+                          size={20}
+                          className={`transition-transform duration-200 ${open ? "rotate-90" : ""
+                            }`}
+                        />
+                      </button>
+                    </CollapsibleTrigger>
+                  )}
+                </span>
+              </SidebarMenuButton>
+            </div>
+
             {hasChildren && (
-              <CollapsibleTrigger asChild>
-                <button
-                  type="button"
-                  className="p-1 ml-1"
-                  aria-label={open ? "Collapse" : "Expand"}
-                >
-                  <ChevronRight
-                    className={`transition-transform duration-200 ${
-                      open ? "rotate-90" : ""
-                    }`}
-                  />
-                </button>
-              </CollapsibleTrigger>
-            )}
-          </div>
+              <CollapsibleContent forceMount asChild>
+                <motion.div
+                  initial={false}
+                  animate={open ? "open" : "closed"}
+                  variants={{
+                    open: {
+                      height: "auto",
+                      opacity: 1,
+                    },
+                    closed: {
+                      height: 0,
 
-          {/* Children */}
-          {hasChildren && (
-            <CollapsibleContent>
-              <SidebarMenuSub className="mr-0 pr-0">
-                {renderSidebarItems(item.items!)}
-              </SidebarMenuSub>
-            </CollapsibleContent>
-          )}
-        </SidebarMenuItem>
+                    }
+                  }}
+                  transition={{
+                    duration: 0.3,
+                    ease: [0.25, 0.46, 0.45, 0.94],
+                  }}
+                  style={{
+                    overflow: "hidden",
+                    transformOrigin: "top",
+                    willChange: "height"
+                  }}
+                >
+                  <SidebarMenuSub className="mr-0 pr-0">
+                    {renderSidebarItems(item.items!)}
+                  </SidebarMenuSub>
+                </motion.div>
+              </CollapsibleContent>
+            )}
+          </SidebarMenuItem>
+        </div>
       </Collapsible>
     )
   })
@@ -96,7 +126,7 @@ export const ArticleTableContent = ({ toc }: { toc: TocItem[] }) => {
   const tocTree = buildTocTree(toc)
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-1">
       <SidebarMenu>{renderSidebarItems(tocTree)}</SidebarMenu>
     </div>
   )

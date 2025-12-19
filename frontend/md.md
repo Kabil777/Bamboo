@@ -66,7 +66,7 @@ console.log(add(2, 3));
 
 ## TypeScript Example
 
-A TypeScript function that adds two numbers with type annotations.
+A TypeScript function that adds two numbers with type annotations.  
 
 ```typescript
 function add(a: number, b: number): number {

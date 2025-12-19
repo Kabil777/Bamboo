@@ -3,7 +3,10 @@ import Editor from "@/components/ui/editorComponent";
 
 const CreateNewBlog = () => {
 	return (
-		<Editor/>
+		<div className="w-full">
+
+			<Editor />
+		</div>
 	);
 };
 export default CreateNewBlog;

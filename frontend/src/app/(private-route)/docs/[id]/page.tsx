@@ -1,8 +1,8 @@
 'use client';
+import { DocsRenderPage } from "@/components/ui";
 import { useParams } from "next/navigation";
-import React from "react";
 const cardData = [
-  { id: 1, title: "React", updated: "Jan 2025" , description: "A JavaScript library for building user interfaces" },
+  { id: 1, title: "React", updated: "Jan 2025", description: "A JavaScript library for building user interfaces" },
   { id: 2, title: "Vue", updated: "Feb 2025", description: "A progressive JavaScript framework for building user interfaces" },
   { id: 3, title: "Angular", updated: "Mar 2025", description: "A platform for building mobile and desktop web applications" },
   { id: 4, title: "Svelte", updated: "Apr 2025", description: "A radical new approach to building user interfaces" },
@@ -30,29 +30,13 @@ const cardData = [
 ];
 export default function DocsReadPage() {
 
-    const { id } = useParams();
-    const numericId = typeof id === "string" ? parseInt(id, 10) : Array.isArray(id) ? parseInt(id[0], 10) : NaN;
+  const { id } = useParams();
+  const numericId = typeof id === "string" ? parseInt(id, 10) : Array.isArray(id) ? parseInt(id[0], 10) : NaN;
 
-    if (isNaN(numericId) || numericId < 1 || numericId > cardData.length) {
-      return <div>Invalid document ID.</div>;
-    }
 
-    return (
-      <>
-        <h1 className="text-2xl font-bold">{cardData[numericId - 1].title}</h1>
-        <p className="text-sm text-muted-foreground">
-          Last updated: {cardData[numericId - 1].updated}
-
-        </p>
-        <p className="mt-4 text-base text-accent-foreground">
-          {cardData[numericId - 1].description || "No description available."}
-        </p>
-        <div className="mt-6">
-            <p className="text-lg font-semibold">Content of {cardData[numericId - 1].title}:</p>
-            <p className="mt-2 text-base text-muted-foreground">
-                {`This is the content for ${cardData[numericId - 1].title}. It contains detailed information about the topic, including examples, best practices, and more.`}
-            </p>
-        </div>
-      </>
-    )
+  return (
+    <>
+      <DocsRenderPage />
+    </>
+  )
 }

@@ -72,6 +72,7 @@ import { MenuBar } from "./customBlock";
 import "./syntax.css";
 import "./tiptapstyles.scss"
 import Popup from "./Popup";
+import { TableDropdownMenu, TableMenu } from "@/components/tiptap-ui/table-dropdown-menu";
 interface MainToolbarContentProp {
   onSave: () => void;
   editor: ReturnType<typeof useEditor> | null;
@@ -121,17 +122,17 @@ const MainToolbarContent = ({ onSave, editor }: MainToolbarContentProp) => {
       </ToolbarGroup>
 
       <MenuBar editor={editor} />
+      <TableMenu editor={editor} /> 
       <ToolbarSeparator />
 
       <ToolbarGroup>
-        <TextAlignButton align="left" />
+        {/* <TextAlignButton align="left" />
         <TextAlignButton align="center" />
         <TextAlignButton align="right" />
-        <TextAlignButton align="justify" />
+        <TextAlignButton align="justify" /> */}
       </ToolbarGroup>
 
       <ToolbarSeparator />
-
       <ToolbarGroup>
         <ImageUploadButton text="Add" />
       </ToolbarGroup>
@@ -250,47 +251,53 @@ export default function Editor() {
           <MainToolbarContent onSave={onSave} editor={editor} />
         </Toolbar>
         {editor && (
-          <BubbleMenu
-            editor={editor}
-            className="!z-20 absolute"
-            options={{ placement: "bottom-start", offset: 5 }}
-            shouldShow={({ from, to }) => {
-              return from !== to;
-            }}
-          >
-            <div className="bubble-menu bg-background px-1 py-0.5 border-1 border-border/50 text-sm rounded-xl flex shadow-2xl">
-              <Button
-                variant={"ghost"}
-                onClick={() => editor.chain().focus().toggleBold().run()}
-                className="transition-all delay-75 py-1 px-2 rounded-xl font-semibold text-sm text-muted-foreground bg-background hover:bg-accent hover:text-foreground"
-              >
-                Bold
-              </Button>
-              <button onClick={() => editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()}>
-                Insert table
-              </button>
-              <Button
-                onClick={() => editor.chain().focus().toggleItalic().run()}
-                className="transition-all delay-75 py-1 px-2 font-semibold  rounded-xl text-sm text-muted-foreground bg-background hover:bg-accent hover:text-foreground"
-              >
-                Italic
-              </Button>
-              <Button
-                onClick={() => {
-                  editor.chain().focus().toggleStrike().run();
-                }}
-                className="transition-all delay-75 py-1 px-2 font-semibold  rounded-xl text-sm text-muted-foreground bg-background hover:bg-accent hover:text-foreground"
-              >
-                Strike
-              </Button>
-            </div>
-          </BubbleMenu>
+          <>
+            <BubbleMenu
+              editor={editor}
+              className="!z-20 absolute"
+              options={{ placement: "bottom-start", offset: 5 }}
+              shouldShow={({ from, to }) => {
+                return from !== to;
+              }}
+            >
+              <div className="bubble-menu bg-background px-1 py-0.5 border-1 border-border/50 text-sm rounded-xl flex shadow-2xl">
+                <Button
+                  variant={"ghost"}
+                  onClick={() => editor.chain().focus().toggleBold().run()}
+                  className="transition-all delay-75 py-1 px-2 rounded-xl font-semibold text-sm text-muted-foreground bg-background hover:bg-accent hover:text-foreground"
+                >
+                  Bold
+                </Button>
+                <button onClick={() => editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()}>
+                  Insert table
+                </button>
+                <Button
+                  onClick={() => editor.chain().focus().toggleItalic().run()}
+                  className="transition-all delay-75 py-1 px-2 font-semibold  rounded-xl text-sm text-muted-foreground bg-background hover:bg-accent hover:text-foreground"
+                >
+                  Italic
+                </Button>
+                <Button
+                  onClick={() => {
+                    editor.chain().focus().toggleStrike().run();
+                  }}
+                  className="transition-all delay-75 py-1 px-2 font-semibold  rounded-xl text-sm text-muted-foreground bg-background hover:bg-accent hover:text-foreground"
+                >
+                  Strike
+                </Button>
+              </div>
+            </BubbleMenu>
+
+
+          </>
         )}
+
         <div className="flex justify-center p-5">
           <EditorContent
             editor={editor}
             role="presentation"
             className="simple-editor-content w-full container max-w-5xl  min-h-30"
+
           />
         </div>
         <div className="fixed bottom-5 right-6 text-xs bg-border p-2 rounded-lg ">

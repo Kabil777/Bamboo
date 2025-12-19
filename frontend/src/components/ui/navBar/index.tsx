@@ -1,4 +1,3 @@
-"use client";
 import React from "react";
 import { Book, CirclePlay, File, LifeBuoy, Zap } from "lucide-react";
 import {
