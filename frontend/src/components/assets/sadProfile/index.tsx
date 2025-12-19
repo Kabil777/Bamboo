@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 interface sizeIcon {
     width?: number;
@@ -7,8 +7,8 @@ interface sizeIcon {
     className?: string;
 }
 
-export const SadProfile =(props: sizeIcon) =>{
-    const { width = 42, height = 42, color = 'foreground' ,className} = props;
+export const SadProfile = (props: sizeIcon) => {
+    const { width = 42, height = 42, color = "foreground", className } = props;
     return (
         <svg
             width={width}
@@ -54,4 +54,4 @@ export const SadProfile =(props: sizeIcon) =>{
             />
         </svg>
     );
-}
+};
