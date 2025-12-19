@@ -1,78 +1,112 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-
-// ---------------- BLOG ----------------
-interface BlogPost {
-  id: string;
-  type: "blog";
-  title: string;
-  description: string;
-  tags: string[];
-  content: Record<string, any>; 
-}
-
-// ---------------- DOCS ----------------
 interface DocsPage {
   id: string;
   title: string;
   content: Record<string, any>;
+  subPages?: DocsPage[];
 }
 
-interface DocsPost {
+interface BasePost {
   id: string;
-  type: "docs" | "blog";
   title: string;
   description: string;
   tags: string[];
-  content: Record<string, any>; 
-  subPages?: DocsPage[]; 
+  content: Record<string, any>;
 }
 
-export type PostTypes = BlogPost | DocsPost;
+interface Blog extends BasePost {
+  type: "blog";
+  Pages: never;
+}
 
-const initialSlice: DocsPost = {
-  id: "1",
-  type: "docs",
-  title: "Hello World",
-  description: "Hello World",
-  tags: ["Hello World", "diuy"],
-  content: {
-    type: "doc",
-    content: [
-      {
-        type: "paragraph",
-        content: [{ type: "text", text: "hello yxygli" }],
-      },
-    ],
-  },
-  subPages: [
-    {
-      id: "1",
-      title: "Hello",
-      content: {
-        type: "doc",
-        content: [
-          {
-            type: "paragraph",
-            content: [{ type: "text", text: "hello" }],
-          },
-        ],
-      },
-    },
-  ],
-};
+interface Docs extends BasePost {
+  type: "docs";
+  Pages: DocsPage[];
+}
 
-// ---------------- SLICE ----------------
+type PostState = Docs | Blog;
+
 const postSlice = createSlice({
   name: "post",
-  initialState: initialSlice,
+  initialState: {
+    id: "1",
+    type: "docs",
+    title: "Hello World",
+    description: "Hello World",
+    tags: ["Hello World", "diuy"],
+    content: {
+      type: "doc",
+      content: [
+        {
+          type: "paragraph",
+          content: [{ type: "text", text: "hello yxygli" }],
+        },
+      ],
+    },
+    Pages: [
+      {
+        id: "1",
+        title: "Hello",
+        content: {
+          type: "doc",
+          content: [
+            {
+              type: "paragraph",
+              content: [{ type: "text", text: "hello" }],
+            },
+          ],
+        },
+        subPages:[{
+          id: "1-1",
+          title: "Hello Subpage",
+          content: {
+            type: "doc",
+            content: [
+              {
+                type: "paragraph",
+                content: [{ type: "text", text: "hello from subpage" }],
+              },
+            ],
+          },
+        },
+        {
+          id: "1-2",
+          title: "Hello Subpage 2",
+          content: {
+            type: "doc",
+            content: [
+              {
+                type: "paragraph",
+                content: [{ type: "text", text: "hello from subpage 2" }],
+              },
+            ],
+          },
+        }
+      ]
+      },
+      {
+        id: "2",
+        title: "Hello giy",
+        content: {
+          type: "doc",
+          content: [
+            {
+              type: "paragraph",
+              content: [{ type: "text", text: "hello" }],
+            },
+          ],
+        },
+      },
+    ],
+  } as PostState,
   reducers: {
-    setAll: (state, action: PayloadAction<DocsPost>) => {
-      return action.payload; // replace entire state safely
+    setAll: (state, action: PayloadAction<PostState>) => {
+      return action.payload; 
     },
     setTitleAndDescription: (
       state,
       action: PayloadAction<
-        Pick<DocsPost, "title" | "description" | "tags" | "type">
+        Pick<PostState, "title" | "description" | "tags" | "type">
       >
     ) => {
       state.type = action.payload.type;
@@ -80,19 +114,16 @@ const postSlice = createSlice({
       state.description = action.payload.description;
       state.tags = action.payload.tags;
     },
-    setContent: (state, action: PayloadAction<Pick<DocsPost, "content">>) => {
+    setContent: (state, action: PayloadAction<Pick<PostState, "content">>) => {
       state.content = action.payload.content;
     },
-    setSubPages: (
-      state,
-      action: PayloadAction<DocsPage[]>
-    ) => {
-      state.subPages = action.payload;
+    setPages: (state, action: PayloadAction<DocsPage[]>) => {
+      state.Pages = action.payload;
     },
   },
 });
 
-export const { setAll, setTitleAndDescription, setContent, setSubPages } =
+export const { setAll, setTitleAndDescription, setContent, setPages } =
   postSlice.actions;
 
 export default postSlice.reducer;

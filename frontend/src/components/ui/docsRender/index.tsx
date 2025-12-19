@@ -39,7 +39,7 @@ export default function DocsRenderPage() {
     const description = useAppState((state) => state.postReducer.description);
     const tags = useAppState((state) => state.postReducer.tags);
     const type = useAppState((state) => state.postReducer.type);
-    const subpages = useAppState((state) => state.postReducer.subPages);
+    const pages = useAppState((state) => state.postReducer.Pages);
     const toc = extractToc(md);
 
 
@@ -157,7 +157,7 @@ export default function DocsRenderPage() {
                             {/* Article Content */}
                             <ArticleRender content={md} />
 
-                            {subpages && subpages.length > 0 && (
+                            {pages && pages.length > 0 && (
                                 <div className="p-4 md:p-5 bg-muted/30 rounded-xl border border-border/50 backdrop-blur-sm mb-4">
                                     <h4 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
                                         <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -166,7 +166,7 @@ export default function DocsRenderPage() {
                                         Related Pages
                                     </h4>
                                     <div className="flex flex-wrap gap-2">
-                                        {subpages.map((page, index) => (
+                                        {pages.map((page, index) => (
                                             <span key={index} className="text-xs sm:text-sm px-2.5 sm:px-3 py-1 bg-background/60 rounded-md text-muted-foreground hover:text-foreground hover:bg-background transition-all cursor-pointer border border-border/30">
                                                 {page.title}
                                             </span>

@@ -1,5 +1,7 @@
-"use client"
-import { GalleryVerticalEnd, Plus, Trash } from "lucide-react"
+"use client";
+
+import { Plus, Trash } from "lucide-react";
+import { useState } from "react";
 
 import {
     Sidebar,
@@ -10,116 +12,132 @@ import {
     SidebarMenu,
     SidebarMenuButton,
     SidebarMenuItem,
-    SidebarMenuSkeleton,
     SidebarMenuSub,
     SidebarMenuSubButton,
     SidebarMenuSubItem,
-    SidebarRail,
-} from "@/components/shadcnUI/sidebar"
-import { Input } from "@/components/shadcnUI/input"
-import { Button } from "@/components/shadcnUI/button"
-import { useAppState } from "@/hooks/ReduxHooks";
-import { stat } from "fs"
-import { useState } from "react"
+} from "@/components/shadcnUI/sidebar";
+import { Input } from "@/components/shadcnUI/input";
+import { Button } from "@/components/shadcnUI/button";
 
-type NavItem = {
-    title: string
-    url: string
-    isActive?: boolean
-}
+import { useAppDispatch, useAppState } from "@/hooks/ReduxHooks";
+import { setPages } from "@/store/reducers/PostContent";
 
-type NavMainItem = {
-    title: string
-    url: string
-    items?: NavItem[]
-}
 
-export function EditorSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-    const appState = useAppState((state) => state.postReducer.type);
-    const subPages = useAppState((state) => state.postReducer.subPages);
-    console.log(subPages[0].title);
-    const [navData, setNavData] = useState<NavMainItem[]>([
-        {
-            title: "Click To edit",
-            url: "#",
-            items: [
-                { title: "Installation", url: "#" },
-                { title: "Project Structure", url: "#" },
-            ],
-        },
-        {
-            title: "Building Your Application",
-            url: "#",
-            items: [{ title: "Routing", url: "#" }],
-        },
-    ])
+export function EditorSidebar(props: React.ComponentProps<typeof Sidebar>) {
+    const dispatch = useAppDispatch();
+    const type = useAppState((s) => s.postReducer.type);
+    const pages = useAppState((s) => s.postReducer.Pages);
 
-    // Track which item is being edited
     const [editing, setEditing] = useState<{
-        type: "main" | "sub" | null
-        sectionIndex?: number
-        subIndex?: number
-    }>({ type: null })
+        type: "main" | "sub" | null;
+        sectionIndex?: number;
+        subIndex?: number;
+    }>({ type: null });
 
-    // Add new main section
+    if (type !== "docs") return null;
+
+    /* ------------------ Add ------------------ */
+
     const addMainSection = () => {
-        const newSection: NavMainItem = {
-            title: `Section ${navData.length + 1}`,
-            url: "#",
-            items: [],
-        }
-        setNavData([...navData, newSection])
-    }
+        dispatch(
+            setPages([
+                ...pages,
+                {
+                    id: crypto.randomUUID(),
+                    title: `New Section`,
+                    content: { type: "doc", content: [] },
+                    subPages: [],
+                },
+            ])
+        );
+    };
 
-    // Add new sub-item to a section
     const addSubItem = (sectionIndex: number) => {
-        const updated = [...navData]
-        const section = updated[sectionIndex]
-        const newSub: NavItem = {
-            title: `Sub Page ${section.items?.length ? section.items.length + 1 : 1}`,
-            url: "#",
-        }
-        if (!section.items) section.items = []
-        section.items.push(newSub)
-        setNavData(updated)
-    }
+        dispatch(
+            setPages(
+                pages.map((section, i) =>
+                    i === sectionIndex
+                        ? {
+                            ...section,
+                            subPages: [
+                                ...(section.subPages ?? []),
+                                {
+                                    id: crypto.randomUUID(),
+                                    title: "New Sub Page",
+                                    content: { type: "doc", content: [] },
+                                },
+                            ],
+                        }
+                        : section
+                )
+            )
+        );
+    };
 
-    // Delete main section
+    /* ------------------ Delete ------------------ */
+
     const deleteMainSection = (sectionIndex: number) => {
-        const updated = [...navData]
-        updated.splice(sectionIndex, 1)
-        setNavData(updated)
-    }
+        dispatch(setPages(pages.filter((_, i) => i !== sectionIndex)));
+    };
 
-    // Delete sub-item
     const deleteSubItem = (sectionIndex: number, subIndex: number) => {
-        const updated = [...navData]
-        updated[sectionIndex].items?.splice(subIndex, 1)
-        setNavData(updated)
-    }
+        dispatch(
+            setPages(
+                pages.map((section, i) =>
+                    i === sectionIndex
+                        ? {
+                            ...section,
+                            subPages: section.subPages?.filter(
+                                (_, j) => j !== subIndex
+                            ),
+                        }
+                        : section
+                )
+            )
+        );
+    };
 
-    // Save edited title
-    const saveTitle = (newTitle: string) => {
+    /* ------------------ Edit ------------------ */
+
+    const saveTitle = (title: string) => {
         if (editing.type === "main" && editing.sectionIndex !== undefined) {
-            const updated = [...navData]
-            updated[editing.sectionIndex].title = newTitle
-            setNavData(updated)
-        } else if (
+            dispatch(
+                setPages(
+                    pages.map((section, i) =>
+                        i === editing.sectionIndex
+                            ? { ...section, title }
+                            : section
+                    )
+                )
+            );
+        }
+
+        if (
             editing.type === "sub" &&
             editing.sectionIndex !== undefined &&
             editing.subIndex !== undefined
         ) {
-            const updated = [...navData]
-            updated[editing.sectionIndex].items![editing.subIndex].title = newTitle
-            setNavData(updated)
+            dispatch(
+                setPages(
+                    pages.map((section, i) =>
+                        i === editing.sectionIndex
+                            ? {
+                                ...section,
+                                subPages: section.subPages?.map((sub, j) =>
+                                    j === editing.subIndex
+                                        ? { ...sub, title }
+                                        : sub
+                                ),
+                            }
+                            : section
+                    )
+                )
+            );
         }
-        setEditing({ type: null })
-    }
-    console.log(appState);
-    if (appState !== "docs") {
-        return <>None</>;
-    }
-    
+
+        setEditing({ type: null });
+    };
+ console.log('pages', pages);
     return (
         <Sidebar {...props}>
             <SidebarHeader>
@@ -135,7 +153,7 @@ export function EditorSidebar({ ...props }: React.ComponentProps<typeof Sidebar>
             <SidebarContent className="custom-scroll scroll-smooth">
                 <SidebarGroup>
                     <SidebarMenu>
-                        {navData.map((item, sectionIndex) => (
+                        {pages.map((item, sectionIndex) => (
                             <SidebarMenuItem key={sectionIndex}>
                                 <div className="flex items-center justify-between group/btnvisible">
                                     {editing.type === "main" && editing.sectionIndex === sectionIndex ? (
@@ -178,9 +196,9 @@ export function EditorSidebar({ ...props }: React.ComponentProps<typeof Sidebar>
                                     </div>
                                 </div>
 
-                                {item.items?.length ? (
+                                {item.subPages?.length ? (
                                     <SidebarMenuSub className="!pr-0 mr-0">
-                                        {item.items.map((sub, subIndex) => (
+                                        {item.subPages.map((sub, subIndex) => (
                                             <SidebarMenuSubItem key={subIndex}>
                                                 <div className="flex items-center justify-between w-full group/btnvisible">
                                                     {editing.type === "sub" &&
@@ -194,12 +212,12 @@ export function EditorSidebar({ ...props }: React.ComponentProps<typeof Sidebar>
                                                                 if (e.key === "Enter")
                                                                     saveTitle((e.target as HTMLInputElement).value)
                                                             }}
-                                                            className="w-full rounded border px-1 !h-fit text-sm !py-0"
+                                                            className="w-full rounded border px-1 !h-fit text-sm !py-1"
                                                         />
                                                     ) : (
                                                         <SidebarMenuSubButton
                                                             asChild
-                                                            isActive={sub.isActive}
+                                                            isActive={sub.id === "1-1"}
                                                             onClick={() =>
                                                                 setEditing({
                                                                     type: "sub",
@@ -207,6 +225,7 @@ export function EditorSidebar({ ...props }: React.ComponentProps<typeof Sidebar>
                                                                     subIndex,
                                                                 })
                                                             }
+                                                            className="w-full"
                                                         >
                                                             <span className="cursor-text">{sub.title}</span>
                                                         </SidebarMenuSubButton>
