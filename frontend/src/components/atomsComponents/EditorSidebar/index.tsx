@@ -1,5 +1,4 @@
 "use client"
-import * as React from "react"
 import { GalleryVerticalEnd, Plus, Trash } from "lucide-react"
 
 import {
@@ -11,6 +10,7 @@ import {
     SidebarMenu,
     SidebarMenuButton,
     SidebarMenuItem,
+    SidebarMenuSkeleton,
     SidebarMenuSub,
     SidebarMenuSubButton,
     SidebarMenuSubItem,
@@ -18,6 +18,9 @@ import {
 } from "@/components/shadcnUI/sidebar"
 import { Input } from "@/components/shadcnUI/input"
 import { Button } from "@/components/shadcnUI/button"
+import { useAppState } from "@/hooks/ReduxHooks";
+import { stat } from "fs"
+import { useState } from "react"
 
 type NavItem = {
     title: string
@@ -32,7 +35,10 @@ type NavMainItem = {
 }
 
 export function EditorSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-    const [navData, setNavData] = React.useState<NavMainItem[]>([
+    const appState = useAppState((state) => state.postReducer.type);
+    const subPages = useAppState((state) => state.postReducer.subPages);
+    console.log(subPages[0].title);
+    const [navData, setNavData] = useState<NavMainItem[]>([
         {
             title: "Click To edit",
             url: "#",
@@ -49,7 +55,7 @@ export function EditorSidebar({ ...props }: React.ComponentProps<typeof Sidebar>
     ])
 
     // Track which item is being edited
-    const [editing, setEditing] = React.useState<{
+    const [editing, setEditing] = useState<{
         type: "main" | "sub" | null
         sectionIndex?: number
         subIndex?: number
@@ -109,14 +115,18 @@ export function EditorSidebar({ ...props }: React.ComponentProps<typeof Sidebar>
         }
         setEditing({ type: null })
     }
-
+    console.log(appState);
+    if (appState !== "docs") {
+        return <>None</>;
+    }
+    
     return (
         <Sidebar {...props}>
             <SidebarHeader>
                 <SidebarMenu>
                     <SidebarMenuItem>
                         <SidebarMenuButton size="lg" asChild>
-                                <span className="font-medium">Pages</span>
+                            <span className="font-medium">Pages</span>
                         </SidebarMenuButton>
                     </SidebarMenuItem>
                 </SidebarMenu>
@@ -127,7 +137,7 @@ export function EditorSidebar({ ...props }: React.ComponentProps<typeof Sidebar>
                     <SidebarMenu>
                         {navData.map((item, sectionIndex) => (
                             <SidebarMenuItem key={sectionIndex}>
-                                <div className="flex items-center justify-between">
+                                <div className="flex items-center justify-between group/btnvisible">
                                     {editing.type === "main" && editing.sectionIndex === sectionIndex ? (
                                         <Input
                                             autoFocus
@@ -147,7 +157,7 @@ export function EditorSidebar({ ...props }: React.ComponentProps<typeof Sidebar>
                                         </SidebarMenuButton>
                                     )}
 
-                                    <div className="flex items-center">
+                                    <div className="flex items-center group-hover/btnvisible:visible invisible">
                                         {/* Add sub-item button */}
                                         <Button
                                             onClick={() => addSubItem(sectionIndex)}
@@ -161,7 +171,7 @@ export function EditorSidebar({ ...props }: React.ComponentProps<typeof Sidebar>
                                             onClick={() => deleteMainSection(sectionIndex)}
                                             variant="link"
                                             size="icon"
-                                            className="text-red-500"
+                                            className="text-red-500 group-hover/btnvisible:visible invisible"
                                         >
                                             <Trash className="w-4 h-4" />
                                         </Button>
@@ -172,7 +182,7 @@ export function EditorSidebar({ ...props }: React.ComponentProps<typeof Sidebar>
                                     <SidebarMenuSub className="!pr-0 mr-0">
                                         {item.items.map((sub, subIndex) => (
                                             <SidebarMenuSubItem key={subIndex}>
-                                                <div className="flex items-center justify-between w-full">
+                                                <div className="flex items-center justify-between w-full group/btnvisible">
                                                     {editing.type === "sub" &&
                                                         editing.sectionIndex === sectionIndex &&
                                                         editing.subIndex === subIndex ? (
@@ -207,7 +217,7 @@ export function EditorSidebar({ ...props }: React.ComponentProps<typeof Sidebar>
                                                         onClick={() => deleteSubItem(sectionIndex, subIndex)}
                                                         variant="link"
                                                         size="icon"
-                                                        className="text-red-500"
+                                                        className={`text-red-500 group-hover/btnvisible:visible invisible`}
                                                     >
                                                         <Trash className="w-4 h-4" />
                                                     </Button>
@@ -227,7 +237,6 @@ export function EditorSidebar({ ...props }: React.ComponentProps<typeof Sidebar>
                     <Plus className="w-4 h-4" /> Add Section
                 </Button>
             </SidebarFooter>
-            <SidebarRail />
         </Sidebar>
     )
 }

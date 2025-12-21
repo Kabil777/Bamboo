@@ -1,6 +1,5 @@
 // components/tiptap-node/code-block-node/CodeBlockComponent.tsx
-import { NodeViewContent, NodeViewWrapper } from "@tiptap/react";
-import React from "react";
+import { NodeViewContent, NodeViewWrapper } from '@tiptap/react'
 
 const CodeBlockComponent = ({
     node: {
