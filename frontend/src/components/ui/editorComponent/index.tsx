@@ -57,7 +57,6 @@ import { CodeBlockButton } from "@/components/tiptap-ui/code-block-button";
 import { ColorHighlightPopover } from "@/components/tiptap-ui/color-highlight-popover";
 import { LinkPopover } from "@/components/tiptap-ui/link-popover";
 import { MarkButton } from "@/components/tiptap-ui/mark-button";
-import { TextAlignButton } from "@/components/tiptap-ui/text-align-button";
 import { UndoRedoButton } from "@/components/tiptap-ui/undo-redo-button";
 
 // --- Lib ---
@@ -66,7 +65,7 @@ import "highlight.js/styles/tokyo-night-dark.css";
 
 // --- Styles ---
 import { Button } from "@/components/shadcnUI/button";
-import { useAppDispatch } from "@/hooks/ReduxHooks";
+import { useAppDispatch, useAppState } from "@/hooks/ReduxHooks";
 import { setContent } from "@/store/reducers/PostContent";
 import { MenuBar } from "./customBlock";
 import "./syntax.css";
@@ -117,12 +116,13 @@ const MainToolbarContent = ({ onSave, editor }: MainToolbarContentProp) => {
       <ToolbarSeparator />
 
       <ToolbarGroup>
+        
         <MarkButton type="superscript" />
         <MarkButton type="subscript" />
       </ToolbarGroup>
 
       <MenuBar editor={editor} />
-      <TableMenu editor={editor} /> 
+      <TableMenu editor={editor} />
       <ToolbarSeparator />
 
       <ToolbarGroup>
@@ -169,7 +169,7 @@ export default function Editor() {
   lowlight.register("xml", xml);
   lowlight.register("c", c);
   lowlight.register("cpp", cpp);
-
+  const content = useAppState((s) => s.postReducer.content);
   const editor = useEditor({
     immediatelyRender: false,
     editorProps: {
@@ -232,10 +232,12 @@ export default function Editor() {
         lowlight,
       }),
     ],
+    content: content,
     onUpdate({ editor }) {
       const count = editor.storage.characterCount.characters();
       setWord(count);
     },
+
   });
   const onSave = () => {
     dispatch(
@@ -292,11 +294,11 @@ export default function Editor() {
           </>
         )}
 
-        <div className="flex justify-center p-5">
+        <div className="flex justify-center p-5 min-h-[calc(100vh-7rem)]" onClick={() => editor?.chain().focus().run()}>
           <EditorContent
             editor={editor}
             role="presentation"
-            className="simple-editor-content w-full container max-w-5xl  min-h-30"
+            className="simple-editor-content w-full container max-w-5xl"
 
           />
         </div>
