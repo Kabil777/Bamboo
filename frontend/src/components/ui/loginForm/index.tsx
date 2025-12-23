@@ -1,10 +1,10 @@
-"use client"
+"use client";
 
-import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm } from "react-hook-form"
-import { z } from "zod"
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
 import { FcGoogle } from "react-icons/fc";
-import { Button } from "@/components/shadcnUI/button"
+import { Button } from "@/components/shadcnUI/button";
 import {
     Form,
     FormControl,
@@ -12,12 +12,12 @@ import {
     FormItem,
     FormLabel,
     FormMessage,
-} from "@/components/shadcnUI/form"
-import { Input } from "@/components/shadcnUI/input"
-import Image from "next/image"
-import { Card, CardContent } from "@/components/shadcnUI/card"
-import { cn } from "@/lib/utils"
-import { toast } from "sonner"
+} from "@/components/shadcnUI/form";
+import { Input } from "@/components/shadcnUI/input";
+import Image from "next/image";
+import { Card, CardContent } from "@/components/shadcnUI/card";
+import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 import { useRouter } from "nextjs-toploader/app";
 const formSchema = z.object({
     email: z.string().email("Please enter a valid email"),
@@ -36,26 +36,24 @@ const formSchema = z.object({
         .refine((value) => /[^a-zA-Z0-9]/.test(value), {
             message: "Password must contain at least one special character",
         }),
-})
-
+});
 
 export function LoginForm({
     className,
     ...props
 }: React.ComponentProps<"div">) {
-    const router = useRouter()
+    const router = useRouter();
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
             email: "",
             password: "",
         },
-    })
+    });
     function onSubmit(values: z.infer<typeof formSchema>) {
-        console.log(values)
-        router.push('/')
-        toast.success(`Login successful as ${values.email}`)
-
+        console.log(values);
+        router.push("/");
+        toast.success(`Login successful as ${values.email}`);
     }
 
     return (
@@ -65,9 +63,14 @@ export function LoginForm({
                     <CardContent className="grid p-0 md:grid-cols-2">
                         <div className="space-y-8 p-6 md:p-8">
                             <Form {...form}>
-                                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+                                <form
+                                    onSubmit={form.handleSubmit(onSubmit)}
+                                    className="space-y-8"
+                                >
                                     <div className="flex flex-col items-center text-center">
-                                        <h1 className="text-2xl font-bold">Welcome</h1>
+                                        <h1 className="text-2xl font-bold">
+                                            Welcome
+                                        </h1>
                                         <p className="text-balance text-muted-foreground">
                                             Login to your Bamboo account
                                         </p>
@@ -79,7 +82,10 @@ export function LoginForm({
                                             <FormItem>
                                                 <FormLabel>Email</FormLabel>
                                                 <FormControl>
-                                                    <Input placeholder="Email" {...field} />
+                                                    <Input
+                                                        placeholder="Email"
+                                                        {...field}
+                                                    />
                                                 </FormControl>
                                                 <FormMessage />
                                             </FormItem>
@@ -92,7 +98,11 @@ export function LoginForm({
                                             <FormItem>
                                                 <FormLabel>Password</FormLabel>
                                                 <FormControl>
-                                                    <Input type="password" placeholder="Password" {...field} />
+                                                    <Input
+                                                        type="password"
+                                                        placeholder="Password"
+                                                        {...field}
+                                                    />
                                                 </FormControl>
                                                 <FormMessage />
                                                 <a
@@ -104,23 +114,33 @@ export function LoginForm({
                                             </FormItem>
                                         )}
                                     />
-                                    <Button type="submit" className="w-full">Login</Button>
-
+                                    <Button type="submit" className="w-full">
+                                        Login
+                                    </Button>
                                 </form>
-
                             </Form>
                             <div className="relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t after:border-border">
                                 <span className="relative z-10 bg-card px-2 text-muted-foreground">
                                     Or continue with
                                 </span>
                             </div>
-                            <Button variant="outline" className="w-full">
+                            <Button
+                                variant="outline"
+                                className="w-full"
+                                onClick={() => {
+                                    window.location.href =
+                                        "http://localhost:8080/api/v1/auth/login/google";
+                                }}
+                            >
                                 <FcGoogle />
                                 <span>Login with Google</span>
                             </Button>
                             <div className="text-center text-sm">
                                 Don&apos;t have an account?{" "}
-                                <a href="#" className="underline underline-offset-4">
+                                <a
+                                    href="#"
+                                    className="underline underline-offset-4"
+                                >
                                     Sign up
                                 </a>
                             </div>
@@ -137,10 +157,10 @@ export function LoginForm({
                     </CardContent>
                 </Card>
                 <div className="text-balance text-center text-xs text-muted-foreground [&_a]:underline [&_a]:underline-offset-4 hover:[&_a]:text-primary">
-                    <a href="#">Terms of Service</a>{" "}
-                    and <a href="#">Privacy Policy</a>.
+                    <a href="#">Terms of Service</a> and{" "}
+                    <a href="#">Privacy Policy</a>.
                 </div>
             </div>
         </>
-    )
+    );
 }
