@@ -13,7 +13,6 @@ import "highlight.js/styles/tokyo-night-dark.css";
 
 
 // import "./dummy.css";
-import { renderToMarkdown } from "@tiptap/static-renderer";
 import { useAppState } from "@/hooks/ReduxHooks";
 import { ArticleRender, ArticleSidebar, ArticleTableContent } from "@/components/atomsComponents";
 import { ProfileHoverTag } from "@/components/atomsComponents/profileHoverTag";
@@ -21,25 +20,34 @@ import NextImage from "next/image";
 import { useState } from "react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/shadcnUI/accordion";
 import { motion } from "framer-motion";
-import extensions from "@/lib/extensions";
 import { SidebarTrigger } from "@/components/shadcnUI/sidebar";
 import { extractToc } from "@/lib/utils";
+import { useParams } from "next/navigation";
 
 
 export default function DocsRenderPage() {
     const [accordionValue, setAccordionValue] = useState<string | undefined>(undefined);
-
-
-
-    const md = renderToMarkdown({
-        content: useAppState((state) => state.postReducer.content),
-        extensions,
-    });
-    const title = useAppState((state) => state.postReducer.title);
+    const { id } = useParams() as { id: string | string[] };
+    const content = useAppState((state) => state.postReducer.content)
+    // const title = useAppState((state) => state.postReducer.title);
     const description = useAppState((state) => state.postReducer.description);
     const tags = useAppState((state) => state.postReducer.tags);
     const type = useAppState((state) => state.postReducer.type);
     const pages = useAppState((state) => state.postReducer.Pages);
+    let md = "", title = useAppState((state) => state.postReducer.title);
+    if (id.length == 1) {
+        md = content;
+        title = title;
+    } else if (id.length == 2) {
+        const page = pages.find((p) => p.id === id[1]);
+        title = page ? page.title : "";
+        md = page ? page.content : "";
+    } else if (id.length == 3) {
+        const page = pages.find((p) => p.id === id[1]);
+        const subpage = page?.subPages?.find((sp) => sp.id === id[2]);
+        title = subpage ? subpage.title : "";
+        md = subpage ? subpage.content : "";
+    }
     const toc = extractToc(md);
 
 

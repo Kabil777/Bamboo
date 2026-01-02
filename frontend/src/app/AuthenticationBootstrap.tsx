@@ -4,7 +4,7 @@ import { useAppDispatch } from "@/hooks/ReduxHooks";
 import { getAuthentication } from "@/store/reducers/AuthReducers";
 import { RootState } from "@/store/store";
 import { useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 
 export default function AuthBootstrap() {
     const dispatch = useAppDispatch();
@@ -13,7 +13,7 @@ export default function AuthBootstrap() {
         if (status === "idle") {
             dispatch(getAuthentication());
         }
-    }, [dispatch]);
+    }, [dispatch, status]);
 
     return null;
 }

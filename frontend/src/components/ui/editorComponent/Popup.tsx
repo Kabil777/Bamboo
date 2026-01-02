@@ -25,10 +25,12 @@ import {
 } from "@/components/shadcnUI/select";
 import Image from "next/image";
 import { Input } from "@/components/shadcnUI/input";
-import { setContent } from "@/store/reducers/PostContent";
-import { string } from "zod";
 import { FileText, UploadCloud } from "lucide-react";
 import { toast } from "sonner";
+import { marked } from "marked";
+
+
+
 type Setter<T> = React.Dispatch<React.SetStateAction<T>>;
 interface props {
   open: boolean;
@@ -57,21 +59,22 @@ const setEditorContent = async (
   content: string,
 ) => {
   try {
-    const tree = await remark()
-      .use(remarkParse)
-      .use(remarkHtml)
-      .process(content);
+
+    const tree = marked.parse(content);
+
 
     const data = String(tree);
     if (editor) {
       console.log(data);
       editor.commands.setContent(data);
+      toast.success("Content loaded successfully!");
     }
   } catch (error) {
     console.error(error);
+    toast.error("Failed to load content.");
   }
 };
-function Popup({ open, setOpen, onClick, editor }: props) {
+function Popup({ setOpen, editor }: props) {
   const [content, saveContent] = useState("");
   const [uploadType, setUploadType] = useState("file");
   const [dragActive, setDragActive] = useState(false);
@@ -96,7 +99,7 @@ function Popup({ open, setOpen, onClick, editor }: props) {
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
       const file = e.dataTransfer.files[0];
       if (file.name.endsWith(".md")) {
-        setFileName(file.name); 
+        setFileName(file.name);
         // Create a mock FileList with the required 'item' method
         const fileList = {
           0: file,
@@ -123,7 +126,7 @@ function Popup({ open, setOpen, onClick, editor }: props) {
       const file = e.target.files[0];
       setFileName(file.name);
       handleupload(e, saveContent);
-      e.target.value = ""; 
+      e.target.value = "";
     }
   }
   return (
@@ -145,6 +148,7 @@ function Popup({ open, setOpen, onClick, editor }: props) {
           onValueChange={(value) => {
             setUploadType(value);
           }}
+          defaultValue={uploadType}
         >
           <SelectTrigger className="w-44">
             <SelectValue placeholder="Type of upload" />

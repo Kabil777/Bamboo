@@ -1,7 +1,5 @@
 import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
-import axios from "axios";
 import { jwtDecode } from "jwt-decode";
-import store from "../store";
 import api from "@/api/axios";
 
 interface AuthState {
@@ -31,7 +29,9 @@ export const getAuthentication = createAsyncThunk(
         try {
             const response = await api.post(
                 "http://localhost:8080/api/v1/auth/refresh",
-                {},
+                {
+                    redirectUrl:"/",
+                },
                 {
                     withCredentials: true,
                 },

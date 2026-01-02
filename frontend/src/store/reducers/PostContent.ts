@@ -2,7 +2,7 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 interface DocsPage {
     id: string;
     title: string;
-    content: Record<string, any>;
+    content: string;
     subPages?: DocsPage[];
 }
 
@@ -11,7 +11,7 @@ interface BasePost {
     title: string;
     description: string;
     tags: string[];
-    content: Record<string, any>;
+    content: string;
 }
 
 interface Blog extends BasePost {
@@ -34,79 +34,29 @@ const postSlice = createSlice({
         title: "Hello World",
         description: "Hello World",
         tags: ["Hello World", "diuy"],
-        content: {
-            type: "doc",
-            content: [
-                {
-                    type: "paragraph",
-                    content: [{ type: "text", text: "hello yxygli" }],
-                },
-            ],
-        },
+        content: "Hello kowsik",
         Pages: [
             {
                 id: "1",
                 title: "Hello",
-                content: {
-                    type: "doc",
-                    content: [
-                        {
-                            type: "paragraph",
-                            content: [{ type: "text", text: "hello" }],
-                        },
-                    ],
-                },
+                content: "hello main",
                 subPages: [
                     {
                         id: "1-1",
                         title: "Hello Subpage",
-                        content: {
-                            type: "doc",
-                            content: [
-                                {
-                                    type: "paragraph",
-                                    content: [
-                                        {
-                                            type: "text",
-                                            text: "hello from subpage",
-                                        },
-                                    ],
-                                },
-                            ],
-                        },
+                        content: "hello 2-1",
                     },
                     {
                         id: "1-2",
                         title: "Hello Subpage 2",
-                        content: {
-                            type: "doc",
-                            content: [
-                                {
-                                    type: "paragraph",
-                                    content: [
-                                        {
-                                            type: "text",
-                                            text: "hello from subpage 2",
-                                        },
-                                    ],
-                                },
-                            ],
-                        },
+                        content: "hello 2-2",
                     },
                 ],
             },
             {
                 id: "2",
                 title: "Hello giy",
-                content: {
-                    type: "doc",
-                    content: [
-                        {
-                            type: "paragraph",
-                            content: [{ type: "text", text: "hello" }],
-                        },
-                    ],
-                },
+                content: "HEllo",
             },
         ],
     } as PostState,

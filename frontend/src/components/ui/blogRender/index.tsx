@@ -11,7 +11,6 @@ import "@/components/tiptap-node/paragraph-node/paragraph-node.scss";
 import "highlight.js/styles/tokyo-night-dark.css";
 
 // import "./dummy.css";
-import { renderToMarkdown } from "@tiptap/static-renderer";
 import { useAppState } from "@/hooks/ReduxHooks";
 import {
     ArticleRender,
@@ -27,8 +26,6 @@ import {
     AccordionTrigger,
 } from "@/components/shadcnUI/accordion";
 import { motion } from "framer-motion";
-
-import extensions from "@/lib/extensions";
 import { extractToc } from "@/lib/utils";
 
 export default function BlogRenderPage() {
@@ -36,10 +33,7 @@ export default function BlogRenderPage() {
         undefined,
     );
 
-    const md = renderToMarkdown({
-        content: useAppState((state) => state.postReducer.content),
-        extensions,
-    });
+    const md = useAppState((state) => state.postReducer.content);
     const title = useAppState((state) => state.postReducer.title);
     const description = useAppState((state) => state.postReducer.description);
     const tags = useAppState((state) => state.postReducer.tags);

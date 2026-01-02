@@ -1,32 +1,61 @@
-// --- Tiptap UI ---
-
-// --- Lib ---
-import "highlight.js/styles/tokyo-night-dark.css";
+// --- Tiptap Core Extensions ---
+import { StarterKit } from "@tiptap/starter-kit";
 import { Image } from "@tiptap/extension-image";
 import { TaskItem } from "@tiptap/extension-task-item";
 import { TaskList } from "@tiptap/extension-task-list";
 import { TextAlign } from "@tiptap/extension-text-align";
 import { Typography } from "@tiptap/extension-typography";
 import { Highlight } from "@tiptap/extension-highlight";
-import { Underline } from "@tiptap/extension-underline";
-import { TableKit } from "@tiptap/extension-table";
-import { ImageUploadNode } from "@/components/tiptap-node/image-upload-node/image-upload-node-extension";
+import { Subscript } from "@tiptap/extension-subscript";
+import { Superscript } from "@tiptap/extension-superscript";
+import { CharacterCount } from "@tiptap/extensions";
+import CodeBlockLowlight from "@tiptap/extension-code-block-lowlight";
+import {
+  Table,
+  TableCell,
+  TableHeader,
+  TableKit,
+  TableRow,
+} from "@tiptap/extension-table";
 
 // --- Custom Extensions ---
 import { Link } from "@/components/tiptap-extension/link-extension";
 import { Selection } from "@/components/tiptap-extension/selection-extension";
 import { TrailingNode } from "@/components/tiptap-extension/trailing-node-extension";
-import { Subscript } from "@tiptap/extension-subscript";
-import { Superscript } from "@tiptap/extension-superscript";
+import { all, createLowlight } from "lowlight";
+import css from "highlight.js/lib/languages/css";
+import js from "highlight.js/lib/languages/javascript";
+import ts from "highlight.js/lib/languages/typescript";
+import html from "highlight.js/lib/languages/xml";
+import java from "highlight.js/lib/languages/java";
+import yaml from "highlight.js/lib/languages/yaml";
+import xml from "highlight.js/lib/languages/xml";
+import c from "highlight.js/lib/languages/c";
+import cpp from "highlight.js/lib/languages/cpp";
 
-// import "./dummy.css";
-import { StarterKit } from "@tiptap/starter-kit";
+// --- Tiptap Node ---
+import { ImageUploadNode } from "@/components/tiptap-node/image-upload-node/image-upload-node-extension";
 
+// --- Lib ---
+import { handleImageUpload, MAX_FILE_SIZE } from "@/lib/tiptap-utils";
+
+const lowlight = createLowlight(all);
+lowlight.register("js", js);
+lowlight.register("ts", ts);
+lowlight.register("html", html);
+lowlight.register("css", css);
+lowlight.register("java", java);
+lowlight.register("yaml", yaml);
+lowlight.register("xml", xml);
+lowlight.register("c", c);
+lowlight.register("cpp", cpp);
 
 const extensions = [
-  StarterKit,
+  StarterKit.configure({
+    link: false,
+    codeBlock: false,
+  }),
   TextAlign.configure({ types: ["heading", "paragraph"] }),
-  Underline,
   TaskList,
   TaskItem.configure({ nested: true }),
   Highlight.configure({ multicolor: true }),
@@ -34,13 +63,19 @@ const extensions = [
   Typography,
   Superscript,
   Subscript,
+  Table,
+  TableRow,
+  TableCell,
+  TableHeader,
   Selection,
-  TableKit,
   ImageUploadNode.configure({
     accept: "image/*",
+    maxSize: MAX_FILE_SIZE,
     limit: 3,
+    upload: handleImageUpload,
     onError: (error) => console.error("Upload failed:", error),
   }),
+  CharacterCount,
   TrailingNode,
   Link.configure({
     openOnClick: false,
@@ -63,6 +98,10 @@ const extensions = [
         return false;
       }
     },
+  }),
+
+  CodeBlockLowlight.configure({
+    lowlight,
   }),
 ];
 

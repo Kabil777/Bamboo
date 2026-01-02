@@ -2,36 +2,9 @@ import * as React from "react";
 import { EditorContent, EditorContext, useEditor } from "@tiptap/react";
 
 // --- Tiptap Core Extensions ---
-import { StarterKit } from "@tiptap/starter-kit";
-import { Image } from "@tiptap/extension-image";
-import { TaskItem } from "@tiptap/extension-task-item";
-import { TaskList } from "@tiptap/extension-task-list";
-import { TextAlign } from "@tiptap/extension-text-align";
-import { Typography } from "@tiptap/extension-typography";
-import { Highlight } from "@tiptap/extension-highlight";
-import { Subscript } from "@tiptap/extension-subscript";
-import { Superscript } from "@tiptap/extension-superscript";
-import { Underline } from "@tiptap/extension-underline";
 import { BubbleMenu } from "@tiptap/react/menus";
-import { CharacterCount } from "@tiptap/extensions";
-import CodeBlockLowlight from "@tiptap/extension-code-block-lowlight";
-import { TableKit } from '@tiptap/extension-table'
+import { marked } from "marked";
 
-
-// --- Custom Extensions ---
-import { Link } from "@/components/tiptap-extension/link-extension";
-import { Selection } from "@/components/tiptap-extension/selection-extension";
-import { TrailingNode } from "@/components/tiptap-extension/trailing-node-extension";
-import { all, createLowlight } from "lowlight";
-import css from "highlight.js/lib/languages/css";
-import js from "highlight.js/lib/languages/javascript";
-import ts from "highlight.js/lib/languages/typescript";
-import html from "highlight.js/lib/languages/xml";
-import java from "highlight.js/lib/languages/java";
-import yaml from "highlight.js/lib/languages/yaml";
-import xml from "highlight.js/lib/languages/xml";
-import c from "highlight.js/lib/languages/c";
-import cpp from "highlight.js/lib/languages/cpp";
 
 // --- UI Primitives ---
 import { Spacer } from "@/components/tiptap-ui-primitive/spacer";
@@ -42,7 +15,6 @@ import {
 } from "@/components/tiptap-ui-primitive/toolbar";
 
 // --- Tiptap Node ---
-import { ImageUploadNode } from "@/components/tiptap-node/image-upload-node/image-upload-node-extension";
 import "@/components/tiptap-node/code-block-node/code-block-node.scss";
 import "@/components/tiptap-node/list-node/list-node.scss";
 import "@/components/tiptap-node/image-node/image-node.scss";
@@ -60,7 +32,6 @@ import { MarkButton } from "@/components/tiptap-ui/mark-button";
 import { UndoRedoButton } from "@/components/tiptap-ui/undo-redo-button";
 
 // --- Lib ---
-import { handleImageUpload, MAX_FILE_SIZE } from "@/lib/tiptap-utils";
 import "highlight.js/styles/tokyo-night-dark.css";
 
 // --- Styles ---
@@ -71,7 +42,11 @@ import { MenuBar } from "./customBlock";
 import "./syntax.css";
 import "./tiptapstyles.scss"
 import Popup from "./Popup";
-import { TableDropdownMenu, TableMenu } from "@/components/tiptap-ui/table-dropdown-menu";
+import { TableMenu } from "@/components/tiptap-ui/table-dropdown-menu";
+
+import { renderToMarkdown } from "@tiptap/static-renderer";
+import { TextAlignButton } from "@/components/tiptap-ui/text-align-button";
+import extensions from "@/lib/extensions";
 interface MainToolbarContentProp {
   onSave: () => void;
   editor: ReturnType<typeof useEditor> | null;
@@ -80,7 +55,6 @@ interface MainToolbarContentProp {
 //syntax highlighting
 const MainToolbarContent = ({ onSave, editor }: MainToolbarContentProp) => {
   const [open, setOpen] = React.useState<boolean>(false);
-  const [content, saveContent] = React.useState<string>("");
   return (
     <>
       <Spacer />
@@ -116,36 +90,38 @@ const MainToolbarContent = ({ onSave, editor }: MainToolbarContentProp) => {
       <ToolbarSeparator />
 
       <ToolbarGroup>
-        
+
         <MarkButton type="superscript" />
         <MarkButton type="subscript" />
       </ToolbarGroup>
 
       <MenuBar editor={editor} />
+
       <TableMenu editor={editor} />
+      {/* <TableDropdownMenu editor={editor} /> */}
+
       <ToolbarSeparator />
 
       <ToolbarGroup>
-        {/* <TextAlignButton align="left" />
+        <TextAlignButton align="left" />
         <TextAlignButton align="center" />
         <TextAlignButton align="right" />
-        <TextAlignButton align="justify" /> */}
+        <TextAlignButton align="justify" />
       </ToolbarGroup>
 
       <ToolbarSeparator />
       <ToolbarGroup>
         <ImageUploadButton text="Add" />
       </ToolbarGroup>
-
-      <Popup
+      {editor && <Popup
         open={open}
         setOpen={setOpen}
-        saveContent={saveContent}
         onClick={() => {
           setOpen(true);
         }}
         editor={editor}
       />
+      }
       <Button onClick={onSave}>Save</Button>
       <Spacer />
     </>
@@ -153,23 +129,10 @@ const MainToolbarContent = ({ onSave, editor }: MainToolbarContentProp) => {
 };
 
 export default function Editor() {
-  const [word, setWord] = React.useState(0);
   const toolbarRef = React.useRef<HTMLDivElement>(null);
   const dispatch = useAppDispatch();
-
-  //limit
-  const limit = 20000;
-  const lowlight = createLowlight(all);
-  lowlight.register("js", js);
-  lowlight.register("ts", ts);
-  lowlight.register("html", html);
-  lowlight.register("css", css);
-  lowlight.register("java", java);
-  lowlight.register("yaml", yaml);
-  lowlight.register("xml", xml);
-  lowlight.register("c", c);
-  lowlight.register("cpp", cpp);
-  const content = useAppState((s) => s.postReducer.content);
+  const raw = marked.parse(useAppState((s) => s.postReducer.content));
+  const [word, setWord] = React.useState(0);
   const editor = useEditor({
     immediatelyRender: false,
     editorProps: {
@@ -181,68 +144,21 @@ export default function Editor() {
       },
     },
     autofocus: "end",
-    extensions: [
-      StarterKit,
-      TextAlign.configure({ types: ["heading", "paragraph"] }),
-      Underline,
-      TaskList,
-      TaskItem.configure({ nested: true }),
-      Highlight.configure({ multicolor: true }),
-      Image,
-      Typography,
-      Superscript,
-      Subscript,
-      TableKit,
-      Selection,
-      ImageUploadNode.configure({
-        accept: "image/*",
-        maxSize: MAX_FILE_SIZE,
-        limit: 3,
-        upload: handleImageUpload,
-        onError: (error) => console.error("Upload failed:", error),
-      }),
-      CharacterCount.configure({
-        limit,
-      }),
-      TrailingNode,
-      Link.configure({
-        openOnClick: false,
-        autolink: true,
-        defaultProtocol: "https",
-        protocols: ["http", "https"],
-        shouldAutoLink: (url) => {
-          try {
-            const parsedUrl = url.includes(":")
-              ? new URL(url)
-              : new URL(`https://${url}`);
-            const disallowedDomains = [
-              "example-no-autolink.com",
-              "another-no-autolink.com",
-            ];
-            const domain = parsedUrl.hostname;
-
-            return !disallowedDomains.includes(domain);
-          } catch {
-            return false;
-          }
-        },
-      }),
-
-      CodeBlockLowlight.configure({
-        lowlight,
-      }),
-    ],
-    content: content,
+    extensions: extensions,
+    content: raw,
+    onCreate({ editor }) {
+      setWord(editor.storage.characterCount.characters());
+    },
     onUpdate({ editor }) {
-      const count = editor.storage.characterCount.characters();
-      setWord(count);
+      setWord(editor.storage.characterCount.characters());
     },
 
   });
   const onSave = () => {
+    console.log(renderToMarkdown({ extensions, content: editor?.getJSON() || {} }));
     dispatch(
       setContent({
-        content: editor?.getJSON() || {},
+        content: renderToMarkdown({ extensions, content: editor?.getJSON() || {} }),
       }),
     );
   };
@@ -270,9 +186,6 @@ export default function Editor() {
                 >
                   Bold
                 </Button>
-                <button onClick={() => editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()}>
-                  Insert table
-                </button>
                 <Button
                   onClick={() => editor.chain().focus().toggleItalic().run()}
                   className="transition-all delay-75 py-1 px-2 font-semibold  rounded-xl text-sm text-muted-foreground bg-background hover:bg-accent hover:text-foreground"
@@ -304,7 +217,7 @@ export default function Editor() {
         </div>
         <div className="fixed bottom-5 right-6 text-xs bg-border p-2 rounded-lg ">
           {" "}
-          {word ?? 0} / {limit} characters
+          {word ?? 0} characters
         </div>
       </div>
     </EditorContext.Provider>
