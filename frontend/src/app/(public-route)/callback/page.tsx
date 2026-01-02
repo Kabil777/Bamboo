@@ -13,7 +13,7 @@ export default function OAuthCallback() {
     useEffect(() => {
         dispatch(getAuthentication())
             .unwrap()
-            .then(() => router.replace("/blog"))
+            .then(() => router.replace("/"))
             .catch(() => router.replace("/login"));
     }, [dispatch, router]);
 

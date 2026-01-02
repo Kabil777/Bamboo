@@ -15,8 +15,7 @@ import { Underline } from "@tiptap/extension-underline";
 import { BubbleMenu } from "@tiptap/react/menus";
 import { CharacterCount } from "@tiptap/extensions";
 import CodeBlockLowlight from "@tiptap/extension-code-block-lowlight";
-import { TableKit } from '@tiptap/extension-table'
-
+import { TableKit } from "@tiptap/extension-table";
 
 // --- Custom Extensions ---
 import { Link } from "@/components/tiptap-extension/link-extension";
@@ -36,9 +35,9 @@ import cpp from "highlight.js/lib/languages/cpp";
 // --- UI Primitives ---
 import { Spacer } from "@/components/tiptap-ui-primitive/spacer";
 import {
-  Toolbar,
-  ToolbarGroup,
-  ToolbarSeparator,
+    Toolbar,
+    ToolbarGroup,
+    ToolbarSeparator,
 } from "@/components/tiptap-ui-primitive/toolbar";
 
 // --- Tiptap Node ---
@@ -69,244 +68,318 @@ import { useAppDispatch, useAppState } from "@/hooks/ReduxHooks";
 import { setContent } from "@/store/reducers/PostContent";
 import { MenuBar } from "./customBlock";
 import "./syntax.css";
-import "./tiptapstyles.scss"
+import "./tiptapstyles.scss";
 import Popup from "./Popup";
-import { TableDropdownMenu, TableMenu } from "@/components/tiptap-ui/table-dropdown-menu";
+import {
+    TableDropdownMenu,
+    TableMenu,
+} from "@/components/tiptap-ui/table-dropdown-menu";
+
+import * as Y from "yjs";
+import {
+    HocuspocusProvider,
+    HocuspocusProviderWebsocket,
+} from "@hocuspocus/provider";
+import Collaboration from "@tiptap/extension-collaboration";
+import CollaborationCaret from "@tiptap/extension-collaboration-caret";
+import { useRef } from "react";
+
 interface MainToolbarContentProp {
-  onSave: () => void;
-  editor: ReturnType<typeof useEditor> | null;
+    onSave: () => void;
+    editor: ReturnType<typeof useEditor> | null;
 }
 
 //syntax highlighting
 const MainToolbarContent = ({ onSave, editor }: MainToolbarContentProp) => {
-  const [open, setOpen] = React.useState<boolean>(false);
-  const [content, saveContent] = React.useState<string>("");
-  return (
-    <>
-      <Spacer />
+    const [open, setOpen] = React.useState<boolean>(false);
+    const [content, saveContent] = React.useState<string>("");
+    return (
+        <>
+            <Spacer />
 
-      <ToolbarGroup>
-        <UndoRedoButton action="undo" />
-        <UndoRedoButton action="redo" />
-      </ToolbarGroup>
+            <ToolbarGroup>
+                <UndoRedoButton action="undo" />
+                <UndoRedoButton action="redo" />
+            </ToolbarGroup>
 
-      <ToolbarSeparator />
+            <ToolbarSeparator />
 
-      <ToolbarGroup>
-        <HeadingDropdownMenu levels={[1, 2, 3, 4]} />
-        <ListDropdownMenu types={["bulletList", "orderedList", "taskList"]} />
-        <BlockquoteButton />
-        <CodeBlockButton />
-      </ToolbarGroup>
+            <ToolbarGroup>
+                <HeadingDropdownMenu levels={[1, 2, 3, 4]} />
+                <ListDropdownMenu
+                    types={["bulletList", "orderedList", "taskList"]}
+                />
+                <BlockquoteButton />
+                <CodeBlockButton />
+            </ToolbarGroup>
 
-      <ToolbarSeparator />
+            <ToolbarSeparator />
 
-      <ToolbarGroup>
-        <MarkButton type="bold" />
-        <MarkButton type="italic" />
-        <MarkButton type="strike" />
-        <MarkButton type="code" />
-        <MarkButton type="underline" />
+            <ToolbarGroup>
+                <MarkButton type="bold" />
+                <MarkButton type="italic" />
+                <MarkButton type="strike" />
+                <MarkButton type="code" />
+                <MarkButton type="underline" />
 
-        <ColorHighlightPopover />
+                <ColorHighlightPopover />
 
-        <LinkPopover />
-      </ToolbarGroup>
+                <LinkPopover />
+            </ToolbarGroup>
 
-      <ToolbarSeparator />
+            <ToolbarSeparator />
 
-      <ToolbarGroup>
-        
-        <MarkButton type="superscript" />
-        <MarkButton type="subscript" />
-      </ToolbarGroup>
+            <ToolbarGroup>
+                <MarkButton type="superscript" />
+                <MarkButton type="subscript" />
+            </ToolbarGroup>
 
-      <MenuBar editor={editor} />
-      <TableMenu editor={editor} />
-      <ToolbarSeparator />
+            <MenuBar editor={editor} />
+            <TableMenu editor={editor} />
+            <ToolbarSeparator />
 
-      <ToolbarGroup>
-        {/* <TextAlignButton align="left" />
+            <ToolbarGroup>
+                {/* <TextAlignButton align="left" />
         <TextAlignButton align="center" />
         <TextAlignButton align="right" />
         <TextAlignButton align="justify" /> */}
-      </ToolbarGroup>
+            </ToolbarGroup>
 
-      <ToolbarSeparator />
-      <ToolbarGroup>
-        <ImageUploadButton text="Add" />
-      </ToolbarGroup>
+            <ToolbarSeparator />
+            <ToolbarGroup>
+                <ImageUploadButton text="Add" />
+            </ToolbarGroup>
 
-      <Popup
-        open={open}
-        setOpen={setOpen}
-        saveContent={saveContent}
-        onClick={() => {
-          setOpen(true);
-        }}
-        editor={editor}
-      />
-      <Button onClick={onSave}>Save</Button>
-      <Spacer />
-    </>
-  );
+            <Popup
+                open={open}
+                setOpen={setOpen}
+                saveContent={saveContent}
+                onClick={() => {
+                    setOpen(true);
+                }}
+                editor={editor}
+            />
+            <Button onClick={onSave}>Save</Button>
+            <Spacer />
+        </>
+    );
 };
 
 export default function Editor() {
-  const [word, setWord] = React.useState(0);
-  const toolbarRef = React.useRef<HTMLDivElement>(null);
-  const dispatch = useAppDispatch();
+    const uName = useAppState((state) => state.userReducer.user?.name);
+    const ydoc = new Y.Doc();
 
-  //limit
-  const limit = 20000;
-  const lowlight = createLowlight(all);
-  lowlight.register("js", js);
-  lowlight.register("ts", ts);
-  lowlight.register("html", html);
-  lowlight.register("css", css);
-  lowlight.register("java", java);
-  lowlight.register("yaml", yaml);
-  lowlight.register("xml", xml);
-  lowlight.register("c", c);
-  lowlight.register("cpp", cpp);
-  const content = useAppState((s) => s.postReducer.content);
-  const editor = useEditor({
-    immediatelyRender: false,
-    editorProps: {
-      attributes: {
-        autocomplete: "on",
-        autocorrect: "on",
-        autocapitalize: "on",
-        "aria-label": "Start typing...",
-      },
-    },
-    autofocus: "end",
-    extensions: [
-      StarterKit,
-      TextAlign.configure({ types: ["heading", "paragraph"] }),
-      Underline,
-      TaskList,
-      TaskItem.configure({ nested: true }),
-      Highlight.configure({ multicolor: true }),
-      Image,
-      Typography,
-      Superscript,
-      Subscript,
-      TableKit,
-      Selection,
-      ImageUploadNode.configure({
-        accept: "image/*",
-        maxSize: MAX_FILE_SIZE,
-        limit: 3,
-        upload: handleImageUpload,
-        onError: (error) => console.error("Upload failed:", error),
-      }),
-      CharacterCount.configure({
-        limit,
-      }),
-      TrailingNode,
-      Link.configure({
-        openOnClick: false,
-        autolink: true,
-        defaultProtocol: "https",
-        protocols: ["http", "https"],
-        shouldAutoLink: (url) => {
-          try {
-            const parsedUrl = url.includes(":")
-              ? new URL(url)
-              : new URL(`https://${url}`);
-            const disallowedDomains = [
-              "example-no-autolink.com",
-              "another-no-autolink.com",
-            ];
-            const domain = parsedUrl.hostname;
-
-            return !disallowedDomains.includes(domain);
-          } catch {
-            return false;
-          }
+    // Set up Hocuspocus provider with proper configuration
+    const provider = new HocuspocusProvider({
+        url: `ws://${window.location.hostname}:1234`,
+        name: "example-document",
+        document: ydoc,
+        WebSocketPolyfill: WebSocket,
+        parameters: {
+            version: "1.0.0",
         },
-      }),
+        onConnect() {
+            console.log("Connected to Hocuspocus server");
+        },
+        onDisconnect() {
+            console.log("Disconnected from Hocuspocus server");
+        },
+        onError(error) {
+            console.error("Hocuspocus error:", error);
+        },
+        onMessage(message) {
+            console.log("Message received:", message);
+        },
+    });
+    const [word, setWord] = React.useState(0);
+    const toolbarRef = React.useRef<HTMLDivElement>(null);
+    const dispatch = useAppDispatch();
 
-      CodeBlockLowlight.configure({
-        lowlight,
-      }),
-    ],
-    content: content,
-    onUpdate({ editor }) {
-      const count = editor.storage.characterCount.characters();
-      setWord(count);
-    },
+    //limit
+    const limit = 20000;
+    const lowlight = createLowlight(all);
+    lowlight.register("js", js);
+    lowlight.register("ts", ts);
+    lowlight.register("html", html);
+    lowlight.register("css", css);
+    lowlight.register("java", java);
+    lowlight.register("yaml", yaml);
+    lowlight.register("xml", xml);
+    lowlight.register("c", c);
+    lowlight.register("cpp", cpp);
+    const content = useAppState((s) => s.postReducer.content);
+    const editor = useEditor({
+        immediatelyRender: false,
+        editorProps: {
+            attributes: {
+                autocomplete: "on",
+                autocorrect: "on",
+                autocapitalize: "on",
+                "aria-label": "Start typing...",
+            },
+        },
+        autofocus: "end",
+        extensions: [
+            StarterKit.configure({
+                undoRedo: false,
+            }),
+            Collaboration.configure({
+                document: provider.document,
+            }),
+            CollaborationCaret.configure({
+                provider,
+                user: { name: uName, color: "#ffcc00" },
+            }),
+            TextAlign.configure({ types: ["heading", "paragraph"] }),
+            Underline,
+            TaskList,
+            TaskItem.configure({ nested: true }),
+            Highlight.configure({ multicolor: true }),
+            Image,
+            Typography,
+            Superscript,
+            Subscript,
+            TableKit,
+            ImageUploadNode.configure({
+                accept: "image/*",
+                maxSize: MAX_FILE_SIZE,
+                limit: 3,
+                upload: handleImageUpload,
+                onError: (error) => console.error("Upload failed:", error),
+            }),
+            CharacterCount.configure({
+                limit,
+            }),
+            TrailingNode,
+            Link.configure({
+                openOnClick: false,
+                autolink: true,
+                defaultProtocol: "https",
+                protocols: ["http", "https"],
+                shouldAutoLink: (url) => {
+                    try {
+                        const parsedUrl = url.includes(":")
+                            ? new URL(url)
+                            : new URL(`https://${url}`);
+                        const disallowedDomains = [
+                            "example-no-autolink.com",
+                            "another-no-autolink.com",
+                        ];
+                        const domain = parsedUrl.hostname;
 
-  });
-  const onSave = () => {
-    dispatch(
-      setContent({
-        content: editor?.getJSON() || {},
-      }),
+                        return !disallowedDomains.includes(domain);
+                    } catch {
+                        return false;
+                    }
+                },
+            }),
+
+            CodeBlockLowlight.configure({
+                lowlight,
+            }),
+        ],
+        // content: content,
+        onUpdate({ editor }) {
+            const count = editor.storage.characterCount.characters();
+            setWord(count);
+        },
+    });
+    const onSave = () => {
+        dispatch(
+            setContent({
+                content: editor?.getJSON() || {},
+            }),
+        );
+    };
+    return (
+        <EditorContext.Provider value={{ editor }}>
+            <div className="content-wrapper">
+                <Toolbar ref={toolbarRef}>
+                    <MainToolbarContent onSave={onSave} editor={editor} />
+                </Toolbar>
+                {editor && (
+                    <>
+                        <BubbleMenu
+                            editor={editor}
+                            className="!z-20 absolute"
+                            options={{ placement: "bottom-start", offset: 5 }}
+                            shouldShow={({ from, to }) => {
+                                return from !== to;
+                            }}
+                        >
+                            <div className="bubble-menu bg-background px-1 py-0.5 border-1 border-border/50 text-sm rounded-xl flex shadow-2xl">
+                                <Button
+                                    variant={"ghost"}
+                                    onClick={() =>
+                                        editor
+                                            .chain()
+                                            .focus()
+                                            .toggleBold()
+                                            .run()
+                                    }
+                                    className="transition-all delay-75 py-1 px-2 rounded-xl font-semibold text-sm text-muted-foreground bg-background hover:bg-accent hover:text-foreground"
+                                >
+                                    Bold
+                                </Button>
+                                <button
+                                    onClick={() =>
+                                        editor
+                                            .chain()
+                                            .focus()
+                                            .insertTable({
+                                                rows: 3,
+                                                cols: 3,
+                                                withHeaderRow: true,
+                                            })
+                                            .run()
+                                    }
+                                >
+                                    Insert table
+                                </button>
+                                <Button
+                                    onClick={() =>
+                                        editor
+                                            .chain()
+                                            .focus()
+                                            .toggleItalic()
+                                            .run()
+                                    }
+                                    className="transition-all delay-75 py-1 px-2 font-semibold  rounded-xl text-sm text-muted-foreground bg-background hover:bg-accent hover:text-foreground"
+                                >
+                                    Italic
+                                </Button>
+                                <Button
+                                    onClick={() => {
+                                        editor
+                                            .chain()
+                                            .focus()
+                                            .toggleStrike()
+                                            .run();
+                                    }}
+                                    className="transition-all delay-75 py-1 px-2 font-semibold  rounded-xl text-sm text-muted-foreground bg-background hover:bg-accent hover:text-foreground"
+                                >
+                                    Strike
+                                </Button>
+                            </div>
+                        </BubbleMenu>
+                    </>
+                )}
+
+                <div
+                    className="flex justify-center p-5 min-h-[calc(100vh-7rem)]"
+                    onClick={() => editor?.chain().focus().run()}
+                >
+                    <EditorContent
+                        editor={editor}
+                        role="presentation"
+                        className="simple-editor-content w-full container max-w-5xl"
+                    />
+                </div>
+                <div className="fixed bottom-5 right-6 text-xs bg-border p-2 rounded-lg ">
+                    {" "}
+                    {word ?? 0} / {limit} characters
+                </div>
+            </div>
+        </EditorContext.Provider>
     );
-  };
-  return (
-    <EditorContext.Provider value={{ editor }}>
-      <div className="content-wrapper">
-        <Toolbar ref={toolbarRef}>
-          <MainToolbarContent onSave={onSave} editor={editor} />
-        </Toolbar>
-        {editor && (
-          <>
-            <BubbleMenu
-              editor={editor}
-              className="!z-20 absolute"
-              options={{ placement: "bottom-start", offset: 5 }}
-              shouldShow={({ from, to }) => {
-                return from !== to;
-              }}
-            >
-              <div className="bubble-menu bg-background px-1 py-0.5 border-1 border-border/50 text-sm rounded-xl flex shadow-2xl">
-                <Button
-                  variant={"ghost"}
-                  onClick={() => editor.chain().focus().toggleBold().run()}
-                  className="transition-all delay-75 py-1 px-2 rounded-xl font-semibold text-sm text-muted-foreground bg-background hover:bg-accent hover:text-foreground"
-                >
-                  Bold
-                </Button>
-                <button onClick={() => editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()}>
-                  Insert table
-                </button>
-                <Button
-                  onClick={() => editor.chain().focus().toggleItalic().run()}
-                  className="transition-all delay-75 py-1 px-2 font-semibold  rounded-xl text-sm text-muted-foreground bg-background hover:bg-accent hover:text-foreground"
-                >
-                  Italic
-                </Button>
-                <Button
-                  onClick={() => {
-                    editor.chain().focus().toggleStrike().run();
-                  }}
-                  className="transition-all delay-75 py-1 px-2 font-semibold  rounded-xl text-sm text-muted-foreground bg-background hover:bg-accent hover:text-foreground"
-                >
-                  Strike
-                </Button>
-              </div>
-            </BubbleMenu>
-
-
-          </>
-        )}
-
-        <div className="flex justify-center p-5 min-h-[calc(100vh-7rem)]" onClick={() => editor?.chain().focus().run()}>
-          <EditorContent
-            editor={editor}
-            role="presentation"
-            className="simple-editor-content w-full container max-w-5xl"
-
-          />
-        </div>
-        <div className="fixed bottom-5 right-6 text-xs bg-border p-2 rounded-lg ">
-          {" "}
-          {word ?? 0} / {limit} characters
-        </div>
-      </div>
-    </EditorContext.Provider>
-  );
 }
