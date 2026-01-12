@@ -1,9 +1,9 @@
 import setupInterceptors from "@/api/interceptors";
 import { useEffect } from "react";
 
-export const provider = () => {
+export const Provider = () => {
     useEffect(() => {
         setupInterceptors();
     }, []);
-    return <></>;
+    return null;
 };

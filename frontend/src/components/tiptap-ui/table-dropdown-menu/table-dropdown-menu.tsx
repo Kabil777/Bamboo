@@ -7,68 +7,73 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/shadcnUI/dropdown-menu"
+import { Table2 } from "lucide-react"
 import { useEffect, useState } from "react"
 
-export const TableMenu  = ({ editor }: { editor: any }) => {
+export const TableMenu = ({ editor }: { editor: any }) => {
   const [showMenu, setShowMenu] = useState(false)
 
   useEffect(() => {
     if (!editor) return
     editor.on("selectionUpdate", () => {
-      setShowMenu(editor.isActive("table"))
+      setShowMenu(!editor.isActive("table"))
     })
   }, [editor])
 
-  if (!showMenu) return null
-
   return (
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="outline" size="sm">
-            Table
-          </Button>
-        </DropdownMenuTrigger>
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" size="sm">
+          <Table2 />
+        </Button>
+      </DropdownMenuTrigger>
 
-        <DropdownMenuContent
-          className="w-56"
-          side="bottom"
-          align="end"
-          sideOffset={4}
-        >
-          <DropdownMenuLabel>Columns</DropdownMenuLabel>
-          <DropdownMenuItem onClick={() => editor.chain().focus().addColumnBefore().run()}>
-            Add column before
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => editor.chain().focus().addColumnAfter().run()}>
-            Add column after
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => editor.chain().focus().deleteColumn().run()}>
-            Delete column
-          </DropdownMenuItem>
+      <DropdownMenuContent
+        className="w-56"
+        side="bottom"
+        align="end"
+        sideOffset={4}
+      >
+        <DropdownMenuLabel>Table</DropdownMenuLabel>
+        <DropdownMenuItem onClick={() => editor?.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()}>
+          Insert Table
+        </DropdownMenuItem>
+        <DropdownMenuItem disabled={showMenu} onClick={() => editor.chain().focus().deleteTable().run()}>
+          Delete table
+        </DropdownMenuItem>
+        <DropdownMenuItem disabled={showMenu} onClick={() => editor.chain().focus().fixTables().run()}>
+          Fix tables
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+    
+        <DropdownMenuLabel>Columns</DropdownMenuLabel>
 
-          <DropdownMenuSeparator />
+        <DropdownMenuItem disabled={showMenu} onClick={() => editor.chain().focus().addColumnBefore().run()}>
+          Add column before
+        </DropdownMenuItem>
+        <DropdownMenuItem disabled={showMenu} onClick={() => editor.chain().focus().addColumnAfter().run()}>
+          Add column after
+        </DropdownMenuItem>
+        <DropdownMenuItem disabled={showMenu} onClick={() => editor.chain().focus().deleteColumn().run()}>
+          Delete column
+        </DropdownMenuItem>
 
-          <DropdownMenuLabel>Rows</DropdownMenuLabel>
-          <DropdownMenuItem onClick={() => editor.chain().focus().addRowBefore().run()}>
-            Add row before
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => editor.chain().focus().addRowAfter().run()}>
-            Add row after
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => editor.chain().focus().deleteRow().run()}>
-            Delete row
-          </DropdownMenuItem>
+        <DropdownMenuSeparator />
 
-          <DropdownMenuSeparator />
+        <DropdownMenuLabel>Rows</DropdownMenuLabel>
+        <DropdownMenuItem disabled={showMenu} onClick={() => editor.chain().focus().addRowBefore().run()}>
+          Add row before
+        </DropdownMenuItem>
+        <DropdownMenuItem disabled={showMenu} onClick={() => editor.chain().focus().addRowAfter().run()}>
+          Add row after
+        </DropdownMenuItem>
+        <DropdownMenuItem disabled={showMenu} onClick={() => editor.chain().focus().deleteRow().run()}>
+          Delete row
+        </DropdownMenuItem>
 
-          <DropdownMenuLabel>Table</DropdownMenuLabel>
-          <DropdownMenuItem onClick={() => editor.chain().focus().deleteTable().run()}>
-            Delete table
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => editor.chain().focus().fixTables().run()}>
-            Fix tables
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
+
+
+      </DropdownMenuContent>
+    </DropdownMenu>
   )
 }

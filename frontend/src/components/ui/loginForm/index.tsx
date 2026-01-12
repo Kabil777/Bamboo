@@ -19,6 +19,12 @@ import { Card, CardContent } from "@/components/shadcnUI/card";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { useRouter } from "nextjs-toploader/app";
+import { useAppDispatch } from "@/hooks/ReduxHooks";
+import { getAuthentication } from "@/store/reducers/AuthReducers";
+import { useEffect } from "react";
+
+
+
 const formSchema = z.object({
     email: z.string().email("Please enter a valid email"),
     password: z
@@ -43,6 +49,10 @@ export function LoginForm({
     ...props
 }: React.ComponentProps<"div">) {
     const router = useRouter();
+    const dispatch = useAppDispatch();
+
+
+
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
@@ -55,6 +65,12 @@ export function LoginForm({
         router.push("/");
         toast.success(`Login successful as ${values.email}`);
     }
+    useEffect(() => {
+        dispatch(getAuthentication())
+            .unwrap()
+            .then((user) => { toast.success(`Login successful as ${user.data.email}`); router.replace("/blog") })
+            .catch(()=>{});
+    }, [dispatch, router]);
 
     return (
         <>

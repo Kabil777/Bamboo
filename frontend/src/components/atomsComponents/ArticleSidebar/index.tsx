@@ -1,6 +1,6 @@
-import * as React from "react"
-import { ChevronDown } from "lucide-react"
+"use client"
 
+import { ChevronDown } from "lucide-react"
 import {
   Sidebar,
   SidebarContent,
@@ -15,8 +15,11 @@ import {
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/shadcnUI/collapsible"
 import { useAppState } from "@/hooks/ReduxHooks"
 import Link from "next/link"
+import { useParams } from "next/navigation"
 
 export function ArticleSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const { id } = useParams() as { id: string | string[] };
+  console.log("Params ID:", id);
   const NavData = useAppState((s) => s.postReducer.Pages);
   return (
     <Sidebar {...props}  >
@@ -29,8 +32,8 @@ export function ArticleSidebar({ ...props }: React.ComponentProps<typeof Sidebar
               <Collapsible key={item.id} defaultOpen className="group/collapsible">
                 <SidebarMenuItem>
                   <CollapsibleTrigger className="flex items-center justify-between w-full px-2 py-1 rounded-md hover:bg-accent transition-colors">
-                    <SidebarMenuButton asChild className="hover:bg-transparent">
-                      <Link href={item.id} className="font-semibold text-sm">
+                    <SidebarMenuButton asChild isActive={id[1] === item.id} className="hover:bg-transparent">
+                      <Link href={"/docs/" + id[0]+ "/" + item.id} className="font-semibold text-sm">
                         {item.title}
                       </Link>
                     </SidebarMenuButton>
@@ -44,10 +47,10 @@ export function ArticleSidebar({ ...props }: React.ComponentProps<typeof Sidebar
                   {item.subPages?.length ? (
                     <CollapsibleContent>
                       <SidebarMenuSub className="ml-2 border-l border-border ">
-                        {item.subPages.map((item) => (
-                          <SidebarMenuSubItem key={item.id} className="my-0.5">
-                            <SidebarMenuSubButton asChild /*isActive={item.id}*/ className="text-sm py-1">
-                              <Link href={item.id}>{item.title}</Link>
+                        {item.subPages.map((subitem) => (
+                          <SidebarMenuSubItem key={subitem.id} className="my-0.5">
+                            <SidebarMenuSubButton asChild isActive={id[2] === subitem.id} className="text-sm py-1">
+                              <Link href={"/docs/" + id[0]+ "/" + item.id + "/" + subitem.id}>{subitem.title}</Link>
                             </SidebarMenuSubButton>
                           </SidebarMenuSubItem>
                         ))}
