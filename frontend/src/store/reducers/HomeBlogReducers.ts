@@ -23,12 +23,12 @@ interface JwtPayload {
     exp: number;
 }
 
-export const getAuthentication = createAsyncThunk(
-    "/login/google",
+export const getHomeBlog = createAsyncThunk(
+    "/bloghome/",
     async (_, { rejectWithValue }) => {
         try {
             const response = await api.post(
-                "http://localhost:8080/api/v1/auth/refresh",
+                "http://localhost:8080/api/v1/bloghome",
                 {
                     redirectUrl:"/",
                 },
@@ -54,7 +54,7 @@ export const getAuthentication = createAsyncThunk(
     },
 );
 
-const inititialState: AuthState = {
+const inititialBlogHomeState: AuthState = {
     authenticated: false,
     accessToken: null,
     user: {
@@ -68,12 +68,12 @@ const inititialState: AuthState = {
 
 const userDetailsSlice = createSlice({
     name: "userDetails",
-    initialState: inititialState,
+    initialState: inititialBlogHomeState,
     reducers: {
         logout: (state) => {
-            Object.assign(state, inititialState);
+            Object.assign(state, inititialBlogHomeState);
         },
-        setAuthentication: (s, a) => {
+        setHomeBlog: (s, a) => {
             const { token, data } = a.payload;
 
             s.authenticated = true;
@@ -89,10 +89,10 @@ const userDetailsSlice = createSlice({
     },
     extraReducers: (builder) => {
         builder
-            .addCase(getAuthentication.pending, (s) => {
+            .addCase(getHomeBlog.pending, (s) => {
                 s.status = "loading";
             })
-            .addCase(getAuthentication.fulfilled, (s, a) => {
+            .addCase(getHomeBlog.fulfilled, (s, a) => {
                 s.authenticated = true;
                 s.accessToken = a.payload.token;
                 s.user = {
@@ -104,7 +104,7 @@ const userDetailsSlice = createSlice({
                 s.status = "success";
                 console.log(JSON.parse(JSON.stringify(s))); //for test
             })
-            .addCase(getAuthentication.rejected, (state) => {
+            .addCase(getHomeBlog.rejected, (state) => {
                 state.status = "failed";
                 state.authenticated = false;
                 state.accessToken = null;
@@ -113,5 +113,5 @@ const userDetailsSlice = createSlice({
     },
 });
 
-export const { logout, setAuthentication } = userDetailsSlice.actions;
+export const { logout, setHomeBlog } = userDetailsSlice.actions;
 export default userDetailsSlice.reducer;

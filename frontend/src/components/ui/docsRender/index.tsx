@@ -6,12 +6,6 @@ import "@/components/tiptap-node/image-node/image-node.scss";
 import "@/components/tiptap-node/paragraph-node/paragraph-node.scss";
 
 
-// --- Tiptap UI ---
-
-// --- Lib ---
-import "highlight.js/styles/tokyo-night-dark.css";
-
-
 // import "./dummy.css";
 import { useAppState } from "@/hooks/ReduxHooks";
 import { ArticleRender, ArticleSidebar, ArticleTableContent } from "@/components/atomsComponents";

@@ -35,7 +35,31 @@ function extractId(node: React.ReactNode): string {
     return "";
 }
 
+function extractText(node: React.ReactNode): string {
+    if (typeof node === "string") return node;
+    if (typeof node === "number") return String(node);
+
+    if (Array.isArray(node)) {
+        return node.map(extractText).join("");
+    }
+
+    if (React.isValidElement(node)) {
+        return extractText(node.props.children);
+    }
+
+    return "";
+}
 export const ArticleRender = ({ content }: { content: string }) => {
+    const [buttonText, setButtonText] = React.useState<Record<string, boolean>>(
+        {},
+    );
+    const handleCopy = (key: string, text: string) => {
+        navigator.clipboard.writeText(text);
+        setButtonText((prev) => ({ ...prev, [key]: true }));
+        setTimeout(() => {
+            setButtonText((prev) => ({ ...prev, [key]: false }));
+        }, 2000);
+    };
     return (
         <div>
             <ReactMarkdown
@@ -118,13 +142,9 @@ export const ArticleRender = ({ content }: { content: string }) => {
                         if (!src) return null;
 
                         const imageWidth =
-                            typeof width === "string"
-                                ? parseInt(width, 10)
-                                : width;
+                            typeof width === "string" ? parseInt(width, 10) : width;
                         const imageHeight =
-                            typeof height === "string"
-                                ? parseInt(height, 10)
-                                : height;
+                            typeof height === "string" ? parseInt(height, 10) : height;
 
                         return (
                             <Image
@@ -144,30 +164,23 @@ export const ArticleRender = ({ content }: { content: string }) => {
                         const language = rawLang
                             ? rawLang.charAt(0).toUpperCase() + rawLang.slice(1)
                             : null;
+                        const codeText = extractText(children);
+                        const copyKey = `${language ?? "plain"}-${codeText.slice(0, 50)}`;
 
                         return language ? (
-                            <div
-                                className={`relative my-4 ${jetBrains_Mono.className}`}
-                            >
-                                <div className="!bg-accent dark:!bg-[#1a1b26] rounded-t-xl py-2 px-3 font-normal flex justify-between items-center sticky top-14">
-                                    <p className="text-foreground font-semibold text-xs">
+                            <div className={`relative my-4 py-4 ${jetBrains_Mono.className}`}>
+                                <div className=" !bg-[#1a1b26] rounded-t-xl py-2 px-3 font-normal flex justify-between items-center sticky top-14">
+                                    <p className="text-white font-semibold text-xs">
                                         {language}
                                     </p>
                                     <Button
                                         variant="outline"
-                                        onClick={(e) => {
-                                            const codeElement = e.currentTarget
-                                                .closest(".relative")
-                                                ?.querySelector("code");
-                                            const textContent =
-                                                codeElement?.textContent || "";
-                                            navigator.clipboard.writeText(
-                                                textContent.trim(),
-                                            );
+                                        onClick={() => {
+                                            handleCopy(copyKey, codeText);
                                         }}
-                                        className="transition-all delay-75 justify-between px-1 !py-1 !h-fit text-xs text-foreground shadow-none border-none !bg-transparent  hover:text-foreground/80 tracking-tight hover:scale-105 focus:scale-100"
+                                        className="transition-all delay-75 justify-between px-1 !py-1 !h-fit text-xs text-white shadow-none border-none !bg-transparent  hover:text-white/80 tracking-tight"
                                     >
-                                        Copy
+                                        {buttonText[copyKey] ? "Copied" : "Copy"}
                                         <Copy />
                                     </Button>
                                 </div>
@@ -175,7 +188,7 @@ export const ArticleRender = ({ content }: { content: string }) => {
                                     className={`overflow-x-auto custom-scroll max-h-100 rounded-b-xl bg-background`}
                                 >
                                     <code
-                                        className={`text-xs sm:text-sm !bg-accent dark:!bg-[#1a1b26] !py-0 custom-scroll ${className} ${jetBrains_Mono.className}`}
+                                        className={`text-xs sm:text-sm bg-[#1a1b26]  custom-scroll ${className} ${jetBrains_Mono.className}`}
                                         {...rest}
                                     >
                                         {children}
@@ -239,11 +252,7 @@ export const ArticleRender = ({ content }: { content: string }) => {
                                 className="text-foreground underline"
                                 href={href}
                                 target={isExternal ? "_blank" : undefined}
-                                rel={
-                                    isExternal
-                                        ? "noopener noreferrer"
-                                        : undefined
-                                }
+                                rel={isExternal ? "noopener noreferrer" : undefined}
                                 {...props}
                             />
                         );

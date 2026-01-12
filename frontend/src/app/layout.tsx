@@ -2,6 +2,9 @@
 
 import "./provider";
 import "@/styles/globals.css";
+import "highlight.js/styles/magula.min.css";
+
+
 import { ThemeProvider } from "@/components/theme-provider";
 import { Inter } from "next/font/google";
 import { Toaster } from "@/components/shadcnUI/sonner";
