@@ -4,6 +4,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Input } from '@/components/shadcnUI/input'
 import { Label } from '@/components/shadcnUI/label'
 import { Check, Copy } from 'lucide-react'
+import { FaFacebook, FaTwitter, FaLinkedin, FaWhatsapp, FaTelegram, FaReddit } from 'react-icons/fa'
 import { useState } from 'react'
 
 import { ReactNode } from 'react';
@@ -13,8 +14,18 @@ interface SharePopoverProps {
     children: ReactNode;
 }
 
+const socialPlatforms = [
+    { platform: 'facebook', label: 'Facebook', icon: FaFacebook },
+    { platform: 'twitter', label: 'Twitter', icon: FaTwitter },
+    { platform: 'linkedin', label: 'LinkedIn', icon: FaLinkedin },
+    { platform: 'whatsapp', label: 'WhatsApp', icon: FaWhatsapp },
+    { platform: 'telegram', label: 'Telegram', icon: FaTelegram },
+    { platform: 'reddit', label: 'Reddit', icon: FaReddit },
+];
+
 export const SharePopover = ({ text, children }: SharePopoverProps) => {
     const [copied, setCopied] = useState(false);
+
     const handleCopy = () => {
         const input = document.getElementById("link") as HTMLInputElement | null;
         if (!input) return;
@@ -43,6 +54,31 @@ export const SharePopover = ({ text, children }: SharePopoverProps) => {
                 console.error(err);
             }
         }
+    };
+
+    const handleSocialShare = (platform: string) => {
+        const url = encodeURIComponent(text);
+        const shareText = encodeURIComponent('Check this out!');
+
+        const shareUrls: Record<string, string> = {
+            facebook: `https://www.facebook.com/sharer/sharer.php?u=${url}`,
+            twitter: `https://twitter.com/intent/tweet?url=${url}&text=${shareText}`,
+            linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${url}`,
+            whatsapp: `https://wa.me/?text=${shareText}%20${url}`,
+            telegram: `https://t.me/share/url?url=${url}&text=${shareText}`,
+            reddit: `https://reddit.com/submit?url=${url}&title=${shareText}`,
+        };
+
+        const width = 800;
+        const height = 800;
+        const left = (window.screen.width - width) / 2;
+        const top = (window.screen.height - height) / 2;
+
+        window.open(
+            shareUrls[platform],
+            '_blank',
+            `width=${width},height=${height},left=${left},top=${top}`
+        );
     };
     return (
         <Dialog>
@@ -88,6 +124,26 @@ export const SharePopover = ({ text, children }: SharePopoverProps) => {
                             <Check className="text-green-500" />
                         </span>
                     </Button>
+                </div>
+
+                <div className="mt-2">
+                    <Label className="text-sm font-medium mb-3 block">Share on social media</Label>
+                    <div className="grid grid-cols-3 gap-3">
+                        {socialPlatforms.map((social) => {
+                            const Icon = social.icon;
+                            return (
+                                <Button
+                                    key={social.platform}
+                                    variant="outline"
+                                    className="flex items-center gap-2 justify-center"
+                                    onClick={() => handleSocialShare(social.platform)}
+                                >
+                                    <Icon className="h-5 w-5 text-foreground" />
+                                    <span className="text-sm">{social.label}</span>
+                                </Button>
+                            );
+                        })}
+                    </div>
                 </div>
             </DialogContent>
         </Dialog>

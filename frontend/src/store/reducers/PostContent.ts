@@ -26,6 +26,7 @@ interface Docs extends BasePost {
 
 type PostState = Docs | Blog;
 
+
 const postSlice = createSlice({
     name: "post",
     initialState: {
