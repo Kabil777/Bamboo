@@ -23,8 +23,6 @@ import { useAppDispatch } from "@/hooks/ReduxHooks";
 import { getAuthentication } from "@/store/reducers/AuthReducers";
 import { useEffect } from "react";
 
-
-
 const formSchema = z.object({
     email: z.string().email("Please enter a valid email"),
     password: z
@@ -51,8 +49,6 @@ export function LoginForm({
     const router = useRouter();
     const dispatch = useAppDispatch();
 
-
-
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
@@ -60,21 +56,12 @@ export function LoginForm({
             password: "",
         },
     });
-    function onSubmit(values: z.infer<typeof formSchema>) {
-        console.log(values);
+    async function onSubmit() {
+        const res = await dispatch(getAuthentication()).unwrap();
         router.push("/");
-        toast.success(`Login successful as ${values.email}`);
+        toast.success(`Login successful as ${res.data.email}`);
     }
-    useEffect(() => {
-        dispatch(getAuthentication())
-            .unwrap()
-            .then((user) => { toast.success(`Login successful as ${user.data.email}`); router.replace("/blog") })
-            .catch(()=>{});
-    }, [dispatch, router]);
 
-
-
-    
     return (
         <>
             <div className={cn("flex flex-col gap-6", className)} {...props}>
@@ -148,7 +135,9 @@ export function LoginForm({
                                 className="w-full"
                                 onClick={() => {
                                     window.location.href =
-                                        "http://localhost:8080/api/v1/auth/login/google";
+                                        process.env
+                                            .NEXT_PUBLIC_AUTH_SERVER_URL +
+                                        "/auth/login/google";
                                 }}
                             >
                                 <FcGoogle />
