@@ -9,9 +9,15 @@ export function useLogout() {
     const router = useRouter();
 
     return async function handleLogout() {
+        const AUTH_URL = process.env.NEXT_PUBLIC_AUTH_SERVER_URL;
+        const API_VERSION = process.env.NEXT_PUBLIC_API_VERSION;
+
+        if (!AUTH_URL || !API_VERSION) {
+            throw new Error("Auth server env vars are missing");
+        }
         try {
             await authApi.post(
-                process.env.NEXT_PUBLIC_AUTH_SERVER_URL + "/auth/logout",
+                `${AUTH_URL}${API_VERSION}/auth/logout`,
                 {},
                 { withCredentials: true },
             );

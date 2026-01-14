@@ -1,13 +1,15 @@
 "use client";
 import { BlogCard, MoreAbout, TabChips } from "@/components/atomsComponents";
 import { BlogCardSkeleton } from "@/components/atomsComponents/skleton/blogCardSkleton";
-import { SidebarMenuSkeleton } from "@/components/shadcnUI/sidebar";
 import { Skeleton } from "@/components/shadcnUI/skeleton";
 import { DocsHome } from "@/components/ui";
 import { RootState } from "@/store/store";
 import { Separator } from "@/components/shadcnUI/separator";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { SidebarSkeleton } from "@/components/atomsComponents/skleton/sidebarSkleton";
+import { useEffect } from "react";
+import { useAppDispatch } from "@/hooks/ReduxHooks";
+import { getCoverBlog } from "@/store/reducers/BlogCoverReducer";
 
 export default function Home() {
     const tabs = [
@@ -48,11 +50,14 @@ export default function Home() {
     const { status } = useSelector((s: RootState) => s.userReducer);
 
     const loading = status === "loading";
+    const dispatch = useAppDispatch();
 
+    useEffect(() => {
+        dispatch(getCoverBlog({ cursor: null }));
+    }, [dispatch]);
     return (
         <main className="flex justify-center">
             <div className="container grid grid-cols-4 gap-4 md:gap-6">
-                {/* Tabs */}
                 <div className="col-span-full sticky top-[58px] z-10 bg-background">
                     {loading ? (
                         <Skeleton className="h-8 w-full mt-2.5" />

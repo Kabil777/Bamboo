@@ -6,7 +6,10 @@ import { ThemeProvider } from "@/components/theme-provider";
 import NextTopLoader from "nextjs-toploader";
 import AuthBootstrap from "./AuthenticationBootstrap";
 import { Toaster } from "@/components/shadcnUI/sonner";
+import setupInterceptors from "@/api/interceptors";
+import api from "@/api/axios";
 
+setupInterceptors(api);
 export function Providers({ children }: { children: React.ReactNode }) {
     return (
         <Provider store={store}>
