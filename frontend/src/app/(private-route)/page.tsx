@@ -1,7 +1,6 @@
 "use client";
 import { BlogCard, MoreAbout, TabChips } from "@/components/atomsComponents";
 import { BlogCardSkeleton } from "@/components/atomsComponents/skleton/blogCardSkleton";
-import { SidebarMenuSkeleton } from "@/components/shadcnUI/sidebar";
 import { Skeleton } from "@/components/shadcnUI/skeleton";
 import { DocsHome } from "@/components/ui";
 import { RootState } from "@/store/store";

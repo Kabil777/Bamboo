@@ -274,87 +274,13 @@ export const ProfileEditPopOver = ({
       setIsLoading(false);
       setIsSaved(true);
 
-    const removeTag = (tagToRemove: string) => {
-        setTags(tags.filter(tag => tag !== tagToRemove));
-    };
-
-    const handleTagInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-        if (e.key === 'Enter' || e.key === ',') {
-            e.preventDefault();
-            addTag(tagInput);
-            setShowTagSuggestions(false);
-        } else if (e.key === 'Backspace' && tagInput === '' && tags.length > 0) {
-            removeTag(tags[tags.length - 1]);
-        } else if (e.key === 'Escape') {
-            setShowTagSuggestions(false);
-        } else if (e.key === 'ArrowDown' && showTagSuggestions && filteredTags.length > 0) {
-            e.preventDefault();
-        }
-    };
-
-    const addSocialLink = () => {
-        if (socialLinks.length < 5) {
-            setSocialLinks([
-                ...socialLinks,
-                { id: Date.now().toString(), platform: 'github', url: '', icon: 'github' }
-            ]);
-        }
-    };
-
-    const removeSocialLink = (id: string) => {
-        setSocialLinks(socialLinks.filter(link => link.id !== id));
-    };
-
-    const updateSocialLink = (id: string, field: 'platform' | 'url', value: string) => {
-        setSocialLinks(socialLinks.map(link =>
-            link.id === id ? { ...link, [field]: value, ...(field === 'platform' ? { icon: value } : {}) } : link
-        ));
-    };
-
-    const handleSave = () => {
-        setIsLoading(true);
-        const updatedData: ProfileData = {
-            firstName,
-            lastName,
-            designation,
-            handle,
-            description,
-            tags: tags,
-            socialLinks,
-            profileImage,
-        };
-
-        // Simulate async save
-        setTimeout(() => {
-            onSave(updatedData);
-            setIsLoading(false);
-            setIsSaved(true);
-
-            // Close dialog after showing success
-            setTimeout(() => {
-                setIsOpen(false);
-                setIsSaved(false);
-            }, 1500);
-        }, 1000);
-    };
-
-    // const handleCancel = () => {
-    //     // Reset to original values
-    //     setFirstName(profileData.firstName);
-    //     setLastName(profileData.lastName);
-    //     setDesignation(profileData.designation);
-    //     setHandle(profileData.handle);
-    //     setDescription(profileData.description);
-    //     setTags(profileData.tags);
-    //     setTagInput('');
-    //     setSocialLinks(profileData.socialLinks);
-    //     setProfileImage(profileData.profileImage);
-    //   // Close dialog after showing success
-    //   setTimeout(() => {
-    //     setIsOpen(false);
-    //     setIsSaved(false);
-    //   }, 1500);
-    // }
+      // Close dialog after showing success
+      setTimeout(() => {
+        setIsOpen(false);
+        setIsSaved(false);
+      }, 1500);
+    }, 1000);
+  };
 
   const handleCancel = () => {
     // Reset to original values
