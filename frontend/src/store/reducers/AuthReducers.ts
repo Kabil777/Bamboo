@@ -33,7 +33,7 @@ export const getAuthentication = createAsyncThunk(
     async (_, { rejectWithValue }) => {
         try {
             const response = await authApi.post(
-                process.env.NEXT_PUBLIC_AUTH_SERVER_URL + "/auth/refresh",
+                `${process.env.NEXT_PUBLIC_AUTH_SERVER_URL}${process.env.NEXT_PUBLIC_API_VERSION}/auth/refresh`,
                 {
                     redirectUrl: "/",
                 },
@@ -41,7 +41,6 @@ export const getAuthentication = createAsyncThunk(
                     withCredentials: true,
                 },
             );
-            console.log(response);
             const token = response.data.token;
             const data = jwtDecode<JwtPayload>(token);
             console.log("Data: ", data);

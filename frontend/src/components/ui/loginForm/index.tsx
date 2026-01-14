@@ -134,10 +134,7 @@ export function LoginForm({
                                 variant="outline"
                                 className="w-full"
                                 onClick={() => {
-                                    window.location.href =
-                                        process.env
-                                            .NEXT_PUBLIC_AUTH_SERVER_URL +
-                                        "/auth/login/google";
+                                    window.location.href = `${process.env.NEXT_PUBLIC_AUTH_SERVER_URL}${process.env.NEXT_PUBLIC_API_VERSION}/auth/login/google`;
                                 }}
                             >
                                 <FcGoogle />
