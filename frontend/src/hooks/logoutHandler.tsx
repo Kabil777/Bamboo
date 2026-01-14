@@ -1,4 +1,5 @@
-import api from "@/api/axios";
+"use client";
+import { authApi } from "@/api/authApi";
 import { useAppDispatch } from "@/hooks/ReduxHooks";
 import { logout } from "@/store/reducers/AuthReducers";
 import { useRouter } from "next/navigation";
@@ -9,8 +10,8 @@ export function useLogout() {
 
     return async function handleLogout() {
         try {
-            await api.post(
-                "http://localhost:8080/api/v1/auth/logout",
+            await authApi.post(
+                process.env.NEXT_PUBLIC_AUTH_SERVER_URL + "/auth/logout",
                 {},
                 { withCredentials: true },
             );

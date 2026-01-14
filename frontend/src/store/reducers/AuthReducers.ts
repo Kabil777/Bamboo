@@ -1,6 +1,6 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { jwtDecode } from "jwt-decode";
-import api from "@/api/axios";
+import { authApi } from "@/api/authApi";
 
 interface AuthState {
     authenticated: boolean;
@@ -8,17 +8,22 @@ interface AuthState {
     user: {
         name: string;
         email: string;
-        profileImg?: string;
+        profileImg: string;
     } | null;
     tokenExpiration: number | null;
-    status: "idle" | "loading" | "success" | "failed";
+    status:
+        | "uninitialized"
+        | "loading"
+        | "authenticated"
+        | "unauthenticated"
+        | "logged_out";
 }
 
 interface JwtPayload {
     id: string;
     name: string;
     email: string;
-    profileImg: string;
+    profile_url: string;
     accessToken: string;
     exp: number;
 }
@@ -27,10 +32,10 @@ export const getAuthentication = createAsyncThunk(
     "/login/google",
     async (_, { rejectWithValue }) => {
         try {
-            const response = await api.post(
-                "http://localhost:8080/api/v1/auth/refresh",
+            const response = await authApi.post(
+                process.env.NEXT_PUBLIC_AUTH_SERVER_URL + "/auth/refresh",
                 {
-                    redirectUrl:"/",
+                    redirectUrl: "/",
                 },
                 {
                     withCredentials: true,
@@ -39,13 +44,15 @@ export const getAuthentication = createAsyncThunk(
             console.log(response);
             const token = response.data.token;
             const data = jwtDecode<JwtPayload>(token);
-
+            console.log("Data: ", data);
             return {
                 token,
                 data,
             };
         } catch (e: unknown) {
-            const error = e as { response?: { status?: number; data?: string } };
+            const error = e as {
+                response?: { status?: number; data?: string };
+            };
             return rejectWithValue({
                 status: error?.response?.status ?? 0,
                 details: error?.response?.data ?? "Unknown error",
@@ -63,7 +70,7 @@ const inititialState: AuthState = {
         profileImg: "",
     },
     tokenExpiration: null,
-    status: "idle",
+    status: "loading",
 };
 
 const userDetailsSlice = createSlice({
@@ -72,6 +79,7 @@ const userDetailsSlice = createSlice({
     reducers: {
         logout: (state) => {
             Object.assign(state, inititialState);
+            state.status = "logged_out";
         },
         setAuthentication: (s, a) => {
             const { token, data } = a.payload;
@@ -81,31 +89,28 @@ const userDetailsSlice = createSlice({
             s.user = {
                 name: data.name,
                 email: data.email,
-                profileImg: data.profileImg,
+                profileImg: data.profile_url,
             };
             s.tokenExpiration = data.exp;
-            s.status = "success";
+            s.status = "authenticated";
         },
     },
     extraReducers: (builder) => {
         builder
-            .addCase(getAuthentication.pending, (s) => {
-                s.status = "loading";
-            })
             .addCase(getAuthentication.fulfilled, (s, a) => {
                 s.authenticated = true;
                 s.accessToken = a.payload.token;
                 s.user = {
                     name: a.payload.data.name,
                     email: a.payload.data.email,
-                    profileImg: a.payload.data.profileImg,
+                    profileImg: a.payload.data.profile_url,
                 };
                 s.tokenExpiration = a.payload.data.exp;
-                s.status = "success";
-                console.log(JSON.parse(JSON.stringify(s))); //for test
+                s.status = "authenticated";
+                console.log(JSON.parse(JSON.stringify(s)));
             })
             .addCase(getAuthentication.rejected, (state) => {
-                state.status = "failed";
+                state.status = "unauthenticated";
                 state.authenticated = false;
                 state.accessToken = null;
                 state.user = null;

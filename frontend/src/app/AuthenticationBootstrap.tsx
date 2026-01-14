@@ -2,18 +2,16 @@
 
 import { useAppDispatch } from "@/hooks/ReduxHooks";
 import { getAuthentication } from "@/store/reducers/AuthReducers";
-import { RootState } from "@/store/store";
-import { useEffect } from "react";
-import { useSelector } from "react-redux";
+import { useEffect, useRef } from "react";
 
 export default function AuthBootstrap() {
     const dispatch = useAppDispatch();
-    const status = useSelector((state: RootState) => state.userReducer.status);
+    const ran = useRef(false);
     useEffect(() => {
-        if (status === "idle") {
-            dispatch(getAuthentication());
-        }
-    }, [dispatch, status]);
+        if (ran.current) return;
+        ran.current = true;
+        dispatch(getAuthentication());
+    }, [dispatch]);
 
     return null;
 }

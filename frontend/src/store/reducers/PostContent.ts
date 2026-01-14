@@ -35,7 +35,8 @@ const postSlice = createSlice({
         title: "Hello World",
         description: "Hello World",
         tags: ["Hello World", "diuy"],
-        content: "Hello kowsik",
+        content:
+            '# Hibernate One-to-One Mapping\n\nThis article explains **why BlogContent is the owning side**.\n\n## Key Takeaways\n\n- Owning side holds the foreign key\n- `@MapsId` shares primary key\n- Cascade controls lifecycle\n\n```java\n@OneToOne(mappedBy = \"post\", cascade = CascadeType.ALL)\nprivate BlogContent content;\n```\n\n---\n\nWritten for Spring Boot + Hibernate users',
         Pages: [
             {
                 id: "1",

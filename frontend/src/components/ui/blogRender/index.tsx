@@ -123,7 +123,7 @@ export default function BlogRenderPage() {
                                         <NextImage
                                             width={800}
                                             height={450}
-                                            src="https://rukminim2.flixcart.com/image/416/416/j95y4cw0/poster/b/u/v/large-wallpaper-ben-10-ultimate-alien-and-gwen-on-large-print-original-imaew88xg7fwzshd.jpeg"
+                                            src="https://komodor.com/wp-content/uploads/2025/12/AI-ON-k8S-Next-frontier-Blog-Image-672x404.png"
                                             alt="Article cover"
                                             className="w-full h-auto object-cover"
                                         />
@@ -196,7 +196,10 @@ export default function BlogRenderPage() {
                                     </h4>
                                     <div className="flex flex-wrap gap-2">
                                         {pages.map((page, index) => (
-                                            <span key={index} className="text-xs sm:text-sm px-2.5 sm:px-3 py-1 bg-background/60 rounded-md text-muted-foreground hover:text-foreground hover:bg-background transition-all cursor-pointer border border-border/30">
+                                            <span
+                                                key={index}
+                                                className="text-xs sm:text-sm px-2.5 sm:px-3 py-1 bg-background/60 rounded-md text-muted-foreground hover:text-foreground hover:bg-background transition-all cursor-pointer border border-border/30"
+                                            >
                                                 {page.title}
                                             </span>
                                         ))}
@@ -242,4 +245,3 @@ export default function BlogRenderPage() {
         </>
     );
 }
-

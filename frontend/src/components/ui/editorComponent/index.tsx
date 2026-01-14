@@ -5,13 +5,12 @@ import { EditorContent, EditorContext, useEditor } from "@tiptap/react";
 import { BubbleMenu } from "@tiptap/react/menus";
 import { marked } from "marked";
 
-
 // --- UI Primitives ---
 import { Spacer } from "@/components/tiptap-ui-primitive/spacer";
 import {
-  Toolbar,
-  ToolbarGroup,
-  ToolbarSeparator,
+    Toolbar,
+    ToolbarGroup,
+    ToolbarSeparator,
 } from "@/components/tiptap-ui-primitive/toolbar";
 
 // --- Tiptap Node ---
@@ -40,7 +39,7 @@ import { useAppDispatch, useAppState } from "@/hooks/ReduxHooks";
 import { setContent } from "@/store/reducers/PostContent";
 import { MenuBar } from "./customBlock";
 import "./syntax.css";
-import "./tiptapstyles.scss"
+import "./tiptapstyles.scss";
 import Popup from "./Popup";
 import { TableMenu } from "@/components/tiptap-ui/table-dropdown-menu";
 
@@ -48,178 +47,200 @@ import { renderToMarkdown } from "@tiptap/static-renderer";
 import { TextAlignButton } from "@/components/tiptap-ui/text-align-button";
 import extensions from "@/lib/extensions";
 interface MainToolbarContentProp {
-  onSave: () => void;
-  editor: ReturnType<typeof useEditor> | null;
+    onSave: () => void;
+    editor: ReturnType<typeof useEditor> | null;
 }
 
 //syntax highlighting
 const MainToolbarContent = ({ onSave, editor }: MainToolbarContentProp) => {
-  const [open, setOpen] = React.useState<boolean>(false);
-  return (
-    <>
-      <Spacer />
+    const [open, setOpen] = React.useState<boolean>(false);
+    return (
+        <>
+            <Spacer />
 
-      <ToolbarGroup>
-        <UndoRedoButton action="undo" />
-        <UndoRedoButton action="redo" />
-      </ToolbarGroup>
+            <ToolbarGroup>
+                <UndoRedoButton action="undo" />
+                <UndoRedoButton action="redo" />
+            </ToolbarGroup>
 
-      <ToolbarSeparator />
+            <ToolbarSeparator />
 
-      <ToolbarGroup>
-        <HeadingDropdownMenu levels={[1, 2, 3, 4]} />
-        <ListDropdownMenu types={["bulletList", "orderedList", "taskList"]} />
-        <BlockquoteButton />
-        <CodeBlockButton />
-      </ToolbarGroup>
+            <ToolbarGroup>
+                <HeadingDropdownMenu levels={[1, 2, 3, 4]} />
+                <ListDropdownMenu
+                    types={["bulletList", "orderedList", "taskList"]}
+                />
+                <BlockquoteButton />
+                <CodeBlockButton />
+            </ToolbarGroup>
 
-      <ToolbarSeparator />
+            <ToolbarSeparator />
 
-      <ToolbarGroup>
-        <MarkButton type="bold" />
-        <MarkButton type="italic" />
-        <MarkButton type="strike" />
-        <MarkButton type="code" />
-        <MarkButton type="underline" />
+            <ToolbarGroup>
+                <MarkButton type="bold" />
+                <MarkButton type="italic" />
+                <MarkButton type="strike" />
+                <MarkButton type="code" />
+                <MarkButton type="underline" />
 
-        <ColorHighlightPopover />
+                <ColorHighlightPopover />
 
-        <LinkPopover />
-      </ToolbarGroup>
+                <LinkPopover />
+            </ToolbarGroup>
 
-      <ToolbarSeparator />
+            <ToolbarSeparator />
 
-      <ToolbarGroup>
+            <ToolbarGroup>
+                <MarkButton type="superscript" />
+                <MarkButton type="subscript" />
+            </ToolbarGroup>
 
-        <MarkButton type="superscript" />
-        <MarkButton type="subscript" />
-      </ToolbarGroup>
+            <MenuBar editor={editor} />
 
-      <MenuBar editor={editor} />
+            <TableMenu editor={editor} />
+            {/* <TableDropdownMenu editor={editor} /> */}
 
-      <TableMenu editor={editor} />
-      {/* <TableDropdownMenu editor={editor} /> */}
+            <ToolbarSeparator />
 
-      <ToolbarSeparator />
+            <ToolbarGroup>
+                <TextAlignButton align="left" />
+                <TextAlignButton align="center" />
+                <TextAlignButton align="right" />
+                <TextAlignButton align="justify" />
+            </ToolbarGroup>
 
-      <ToolbarGroup>
-        <TextAlignButton align="left" />
-        <TextAlignButton align="center" />
-        <TextAlignButton align="right" />
-        <TextAlignButton align="justify" />
-      </ToolbarGroup>
-
-      <ToolbarSeparator />
-      <ToolbarGroup>
-        <ImageUploadButton text="Add" />
-      </ToolbarGroup>
-      {editor && <Popup
-        open={open}
-        setOpen={setOpen}
-        onClick={() => {
-          setOpen(true);
-        }}
-        editor={editor}
-      />
-      }
-      <Button onClick={onSave}>Save</Button>
-      <Spacer />
-    </>
-  );
+            <ToolbarSeparator />
+            <ToolbarGroup>
+                <ImageUploadButton text="Add" />
+            </ToolbarGroup>
+            {editor && (
+                <Popup
+                    open={open}
+                    setOpen={setOpen}
+                    onClick={() => {
+                        setOpen(true);
+                    }}
+                    editor={editor}
+                />
+            )}
+            <Button onClick={onSave}>Save</Button>
+            <Spacer />
+        </>
+    );
 };
 
 export default function Editor() {
-  const toolbarRef = React.useRef<HTMLDivElement>(null);
-  const dispatch = useAppDispatch();
-  const raw = marked.parse(useAppState((s) => s.postReducer.content));
-  const [word, setWord] = React.useState(0);
-  const editor = useEditor({
-    immediatelyRender: false,
-    editorProps: {
-      attributes: {
-        autocomplete: "on",
-        autocorrect: "on",
-        autocapitalize: "on",
-        "aria-label": "Start typing...",
-      },
-    },
-    autofocus: "end",
-    extensions: extensions,
-    content: raw,
-    onCreate({ editor }) {
-      setWord(editor.storage.characterCount.characters());
-    },
-    onUpdate({ editor }) {
-      setWord(editor.storage.characterCount.characters());
-    },
+    const toolbarRef = React.useRef<HTMLDivElement>(null);
+    const dispatch = useAppDispatch();
+    const raw = marked.parse(useAppState((s) => s.postReducer.content));
+    const [word, setWord] = React.useState(0);
+    const editor = useEditor({
+        immediatelyRender: false,
+        editorProps: {
+            attributes: {
+                autocomplete: "on",
+                autocorrect: "on",
+                autocapitalize: "on",
+                "aria-label": "Start typing...",
+            },
+        },
+        autofocus: "end",
+        extensions: extensions,
+        content: raw,
+        onCreate({ editor }) {
+            setWord(editor.storage.characterCount.characters());
+        },
+        onUpdate({ editor }) {
+            setWord(editor.storage.characterCount.characters());
+        },
+    });
+    const onSave = () => {
+        console.log(
+            renderToMarkdown({ extensions, content: editor?.getJSON() || {} }),
+        );
+        dispatch(
+            setContent({
+                content: renderToMarkdown({
+                    extensions,
+                    content: editor?.getJSON() || {},
+                }),
+            }),
+        );
+    };
+    return (
+        <EditorContext.Provider value={{ editor }}>
+            <div className="content-wrapper">
+                <Toolbar ref={toolbarRef}>
+                    <MainToolbarContent onSave={onSave} editor={editor} />
+                </Toolbar>
+                {editor && (
+                    <>
+                        <BubbleMenu
+                            editor={editor}
+                            className="!z-20 absolute"
+                            options={{ placement: "bottom-start", offset: 5 }}
+                            shouldShow={({ from, to }) => {
+                                return from !== to;
+                            }}
+                        >
+                            <div className="bubble-menu bg-background px-1 py-0.5 border-1 border-border/50 text-sm rounded-xl flex shadow-2xl">
+                                <Button
+                                    variant={"ghost"}
+                                    onClick={() =>
+                                        editor
+                                            .chain()
+                                            .focus()
+                                            .toggleBold()
+                                            .run()
+                                    }
+                                    className="transition-all delay-75 py-1 px-2 rounded-xl font-semibold text-sm text-muted-foreground bg-background hover:bg-accent hover:text-foreground"
+                                >
+                                    Bold
+                                </Button>
+                                <Button
+                                    onClick={() =>
+                                        editor
+                                            .chain()
+                                            .focus()
+                                            .toggleItalic()
+                                            .run()
+                                    }
+                                    className="transition-all delay-75 py-1 px-2 font-semibold  rounded-xl text-sm text-muted-foreground bg-background hover:bg-accent hover:text-foreground"
+                                >
+                                    Italic
+                                </Button>
+                                <Button
+                                    onClick={() => {
+                                        editor
+                                            .chain()
+                                            .focus()
+                                            .toggleStrike()
+                                            .run();
+                                    }}
+                                    className="transition-all delay-75 py-1 px-2 font-semibold  rounded-xl text-sm text-muted-foreground bg-background hover:bg-accent hover:text-foreground"
+                                >
+                                    Strike
+                                </Button>
+                            </div>
+                        </BubbleMenu>
+                    </>
+                )}
 
-  });
-  const onSave = () => {
-    console.log(renderToMarkdown({ extensions, content: editor?.getJSON() || {} }));
-    dispatch(
-      setContent({
-        content: renderToMarkdown({ extensions, content: editor?.getJSON() || {} }),
-      }),
+                <div
+                    className="flex justify-center p-5 min-h-[calc(100vh-7rem)]"
+                    onClick={() => editor?.chain().focus().run()}
+                >
+                    <EditorContent
+                        editor={editor}
+                        role="presentation"
+                        className="simple-editor-content w-full container max-w-5xl"
+                    />
+                </div>
+                <div className="fixed bottom-5 right-6 text-xs bg-border p-2 rounded-lg ">
+                    {" "}
+                    {word ?? 0} characters
+                </div>
+            </div>
+        </EditorContext.Provider>
     );
-  };
-  return (
-    <EditorContext.Provider value={{ editor }}>
-      <div className="content-wrapper">
-        <Toolbar ref={toolbarRef}>
-          <MainToolbarContent onSave={onSave} editor={editor} />
-        </Toolbar>
-        {editor && (
-          <>
-            <BubbleMenu
-              editor={editor}
-              className="!z-20 absolute"
-              options={{ placement: "bottom-start", offset: 5 }}
-              shouldShow={({ from, to }) => {
-                return from !== to;
-              }}
-            >
-              <div className="bubble-menu bg-background px-1 py-0.5 border-1 border-border/50 text-sm rounded-xl flex shadow-2xl">
-                <Button
-                  variant={"ghost"}
-                  onClick={() => editor.chain().focus().toggleBold().run()}
-                  className="transition-all delay-75 py-1 px-2 rounded-xl font-semibold text-sm text-muted-foreground bg-background hover:bg-accent hover:text-foreground"
-                >
-                  Bold
-                </Button>
-                <Button
-                  onClick={() => editor.chain().focus().toggleItalic().run()}
-                  className="transition-all delay-75 py-1 px-2 font-semibold  rounded-xl text-sm text-muted-foreground bg-background hover:bg-accent hover:text-foreground"
-                >
-                  Italic
-                </Button>
-                <Button
-                  onClick={() => {
-                    editor.chain().focus().toggleStrike().run();
-                  }}
-                  className="transition-all delay-75 py-1 px-2 font-semibold  rounded-xl text-sm text-muted-foreground bg-background hover:bg-accent hover:text-foreground"
-                >
-                  Strike
-                </Button>
-              </div>
-            </BubbleMenu>
-
-
-          </>
-        )}
-
-        <div className="flex justify-center p-5 min-h-[calc(100vh-7rem)]" onClick={() => editor?.chain().focus().run()}>
-          <EditorContent
-            editor={editor}
-            role="presentation"
-            className="simple-editor-content w-full container max-w-5xl"
-
-          />
-        </div>
-        <div className="fixed bottom-5 right-6 text-xs bg-border p-2 rounded-lg ">
-          {" "}
-          {word ?? 0} characters
-        </div>
-      </div>
-    </EditorContext.Provider>
-  );
 }
