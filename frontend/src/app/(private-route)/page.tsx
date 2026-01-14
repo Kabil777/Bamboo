@@ -5,6 +5,7 @@ import {
   MoreAbout,
   TabChips,
 } from "@/components/atomsComponents";
+import BambooLoader from "@/components/atomsComponents/logo/BambooLoader";
 import { Separator } from "@/components/shadcnUI/separator";
 import { DocsHome } from "@/components/ui";
 import * as React from "react";
@@ -56,12 +57,13 @@ export default function Home() {
           </div>
 
           <div className="col-span-full xl:col-span-3 mx-2 md:mx-0 xl:border-r-1 p-0 sm:p-2 relative">
+            <BambooLoader variant="grow" speed="slow" size={80} />
             <BlogCard />
             <BlogCard />
             <BlogCard />
             <BlogCard />
             <BlogCard />
-            <BlogCard />
+            <BlogCard />  
             <BlogCard />
             <BlogCard />
             <BlogCard />

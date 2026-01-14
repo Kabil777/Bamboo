@@ -168,7 +168,6 @@ export const ProfileEditPopOver = ({ profileData, onSave, children }: SharePopov
             setShowTagSuggestions(false);
         } else if (e.key === 'ArrowDown' && showTagSuggestions && filteredTags.length > 0) {
             e.preventDefault();
-            // Focus first suggestion
         }
     };
 
