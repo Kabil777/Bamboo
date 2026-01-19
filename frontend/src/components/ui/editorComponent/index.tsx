@@ -1,3 +1,5 @@
+"use client";
+
 import * as React from "react";
 import { EditorContent, EditorContext, useEditor } from "@tiptap/react";
 
@@ -35,8 +37,6 @@ import "highlight.js/styles/tokyo-night-dark.css";
 
 // --- Styles ---
 import { Button } from "@/components/shadcnUI/button";
-import { useAppDispatch, useAppState } from "@/hooks/ReduxHooks";
-import { setContent } from "@/store/reducers/PostContent";
 import { MenuBar } from "./customBlock";
 import "./syntax.css";
 import "./tiptapstyles.scss";
@@ -129,11 +129,13 @@ const MainToolbarContent = ({ onSave, editor }: MainToolbarContentProp) => {
     );
 };
 
-export default function Editor() {
+export default function Editor({ intialContent, save }: { intialContent: string, save: (content: string) => void }) {
+
     const toolbarRef = React.useRef<HTMLDivElement>(null);
-    const dispatch = useAppDispatch();
-    const raw = marked.parse(useAppState((s) => s.postReducer.content));
+    const raw = marked.parse(intialContent);
+
     const [word, setWord] = React.useState(0);
+
     const editor = useEditor({
         immediatelyRender: false,
         editorProps: {
@@ -154,19 +156,18 @@ export default function Editor() {
             setWord(editor.storage.characterCount.characters());
         },
     });
+
     const onSave = () => {
         console.log(
             renderToMarkdown({ extensions, content: editor?.getJSON() || {} }),
         );
-        dispatch(
-            setContent({
-                content: renderToMarkdown({
-                    extensions,
-                    content: editor?.getJSON() || {},
-                }),
-            }),
-        );
+        save(renderToMarkdown({
+            extensions,
+            content: editor?.getJSON() || {},
+        }));
     };
+
+
     return (
         <EditorContext.Provider value={{ editor }}>
             <div className="content-wrapper">

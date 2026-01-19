@@ -14,7 +14,7 @@ import { Input } from "@/components/shadcnUI/input";
 import { Label } from "@/components/shadcnUI/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/shadcnUI/select";
 import { useAppDispatch } from "@/hooks/ReduxHooks";
-import { setTitleAndDescription } from "@/store/reducers/PostContent";
+import { setTitleAndDescription } from "@/store/reducers/DocsEditor";
 import { Loader2 } from "lucide-react";
 import { useRouter, usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -94,7 +94,7 @@ export const EditorModel = () => {
     );
 
     setLoading(true);
-    router.push("/editor");
+    router.push("/editor"+ (type === "blog" ? "/blog/new" : "/docs/new"));
   };
 
   return (

@@ -33,12 +33,11 @@ export default function BlogRenderPage() {
         undefined,
     );
 
-    const md = useAppState((state) => state.postReducer.content);
-    const title = useAppState((state) => state.postReducer.title);
-    const description = useAppState((state) => state.postReducer.description);
-    const tags = useAppState((state) => state.postReducer.tags);
-    const type = useAppState((state) => state.postReducer.type);
-    const pages = useAppState((state) => state.postReducer.Pages);
+    const md = useAppState((state) => state.blogReducer.content);
+    const title = useAppState((state) => state.blogReducer.title);
+    const description = useAppState((state) => state.blogReducer.description);
+    const tags = useAppState((state) => state.blogReducer.tags);
+    const type = useAppState((state) => state.blogReducer.type);
     const toc = extractToc(md);
 
     return (
@@ -176,7 +175,7 @@ export default function BlogRenderPage() {
                             {/* Article Content */}
                             <ArticleRender content={md} />
 
-                            {pages && pages.length > 0 && (
+                            {/* {pages && pages.length > 0 && (
                                 <div className="p-4 md:p-5 bg-muted/30 rounded-xl border border-border/50 backdrop-blur-sm mb-4">
                                     <h4 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
                                         <svg
@@ -205,7 +204,7 @@ export default function BlogRenderPage() {
                                         ))}
                                     </div>
                                 </div>
-                            )}
+                            )} */}
                         </div>
                     </article>
 

@@ -39,8 +39,8 @@ const homeBlogCoverReducers = createSlice({
     reducers: {
         setData: (state, action) => {
             state.data.push(action.payload.blogPagesDto);
-            (state.cursor = action.payload.cursor),
-                (state.hasNext = action.payload.hasNext);
+            state.cursor = action.payload.cursor;
+            state.hasNext = action.payload.hasNext;
         },
     },
     extraReducers(builder) {

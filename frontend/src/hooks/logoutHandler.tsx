@@ -3,6 +3,7 @@ import { authApi } from "@/api/authApi";
 import { useAppDispatch } from "@/hooks/ReduxHooks";
 import { logout } from "@/store/reducers/AuthReducers";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 export function useLogout() {
     const dispatch = useAppDispatch();
@@ -23,6 +24,7 @@ export function useLogout() {
             );
 
             dispatch(logout());
+            toast.warning("Logout")
             router.replace("/login");
         } catch (e) {
             console.error("Logout failed", e);

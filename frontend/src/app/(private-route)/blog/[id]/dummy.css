@@ -1,0 +1,15 @@
+pre {
+  color: #ffffff;
+  width: 1000px;
+  font-family: "JetBrains Mono", monospace !important;
+
+  code {
+    line-height: 1.75;
+    font-family: "JetBrains Mono", monospace;
+  }
+}
+
+pre code.hljs {
+  width: 1000px;
+  font-family: "JetBrains Mono", monospace !important;
+}

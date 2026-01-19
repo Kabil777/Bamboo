@@ -26,7 +26,7 @@ export function ArticleSidebar({
 }: React.ComponentProps<typeof Sidebar>) {
     const { id } = useParams() as { id: string | string[] };
     // console.log("Params ID:", id);
-    const NavData = useAppState((s) => s.postReducer.Pages);
+    const NavData = useAppState((s) => s.docsReducer?.Pages || []);
     return (
         <Sidebar {...props}>
             <SidebarContent className="custom-scroll scroll-smooth !bg-background px-3">
@@ -34,18 +34,34 @@ export function ArticleSidebar({
 
                 <SidebarGroup className="px-0">
                     <SidebarMenu className="gap-2">
+                        <SidebarMenuButton
+                            asChild
+                            isActive={id[1]== null}
+                        >
+                            <Link
+                                href={
+                                    "/docs/" +
+                                    id[0]
+                                }
+                                className="font-semibold text-sm"
+                            >
+                                OverView
+                            </Link>
+                        </SidebarMenuButton>
                         {NavData.map((item) => (
                             <Collapsible
                                 key={item.id}
                                 defaultOpen
+                                
                                 className="group/collapsible"
                             >
-                                <SidebarMenuItem>
+                                <SidebarMenuItem
+                                
+                                >
                                     <CollapsibleTrigger className="flex items-center justify-between w-full px-2 py-1 rounded-md hover:bg-accent transition-colors">
                                         <SidebarMenuButton
                                             asChild
                                             isActive={id[1] === item.id}
-                                            className="hover:bg-transparent"
                                         >
                                             <Link
                                                 href={

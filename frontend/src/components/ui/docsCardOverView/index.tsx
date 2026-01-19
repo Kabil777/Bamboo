@@ -37,7 +37,6 @@ const cardData = [
 
 export const DocsHome = () => {
     const [activeCard, setActiveCard] = useState(1);
-
     return (
         <div className="flex flex-col gap-4">
             <span className="flex items-center justify-between px-2">

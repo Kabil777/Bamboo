@@ -15,8 +15,8 @@ interface BlogCardProps {
 
 export const BlogCard: React.FC<BlogCardProps> = ({
     id = '1',
-    title = '8 Psychology-Based Design Hacks That Will Make You A Better UX Designer',
-    description = `If the first thought that crossed your mind when you read the title of the article was "What does Psychology has to do with UX Design?" then, yes, that's what we thought too, now that we're on the same page, let's end this article here. Cheers!`,
+    title = '8 Psychology-Based Design Hacks',
+    description = `If the first too, now that we're on the same page, let's end this article here. Cheers!`,
     imageUrl = 'https://im.indiatimes.in/content/2024/Jul/sergey-zolkin-_UeY8aTI6d0-unsplash_66a4c01462fc8.jpg',
     profileId = 'author1',
 
@@ -43,9 +43,9 @@ export const BlogCard: React.FC<BlogCardProps> = ({
                         src={imageUrl}
                         alt="Card Image"
                         width={300}
-                        height={200}
+                        height={300}
                         className="sm:col-span-2 row-start-1 sm: col-span-full w-full max-h-[160px] rounded-lg m-auto"
-                        style={{ aspectRatio: "300/200", objectFit: "cover" }}
+                        style={{ aspectRatio: "300/300", objectFit: "cover" }}
                         
                     />
                 </CardContent>

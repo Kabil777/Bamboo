@@ -22,13 +22,14 @@ import { useParams } from "next/navigation";
 export default function DocsRenderPage() {
     const [accordionValue, setAccordionValue] = useState<string | undefined>(undefined);
     const { id } = useParams() as { id: string | string[] };
-    const content = useAppState((state) => state.postReducer.content)
+    const content = useAppState((state) => state.docsReducer?.content || "")
     // const title = useAppState((state) => state.postReducer.title);
-    const description = useAppState((state) => state.postReducer.description);
-    const tags = useAppState((state) => state.postReducer.tags);
-    const type = useAppState((state) => state.postReducer.type);
-    const pages = useAppState((state) => state.postReducer.Pages);
-    let md = "", title = useAppState((state) => state.postReducer.title);
+    const description = useAppState((state) => state.docsReducer?.description || "");
+    const tags = useAppState((state) => state.docsReducer?.tags || []);
+    const type = useAppState((state) => state.docsReducer?.type || "docs");
+    const pages = useAppState((state) => state.docsReducer?.Pages || []);
+    let md = "", title = useAppState((state) => state.docsReducer?.title || "");
+
     if (id.length == 1) {
         md = content;
         title = title;
@@ -95,66 +96,75 @@ export default function DocsRenderPage() {
                         <div className="flex w-full min-w-0 flex-1 flex-col gap-8 py-6 lg:py-8 text-neutral-800 dark:text-neutral-300">
 
 
-                            {/* Article Header */}
-                            <header className="mb-6 md:mb-10 w-full">
+                            {/* Article Header - Only show on overview page */}
+                            {id.length === 1 && (
+                                <header className="mb-6 md:mb-10 w-full">
 
-                                <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold tracking-tight text-foreground mt-4 md:mt-6 leading-tight">
-                                    {title || 'Untitled Article'}
-                                </h1>
+                                    <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold tracking-tight text-foreground mt-4 md:mt-6 leading-tight">
+                                        {title || 'Untitled Article'}
+                                    </h1>
 
-                                <div className="flex flex-wrap items-center gap-2 mt-3 md:mt-4">
-                                    <span className="inline-flex items-center px-2.5 sm:px-3 py-1 rounded-full text-xs font-semibold bg-primary/10 text-primary border border-primary/20">
-                                        {type || 'Article'}
-                                    </span>
-
-                                    {tags && tags.length > 0 && tags.map((tag, index) => (
-                                        <span key={index} className="inline-flex items-center px-2.5 sm:px-3 py-1 rounded-full text-xs font-medium bg-secondary/80 text-secondary-foreground hover:bg-secondary transition-colors">
-                                            {tag}
+                                    <div className="flex flex-wrap items-center gap-2 mt-3 md:mt-4">
+                                        <span className="inline-flex items-center px-2.5 sm:px-3 py-1 rounded-full text-xs font-semibold bg-primary/10 text-primary border border-primary/20">
+                                            {type || 'Article'}
                                         </span>
-                                    ))}
-                                </div>
-                                {description && (
-                                    <p className="text-sm sm:text-base text-muted-foreground leading-relaxed mt-2 mb-4 md:mb-6">
-                                        {description}
-                                    </p>
-                                )}
-                                {/* Feature Image */}
-                                <hr className="my-3 md:my-4" />
-                                <figure className="w-full mb-4 md:mb-5">
-                                    <div className="relative overflow-hidden rounded-lg bg-muted ">
-                                        <NextImage
-                                            width={800}
-                                            height={450}
-                                            src="https://rukminim2.flixcart.com/image/416/416/j95y4cw0/poster/b/u/v/large-wallpaper-ben-10-ultimate-alien-and-gwen-on-large-print-original-imaew88xg7fwzshd.jpeg"
-                                            alt="Article cover"
-                                            className="w-full h-auto object-cover"
-                                        />
-                                    </div>
-                                </figure>
-                                {/* Author Profile Section */}
-                                <div className="flex items-center gap-3 sm:gap-4 py-4 md:py-6 border-y border-border">
-                                    <div className="relative flex-shrink-0">
-                                        <NextImage
-                                            width={800}
-                                            height={450}
-                                            src="https://i.pravatar.cc/150?img=12"
-                                            alt="Author profile"
-                                            className="w-12 h-12 sm:w-14 sm:h-14 rounded-full object-cover ring-2 ring-offset-2 ring-primary/50 hover:ring-primary transition-all"
-                                        />
-                                    </div>
-                                    <div className="flex flex-col justify-center flex-1 min-w-0">
-                                        <h3 className="text-sm sm:text-base font-bold text-foreground hover:text-primary transition-colors cursor-pointer truncate">Kowsik</h3>
-                                        <ProfileHoverTag profileId={"author1"} />
 
+                                        {tags && tags.length > 0 && tags.map((tag, index) => (
+                                            <span key={index} className="inline-flex items-center px-2.5 sm:px-3 py-1 rounded-full text-xs font-medium bg-secondary/80 text-secondary-foreground hover:bg-secondary transition-colors">
+                                                {tag}
+                                            </span>
+                                        ))}
                                     </div>
-                                    <div className="ml-auto text-right hidden sm:block flex-shrink-0">
-                                        <p className="text-xs text-muted-foreground">Published</p>
-                                        <p className="text-xs sm:text-sm font-medium text-foreground">{new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</p>
+                                    {description && (
+                                        <p className="text-sm sm:text-base text-muted-foreground leading-relaxed mt-2 mb-4 md:mb-6">
+                                            {description}
+                                        </p>
+                                    )}
+                                    {/* Feature Image */}
+                                    <hr className="my-3 md:my-4" />
+                                    <figure className="w-full mb-4 md:mb-5">
+                                        <div className="relative overflow-hidden rounded-lg bg-muted ">
+                                            <NextImage
+                                                width={800}
+                                                height={450}
+                                                src="https://rukminim2.flixcart.com/image/416/416/j95y4cw0/poster/b/u/v/large-wallpaper-ben-10-ultimate-alien-and-gwen-on-large-print-original-imaew88xg7fwzshd.jpeg"
+                                                alt="Article cover"
+                                                className="w-full h-auto object-cover"
+                                            />
+                                        </div>
+                                    </figure>
+                                    {/* Author Profile Section */}
+                                    <div className="flex items-center gap-3 sm:gap-4 py-4 md:py-6 border-y border-border">
+                                        <div className="relative flex-shrink-0">
+                                            <NextImage
+                                                width={800}
+                                                height={450}
+                                                src="https://i.pravatar.cc/150?img=12"
+                                                alt="Author profile"
+                                                className="w-12 h-12 sm:w-14 sm:h-14 rounded-full object-cover ring-2 ring-offset-2 ring-primary/50 hover:ring-primary transition-all"
+                                            />
+                                        </div>
+                                        <div className="flex flex-col justify-center flex-1 min-w-0">
+                                            <h3 className="text-sm sm:text-base font-bold text-foreground hover:text-primary transition-colors cursor-pointer truncate">Kowsik</h3>
+                                            <ProfileHoverTag profileId={"author1"} />
+
+                                        </div>
+                                        <div className="ml-auto text-right hidden sm:block flex-shrink-0">
+                                            <p className="text-xs text-muted-foreground">Published</p>
+                                            <p className="text-xs sm:text-sm font-medium text-foreground">{new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</p>
+                                        </div>
                                     </div>
-                                </div>
 
 
-                            </header>
+                                </header>
+                            )}
+
+                            {/* Page Title for sub-pages */}
+                            {id.length > 1 && (
+                                <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-foreground mb-6">
+                                    {title || 'Untitled Page'}
+                                </h1>
+                            )}
 
                             {/* Article Content */}
                             <ArticleRender content={md} />

@@ -1,13 +1,10 @@
 
 "use client";
-import { BlogCard, DocsCard, MoreAbout } from "@/components/atomsComponents";
+import { BlogCard } from "@/components/atomsComponents";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/shadcnUI/avatar";
 import { Button } from "@/components/shadcnUI/button";
 import { Separator } from "@/components/shadcnUI/separator";
-import { DocsHome } from "@/components/ui";
 import { motion } from "framer-motion";
-
-import { useState } from "react";
 
 const cont = [
     {

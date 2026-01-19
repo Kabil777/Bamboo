@@ -1,7 +1,9 @@
 "use client";
 
-import { Plus, Trash } from "lucide-react";
+import { Plus, Trash, Pencil } from "lucide-react";
 import { useState } from "react";
+import Link from "next/link";
+import { useParams } from "next/navigation";
 
 import {
     Sidebar,
@@ -20,13 +22,15 @@ import { Input } from "@/components/shadcnUI/input";
 import { Button } from "@/components/shadcnUI/button";
 
 import { useAppDispatch, useAppState } from "@/hooks/ReduxHooks";
-import { setPages } from "@/store/reducers/PostContent";
+import { updatePageTitle, updateSubPageTitle, addMainSection, addSubItem, deleteMainSection, deleteSubItem } from "@/store/reducers/DocsEditor";
 
 
 export function EditorSidebar(props: React.ComponentProps<typeof Sidebar>) {
     const dispatch = useAppDispatch();
-    const type = useAppState((s) => s.postReducer.type);
-    const pages = useAppState((s) => s.postReducer.Pages);
+    const { id } = useParams() as { id: string | string[] };
+    const docId = id[0]; // First part is always the doc ID
+    const type = useAppState((s) => s.docsReducer?.type || "docs");
+    const pages = useAppState((s) => s.docsReducer?.Pages || []);
 
     const [editing, setEditing] = useState<{
         type: "main" | "sub" | null;
@@ -38,78 +42,29 @@ export function EditorSidebar(props: React.ComponentProps<typeof Sidebar>) {
 
     /* ------------------ Add ------------------ */
 
-    const addMainSection = () => {
-        dispatch(
-            setPages([
-                ...pages,
-                {
-                    id: crypto.randomUUID(),
-                    title: `New Section`,
-                    content: { type: "doc", content: [] },
-                    subPages: [],
-                },
-            ])
-        );
+    const handleAddMainSection = () => {
+        dispatch(addMainSection());
     };
 
-    const addSubItem = (sectionIndex: number) => {
-        dispatch(
-            setPages(
-                pages.map((section, i) =>
-                    i === sectionIndex
-                        ? {
-                            ...section,
-                            subPages: [
-                                ...(section.subPages ?? []),
-                                {
-                                    id: crypto.randomUUID(),
-                                    title: "New Sub Page",
-                                    content: { type: "doc", content: [] },
-                                },
-                            ],
-                        }
-                        : section
-                )
-            )
-        );
+    const handleAddSubItem = (sectionIndex: number) => {
+        dispatch(addSubItem(sectionIndex));
     };
 
     /* ------------------ Delete ------------------ */
 
-    const deleteMainSection = (sectionIndex: number) => {
-        dispatch(setPages(pages.filter((_, i) => i !== sectionIndex)));
+    const handleDeleteMainSection = (sectionIndex: number) => {
+        dispatch(deleteMainSection(sectionIndex));
     };
 
-    const deleteSubItem = (sectionIndex: number, subIndex: number) => {
-        dispatch(
-            setPages(
-                pages.map((section, i) =>
-                    i === sectionIndex
-                        ? {
-                            ...section,
-                            subPages: section.subPages?.filter(
-                                (_, j) => j !== subIndex
-                            ),
-                        }
-                        : section
-                )
-            )
-        );
+    const handleDeleteSubItem = (sectionIndex: number, subIndex: number) => {
+        dispatch(deleteSubItem({ sectionIndex, subIndex }));
     };
 
     /* ------------------ Edit ------------------ */
 
     const saveTitle = (title: string) => {
         if (editing.type === "main" && editing.sectionIndex !== undefined) {
-            dispatch(
-                setPages(
-                    pages.map((section, i) =>
-                        i === editing.sectionIndex
-                            ? { ...section, title }
-                            : section
-                    )
-                )
-            );
+            dispatch(updatePageTitle({ pageIndex: editing.sectionIndex, title }));
         }
 
         if (
@@ -118,26 +73,17 @@ export function EditorSidebar(props: React.ComponentProps<typeof Sidebar>) {
             editing.subIndex !== undefined
         ) {
             dispatch(
-                setPages(
-                    pages.map((section, i) =>
-                        i === editing.sectionIndex
-                            ? {
-                                ...section,
-                                subPages: section.subPages?.map((sub, j) =>
-                                    j === editing.subIndex
-                                        ? { ...sub, title }
-                                        : sub
-                                ),
-                            }
-                            : section
-                    )
-                )
+                updateSubPageTitle({
+                    pageIndex: editing.sectionIndex,
+                    subPageIndex: editing.subIndex,
+                    title,
+                })
             );
         }
 
         setEditing({ type: null });
     };
- console.log('pages', pages);
+    console.log('pages', pages);
     return (
         <Sidebar {...props}>
             <SidebarHeader>
@@ -153,6 +99,19 @@ export function EditorSidebar(props: React.ComponentProps<typeof Sidebar>) {
             <SidebarContent className="custom-scroll scroll-smooth">
                 <SidebarGroup>
                     <SidebarMenu>
+                        {/* Overview - Cannot be edited or deleted */}
+                        <SidebarMenuItem>
+                            <SidebarMenuButton
+                                asChild
+                                isActive={id.length === 1}
+                                className="hover:bg-transparent"
+                            >
+                                <Link href={`/editor/docs/${docId}`} className="font-semibold text-sm">
+                                    Overview
+                                </Link>
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+
                         {pages.map((item, sectionIndex) => (
                             <SidebarMenuItem key={sectionIndex}>
                                 <div className="flex items-center justify-between group/btnvisible">
@@ -163,33 +122,50 @@ export function EditorSidebar(props: React.ComponentProps<typeof Sidebar>) {
                                             onBlur={(e) => saveTitle(e.target.value)}
                                             onKeyDown={(e) => {
                                                 if (e.key === "Enter") saveTitle((e.target as HTMLInputElement).value)
+                                                if (e.key === "Escape") setEditing({ type: null })
                                             }}
                                             className="w-full rounded border px-1 text-sm"
                                         />
                                     ) : (
                                         <SidebarMenuButton
                                             asChild
-                                            onClick={() => setEditing({ type: "main", sectionIndex })}
+                                            isActive={id.length === 2 && id[1] === item.id}
                                         >
-                                            <span className="font-medium cursor-text">{item.title}</span>
+                                            <Link href={`/editor/docs/${docId}/${item.id}`} className="font-medium">
+                                                {item.title}
+                                            </Link>
                                         </SidebarMenuButton>
                                     )}
 
-                                    <div className="flex items-center group-hover/btnvisible:visible invisible">
+                                    <div className="flex items-center ml-2 gap-3 group-hover/btnvisible:visible invisible">
                                         {/* Add sub-item button */}
                                         <Button
-                                            onClick={() => addSubItem(sectionIndex)}
+                                            onClick={() => handleAddSubItem(sectionIndex)}
                                             variant="link"
                                             size="icon"
+                                            className="w-fit h-fit"
                                         >
                                             <Plus className="w-4 h-4" />
                                         </Button>
-                                        {/* Delete main section */}
+                                        {/* Edit button */}
                                         <Button
-                                            onClick={() => deleteMainSection(sectionIndex)}
+                                            onClick={(e) => {
+                                                e.preventDefault();
+                                                setEditing({ type: "main", sectionIndex });
+                                            }}
+                                            className="w-fit h-fit"
                                             variant="link"
                                             size="icon"
-                                            className="text-red-500 group-hover/btnvisible:visible invisible"
+                                        >
+                                            <Pencil className="w-3.5 h-3.5" />
+                                        </Button>
+                                        {/* Delete main section */}
+                                        <Button
+                                            onClick={() => handleDeleteMainSection(sectionIndex)}
+                                            variant="link"
+                                            size="icon"
+
+                                            className="text-red-500 w-fit h-fit"
                                         >
                                             <Trash className="w-4 h-4" />
                                         </Button>
@@ -211,35 +187,49 @@ export function EditorSidebar(props: React.ComponentProps<typeof Sidebar>) {
                                                             onKeyDown={(e) => {
                                                                 if (e.key === "Enter")
                                                                     saveTitle((e.target as HTMLInputElement).value)
+                                                                if (e.key === "Escape") setEditing({ type: null })
                                                             }}
                                                             className="w-full rounded border px-1 !h-fit text-sm !py-1"
                                                         />
                                                     ) : (
                                                         <SidebarMenuSubButton
                                                             asChild
-                                                            isActive={sub.id === "1-1"}
-                                                            onClick={() =>
+                                                            isActive={id.length === 3 && id[1] === item.id && id[2] === sub.id}
+                                                            className="w-full"
+                                                        >
+                                                            <Link href={`/editor/docs/${docId}/${item.id}/${sub.id}`}>
+                                                                {sub.title}
+                                                            </Link>
+                                                        </SidebarMenuSubButton>
+                                                    )}
+
+                                                    <div className="flex items-center ml-2 gap-3 group-hover/btnvisible:visible invisible">
+                                                        {/* Edit sub-item */}
+                                                        <Button
+                                                            onClick={(e) => {
+                                                                e.preventDefault();
                                                                 setEditing({
                                                                     type: "sub",
                                                                     sectionIndex,
                                                                     subIndex,
-                                                                })
-                                                            }
-                                                            className="w-full"
+                                                                });
+                                                            }}
+                                                            className="w-fit h-fit"
+                                                            variant="link"
+                                                            size="icon"
                                                         >
-                                                            <span className="cursor-text">{sub.title}</span>
-                                                        </SidebarMenuSubButton>
-                                                    )}
-
-                                                    {/* Delete sub-item */}
-                                                    <Button
-                                                        onClick={() => deleteSubItem(sectionIndex, subIndex)}
-                                                        variant="link"
-                                                        size="icon"
-                                                        className={`text-red-500 group-hover/btnvisible:visible invisible`}
-                                                    >
-                                                        <Trash className="w-4 h-4" />
-                                                    </Button>
+                                                            <Pencil className="w-3 h-3" />
+                                                        </Button>
+                                                        {/* Delete sub-item */}
+                                                        <Button
+                                                            onClick={() => handleDeleteSubItem(sectionIndex, subIndex)}
+                                                            variant="link"
+                                                            size="icon"
+                                                            className={`text-red-500 w-fit h-fit`}
+                                                        >
+                                                            <Trash className="w-4 h-4" />
+                                                        </Button>
+                                                    </div>
                                                 </div>
                                             </SidebarMenuSubItem>
                                         ))}
@@ -252,7 +242,7 @@ export function EditorSidebar(props: React.ComponentProps<typeof Sidebar>) {
             </SidebarContent>
 
             <SidebarFooter>
-                <Button onClick={addMainSection} className="w-full">
+                <Button onClick={handleAddMainSection} className="w-full">
                     <Plus className="w-4 h-4" /> Add Section
                 </Button>
             </SidebarFooter>
