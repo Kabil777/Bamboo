@@ -1,9 +1,13 @@
 import store from "@/store/store";
 import { InternalAxiosRequestConfig } from "axios";
+import { authResolved } from "../auth/authGate";
 
-export const requestInterceptor = (config: InternalAxiosRequestConfig) => {
+export const requestInterceptor = async (
+    config: InternalAxiosRequestConfig,
+) => {
+    await authResolved;
+
     const token = store.getState().userReducer.accessToken;
-
     if (token) {
         config.headers = config.headers ?? {};
         config.headers.Authorization = `Bearer ${token}`;

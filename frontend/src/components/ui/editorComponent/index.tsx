@@ -1,4 +1,5 @@
 import * as React from "react";
+import Collaboration from "@tiptap/extension-collaboration";
 import { EditorContent, EditorContext, useEditor } from "@tiptap/react";
 
 // --- Tiptap Core Extensions ---
@@ -46,6 +47,7 @@ import { TableMenu } from "@/components/tiptap-ui/table-dropdown-menu";
 import { renderToMarkdown } from "@tiptap/static-renderer";
 import { TextAlignButton } from "@/components/tiptap-ui/text-align-button";
 import extensions from "@/lib/extensions";
+import { getHocuspocusProvider } from "@/lib/hocuspocus";
 interface MainToolbarContentProp {
     onSave: () => void;
     editor: ReturnType<typeof useEditor> | null;
@@ -134,6 +136,7 @@ export default function Editor() {
     const dispatch = useAppDispatch();
     const raw = marked.parse(useAppState((s) => s.postReducer.content));
     const [word, setWord] = React.useState(0);
+    const provider = getHocuspocusProvider();
     const editor = useEditor({
         immediatelyRender: false,
         editorProps: {
@@ -145,8 +148,12 @@ export default function Editor() {
             },
         },
         autofocus: "end",
-        extensions: extensions,
-        content: raw,
+        extensions: [
+            ...extensions,
+            Collaboration.configure({
+                document: provider.document,
+            }),
+        ],
         onCreate({ editor }) {
             setWord(editor.storage.characterCount.characters());
         },

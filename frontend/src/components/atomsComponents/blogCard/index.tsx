@@ -1,58 +1,90 @@
-'use client';
-import { StaticImport } from 'next/dist/shared/lib/get-img-props';
-import Image from 'next/image';
-import { Card, CardContent, CardTitle, CardDescription } from "@/components/shadcnUI/card"
-import { Badge } from "@/components/shadcnUI/badge"
-import { ProfileTag } from '@/components/atomsComponents';
-interface BlogCardProps {
-    id?: string;
-    title?: string;
-    description?: string;
-    imageUrl?: string | StaticImport;
-    profileId?: string;
+"use client";
+import { StaticImport } from "next/dist/shared/lib/get-img-props";
+import Image from "next/image";
+import {
+    Card,
+    CardContent,
+    CardTitle,
+    CardDescription,
+} from "@/components/shadcnUI/card";
+import { Badge } from "@/components/shadcnUI/badge";
+import { ProfileTag } from "@/components/atomsComponents";
+import { BlogHomeCard } from "@/types/blog/blog-base";
+import { useState } from "react";
+import { Skeleton } from "@/components/shadcnUI/skeleton";
+import { useRouter } from "next/navigation";
+import { NextRouter } from "next/router";
+import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
+import { useDispatch } from "react-redux";
+import { BlogPageRtk } from "@/store/reducers/BlogPageReducer";
+import Link from "next/link";
 
+function pushRoute(id: string, router: AppRouterInstance, dispatch: any) {
+    dispatch(BlogPageRtk(id));
+    router.push(`blog/${id}`);
 }
 
-export const BlogCard: React.FC<BlogCardProps> = ({
-    id = '1',
-    title = '8 Psychology-Based Design Hacks That Will Make You A Better UX Designer',
-    description = `If the first thought that crossed your mind when you read the title of the article was "What does Psychology has to do with UX Design?" then, yes, that's what we thought too, now that we're on the same page, let's end this article here. Cheers!`,
-    imageUrl = 'https://im.indiatimes.in/content/2024/Jul/sergey-zolkin-_UeY8aTI6d0-unsplash_66a4c01462fc8.jpg',
-    profileId = 'author1',
-
+export const BlogCard: React.FC<BlogHomeCard> = ({
+    id,
+    title,
+    description,
+    coverUrl,
+    authorId,
+    createdAt,
+    tags,
+    authorName,
 }) => {
-
-
+    const [loading, setLoading] = useState(false);
+    const router = useRouter();
+    const dispatch = useDispatch();
     return (
-        <div key={id} >
-            <Card className="shadow-none rounded-none overflow-hidden items-center p-2 sm:p-4 gap-2 border-none transition duration-200 ease-in-out" >
+        <div key={id}>
+            <Card className="shadow-none rounded-none overflow-hidden items-center p-2 sm:p-4 gap-2 border-none transition duration-200 ease-in-out">
                 <CardContent className="p-0 w-full grid grid-cols-5 items-center gap-2 md:gap-5 justify-between">
                     <div className="p-0 col-span-full sm:row-start-1 sm:col-span-3 flex flex-col gap-0 md:gap-2">
-                        <CardTitle className="text-base md:text-2xl font-semibold line-clamp-2">{title}</CardTitle>
-                        <CardDescription className="text-gray-500 dark:text-gray-400 mt-2 line-clamp-2 text-xs md:text-sm">
-                            {description}
-                        </CardDescription>
-                        <ProfileTag profileId={profileId} />
+                        <Link href={`/blog/${id}`} className="cursor-pointer">
+                            <CardTitle className="text-base md:text-2xl font-semibold line-clamp-2">
+                                {title}
+                            </CardTitle>
+                            <CardDescription className="text-gray-500 dark:text-gray-400 mt-2 line-clamp-2 text-xs md:text-sm">
+                                {description}
+                            </CardDescription>
+                        </Link>
+                        <ProfileTag
+                            profileId={authorName ? authorName : "user101"}
+                        />
                         <div className="flex flex-wrap gap-2 mt-3">
-                            <Badge className="bg-gray-200 text-gray-700 dark:bg-gray-800 dark:text-gray-200">Design</Badge>
-                            <Badge className="bg-gray-200 text-gray-700 dark:bg-gray-800 dark:text-gray-200">UI</Badge>
-                            <Badge className="bg-gray-200 text-gray-700 dark:bg-gray-800 dark:text-gray-200">Shadcn</Badge>
+                            {tags.map((tag) => (
+                                <Badge
+                                    key={tag}
+                                    className="capitalize bg-gray-200 text-gray-700 dark:bg-gray-800 dark:text-gray-200"
+                                >
+                                    {tag}
+                                </Badge>
+                            ))}
                         </div>
                     </div>
+                    {!loading && (
+                        <Skeleton className="sm:col-span-2 row-start-1 sm: col-span-full rounded-lg m-auto max-h-[160px] w-3/4  bg-neutral-200 dark:bg-neutral-800" />
+                    )}
+
                     <Image
-                        src={imageUrl}
+                        src={coverUrl}
+                        loading="eager"
                         alt="Card Image"
                         width={300}
                         height={200}
-                        className="sm:col-span-2 row-start-1 sm: col-span-full w-full max-h-[160px] rounded-lg m-auto"
-                        style={{ aspectRatio: "300/200", objectFit: "cover" }}
-                        
+                        className="sm:col-span-2 row-start-1 sm: col-span-full w-3/4  max-h-[160px] rounded-lg m-auto"
+                        style={{ aspectRatio: "300/300", objectFit: "cover" }}
+                        onLoad={() => {
+                            setLoading(true);
+                        }}
                     />
                 </CardContent>
-            </Card >
+            </Card>
             <br />
             <hr />
             <br />
-        </div >
+        </div>
     );
 };

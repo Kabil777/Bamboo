@@ -3,6 +3,8 @@ import { useState } from "react";
 import { Button } from "@/components/shadcnUI/button";
 import { DocsCard } from "@/components/atomsComponents";
 import Link from "next/link";
+import { DocsHomeCard } from "@/types/docs/docs-base";
+import { UUID } from "@/types/blog/blog-base";
 
 const cardData = [
     {
@@ -35,9 +37,12 @@ const cardData = [
     { id: 5, title: "Next.js", created: "May 2025" },
 ];
 
-export const DocsHome = () => {
-    const [activeCard, setActiveCard] = useState(1);
+interface DocsHomeProps {
+    docs: DocsHomeCard[];
+}
 
+export const DocsHome = ({ docs }: DocsHomeProps) => {
+    const [activeCard, setActiveCard] = useState<UUID>(docs[0]?.id);
     return (
         <div className="flex flex-col gap-4">
             <span className="flex items-center justify-between px-2">
@@ -49,11 +54,11 @@ export const DocsHome = () => {
                 </Link>
             </span>
 
-            {cardData.map((card) => {
+            {docs.map((doc) => {
                 return (
                     <DocsCard
-                        key={card.id}
-                        card={card}
+                        key={doc.id}
+                        doc={doc}
                         hoverOpen
                         active={activeCard}
                         setActiveCard={setActiveCard}

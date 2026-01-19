@@ -11,14 +11,14 @@ import "@/components/tiptap-node/paragraph-node/paragraph-node.scss";
 import "highlight.js/styles/tokyo-night-dark.css";
 
 // import "./dummy.css";
-import { useAppState } from "@/hooks/ReduxHooks";
+import { useAppDispatch, useAppState } from "@/hooks/ReduxHooks";
 import {
     ArticleRender,
     ArticleTableContent,
 } from "@/components/atomsComponents";
 import { ProfileHoverTag } from "@/components/atomsComponents/profileHoverTag";
 import NextImage from "next/image";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
     Accordion,
     AccordionContent,
@@ -27,20 +27,49 @@ import {
 } from "@/components/shadcnUI/accordion";
 import { motion } from "framer-motion";
 import { extractToc } from "@/lib/utils";
+import { BlogPageRtk } from "@/store/reducers/BlogPageReducer";
+import { useSelector } from "react-redux";
+import { useParams } from "next/navigation";
+import {
+    blogCoverSelectors,
+    selectById,
+} from "@/store/reducers/BlogCoverReducer";
+import { BlogHomeCard, BlogPage } from "@/types/blog/blog-base";
+import { useApiLoading } from "@/hooks/useApiLoading";
+import { BlogPageSkeleton } from "@/components/atomsComponents/skleton/BlogPageSkleton";
 
 export default function BlogRenderPage() {
+    const { id } = useParams<{ id: string }>();
+    const dispatch = useAppDispatch();
+    const { status } = useAppState((s) => s.userReducer);
+    const { loadingById } = useAppState((s) => s.blogPageReducer);
+
+    console.log("id: \nstatus: ", id, status);
+
+    useEffect(() => {
+        if (!id) return;
+        if (status === "authenticated") {
+            dispatch(BlogPageRtk(id));
+            console.log("called");
+        }
+    }, [dispatch, id, status]);
+
+    const isPageApiLoading = useApiLoading(loadingById[id]);
     const [accordionValue, setAccordionValue] = useState<string | undefined>(
         undefined,
     );
 
-    const md = useAppState((state) => state.postReducer.content);
-    const title = useAppState((state) => state.postReducer.title);
-    const description = useAppState((state) => state.postReducer.description);
-    const tags = useAppState((state) => state.postReducer.tags);
-    const type = useAppState((state) => state.postReducer.type);
-    const pages = useAppState((state) => state.postReducer.Pages);
-    const toc = extractToc(md);
+    const blog: BlogPage = useAppState(
+        (state) => state.blogPageReducer.entities[id],
+    );
 
+    const pages = useAppState((state) => state.postReducer.Pages);
+    if (!id || isPageApiLoading || !blog) {
+        return <BlogPageSkeleton />;
+    }
+
+    const { content, title, description, tags } = blog;
+    const toc = extractToc(content);
     return (
         <>
             <div className="flex flex-1 flex-col w-full">
@@ -100,9 +129,9 @@ export default function BlogRenderPage() {
                                 <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold tracking-tight text-foreground mt-4 md:mt-6 leading-tight">
                                     {title || "Untitled Article"}
                                 </h1>
-                                <div className="flex flex-wrap items-center gap-2 mb-4">
-                                    <span className="inline-flex items-center px-2.5 sm:px-3 py-1 rounded-full text-xs font-semibold bg-primary/10 text-primary border border-primary/20">
-                                        {type || "Article"}
+                                <div className="flex flex-wrap items-center gap-2 my-4">
+                                    <span className="capitalize inline-flex items-center px-2.5 sm:px-3 py-1 rounded-full text-xs font-semibold bg-primary/10 text-primary border border-primary/20">
+                                        {"blog"}
                                     </span>
 
                                     {tags &&
@@ -110,7 +139,7 @@ export default function BlogRenderPage() {
                                         tags.map((tag, index) => (
                                             <span
                                                 key={index}
-                                                className="inline-flex items-center px-2.5 sm:px-3 py-1 rounded-full text-xs font-medium bg-secondary/80 text-secondary-foreground hover:bg-secondary transition-colors"
+                                                className="capitalize inline-flex items-center px-2.5 sm:px-3 py-1 rounded-full text-xs font-medium bg-secondary/80 text-secondary-foreground hover:bg-secondary transition-colors"
                                             >
                                                 {tag}
                                             </span>
@@ -123,7 +152,7 @@ export default function BlogRenderPage() {
                                         <NextImage
                                             width={800}
                                             height={450}
-                                            src="https://komodor.com/wp-content/uploads/2025/12/AI-ON-k8S-Next-frontier-Blog-Image-672x404.png"
+                                            src={blog.coverUrl}
                                             alt="Article cover"
                                             className="w-full h-auto object-cover"
                                         />
@@ -154,14 +183,13 @@ export default function BlogRenderPage() {
                                             Published
                                         </p>
                                         <p className="text-xs sm:text-sm font-medium text-foreground">
-                                            {new Date().toLocaleDateString(
-                                                "en-US",
-                                                {
-                                                    month: "short",
-                                                    day: "numeric",
-                                                    year: "numeric",
-                                                },
-                                            )}
+                                            {new Date(
+                                                blog.createdAt,
+                                            ).toLocaleDateString("en-US", {
+                                                month: "short",
+                                                day: "numeric",
+                                                year: "numeric",
+                                            })}
                                         </p>
                                     </div>
                                 </div>
@@ -174,7 +202,7 @@ export default function BlogRenderPage() {
                             </header>
 
                             {/* Article Content */}
-                            <ArticleRender content={md} />
+                            <ArticleRender content={content} />
 
                             {pages && pages.length > 0 && (
                                 <div className="p-4 md:p-5 bg-muted/30 rounded-xl border border-border/50 backdrop-blur-sm mb-4">

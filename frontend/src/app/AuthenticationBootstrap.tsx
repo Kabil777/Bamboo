@@ -1,5 +1,6 @@
 "use client";
 
+import { signalAuthResolved } from "@/api/auth/authGate";
 import { useAppDispatch } from "@/hooks/ReduxHooks";
 import { getAuthentication } from "@/store/reducers/AuthReducers";
 import { useEffect, useRef } from "react";
@@ -10,7 +11,9 @@ export default function AuthBootstrap() {
     useEffect(() => {
         if (ran.current) return;
         ran.current = true;
-        dispatch(getAuthentication());
+        dispatch(getAuthentication()).finally(() => {
+            signalAuthResolved();
+        });
     }, [dispatch]);
 
     return null;

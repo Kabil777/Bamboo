@@ -8,8 +8,10 @@ import { Separator } from "@/components/shadcnUI/separator";
 import { useDispatch, useSelector } from "react-redux";
 import { SidebarSkeleton } from "@/components/atomsComponents/skleton/sidebarSkleton";
 import { useEffect } from "react";
-import { useAppDispatch } from "@/hooks/ReduxHooks";
+import { useAppDispatch, useAppState } from "@/hooks/ReduxHooks";
 import { getCoverBlog } from "@/store/reducers/BlogCoverReducer";
+import { useApiLoading } from "@/hooks/useApiLoading";
+import { DocsCoverRtk } from "@/store/reducers/DocsCoverReducer";
 
 export default function Home() {
     const tabs = [
@@ -48,18 +50,30 @@ export default function Home() {
     ];
 
     const { status } = useSelector((s: RootState) => s.userReducer);
+    const { blogLoading, data } = useSelector((s: RootState) => s.blogReducer);
+    const { isDocsLoading, docs } = useAppState((s) => s.docsHomeReducer);
 
-    const loading = status === "loading";
     const dispatch = useAppDispatch();
 
     useEffect(() => {
-        dispatch(getCoverBlog({ cursor: null }));
-    }, [dispatch]);
+        if (status !== "authenticated") return;
+
+        if (data.length === 0) {
+            dispatch(getCoverBlog({ cursor: null, mode: "init" }));
+        }
+
+        if (docs.length === 0) {
+            dispatch(DocsCoverRtk());
+        }
+    }, [status, data.length, docs.length, dispatch]);
+    const isBlogApiLoading = useApiLoading(blogLoading);
+    const isDocsApiLoading = useApiLoading(isDocsLoading);
+
     return (
         <main className="flex justify-center">
             <div className="container grid grid-cols-4 gap-4 md:gap-6">
                 <div className="col-span-full sticky top-[58px] z-10 bg-background">
-                    {loading ? (
+                    {blogLoading || status !== "authenticated" ? (
                         <Skeleton className="h-8 w-full mt-2.5" />
                     ) : (
                         <TabChips tabs={tabs} onTabChange={() => {}} />
@@ -67,27 +81,29 @@ export default function Home() {
                 </div>
 
                 {/* Main content */}
-                <div className="col-span-full xl:col-span-3">
-                    {loading ? (
-                        Array.from({ length: 6 }).map((_, i) => (
-                            <BlogCardSkeleton key={i} />
-                        ))
+                <div className="col-span-full xl:col-span-3 relative min-h-[800px]">
+                    {isBlogApiLoading ? (
+                        <div className="absolute inset-0 z-10">
+                            {Array.from({ length: 6 }).map((_, i) => (
+                                <BlogCardSkeleton key={i} />
+                            ))}
+                        </div>
                     ) : (
-                        <>
-                            <BlogCard />
-                            <BlogCard />
-                            <BlogCard />
-                        </>
+                        <div>
+                            {data.map((d) => (
+                                <BlogCard key={d.id} {...d} />
+                            ))}
+                        </div>
                     )}
                 </div>
 
                 {/* Sidebar */}
                 <div className="hidden xl:flex flex-col xl:col-span-1 line-clamp-2 p-2 gap-4 xl:sticky top-[140px] z-8 max-h-[calc(100vh-150px)] overflow-y-auto custom-scroll">
-                    {loading ? (
+                    {isDocsApiLoading ? (
                         <SidebarSkeleton />
                     ) : (
                         <>
-                            <DocsHome />
+                            <DocsHome docs={docs} />
                             <Separator orientation="horizontal" />
                             <MoreAbout />
                         </>

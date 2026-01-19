@@ -3,7 +3,6 @@ import "highlight.js/styles/magula.min.css";
 
 import { Inter } from "next/font/google";
 import { Providers } from "./providers";
-import { Toaster } from "sonner";
 const inter = Inter({
     subsets: ["latin"],
     weight: ["100", "200", "300", "400", "500", "600", "700", "800", "900"],
@@ -21,7 +20,6 @@ export default function RootLayout({
                 <head />
                 <body className={inter.className}>
                     <Providers>{children}</Providers>
-                    <Toaster />
                 </body>
             </html>
         </>
