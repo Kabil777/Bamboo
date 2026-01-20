@@ -11,18 +11,32 @@ interface BlogHomeCard extends BlogBase {
     description: string;
     createdAt: string;
     tags: string[];
+    authorName: string | null;
 }
 
 interface BlogPage extends BlogHomeCard {
     content: string;
 }
 
+interface BlogContentState {
+    entities: Record<UUID, BlogPage>;
+    loadingById: Record<UUID, boolean>;
+    errorById: Record<UUID, string | null>;
+}
 interface BlogCursorResponse {
-    loading: Boolean;
+    blogLoading: Boolean;
+    blogLoadMore: Boolean;
     error: string | null;
     data: BlogHomeCard[];
     cursor: UUID | null;
     hasNext: Boolean;
 }
 
-export type { UUID, BlogBase, BlogHomeCard, BlogPage, BlogCursorResponse };
+export type {
+    UUID,
+    BlogBase,
+    BlogHomeCard,
+    BlogPage,
+    BlogCursorResponse,
+    BlogContentState,
+};

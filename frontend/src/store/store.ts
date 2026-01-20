@@ -1,13 +1,19 @@
 import { configureStore } from "@reduxjs/toolkit";
-import docsReducer from "./reducers/DocsEditor";
+import postReducer from "./reducers/BlogEditor";
 import userReducer from "./reducers/AuthReducers";
-import blogReducer from "./reducers/BlogEditor"
+import blogCoverReducer from "./reducers/BlogCoverReducer";
+import blogPageReducer from "./reducers/BlogPageReducer";
+import docsHomeReducer from "./reducers/DocsCoverReducer";
+import docsReducer from "./reducers/DocsReducer";
 
 const store = configureStore({
     reducer: {
-        docsReducer: docsReducer,
-        blogReducer:blogReducer,
+        postReducer: postReducer,
         userReducer: userReducer,
+        blogReducer: blogCoverReducer,
+        blogPageReducer: blogPageReducer,
+        docsHomeReducer: docsHomeReducer,
+        docsReducer: docsReducer,
     },
 });
 

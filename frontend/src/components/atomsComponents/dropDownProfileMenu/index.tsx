@@ -52,9 +52,7 @@ interface AuthMode {
     profile?: never;
 }
 
-type ProfileProps = ProfileMode | AuthMode;
-
-export function DropDownProfileMenu({ props }: ProfileProps) {
+export function DropDownProfileMenu() {
     const userDetails = useSelector((store: RootState) => store.userReducer);
     const profile = {
         profile: {
