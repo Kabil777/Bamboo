@@ -1,5 +1,6 @@
 import * as React from "react";
 import Collaboration from "@tiptap/extension-collaboration";
+import CollaborationCaret from "@tiptap/extension-collaboration-caret";
 import { EditorContent, EditorContext, useEditor } from "@tiptap/react";
 
 // --- Tiptap Core Extensions ---
@@ -132,11 +133,22 @@ const MainToolbarContent = ({ onSave, editor }: MainToolbarContentProp) => {
 };
 
 export default function Editor() {
+    const provider = getHocuspocusProvider();
+    const user = useAppState((s) => s.userReducer.user?.name);
+    React.useEffect(() => {
+        if (!provider || !user) return;
+
+        if (provider) {
+            provider.setAwarenessField("user", {
+                name: user,
+                color: "#ffcc00",
+            });
+        }
+    }, [provider, user]);
+
     const toolbarRef = React.useRef<HTMLDivElement>(null);
     const dispatch = useAppDispatch();
-    const raw = marked.parse(useAppState((s) => s.postReducer.content));
     const [word, setWord] = React.useState(0);
-    const provider = getHocuspocusProvider();
     const editor = useEditor({
         immediatelyRender: false,
         editorProps: {
@@ -151,7 +163,14 @@ export default function Editor() {
         extensions: [
             ...extensions,
             Collaboration.configure({
+                field: "content",
                 document: provider.document,
+            }),
+            CollaborationCaret.configure({
+                provider: provider,
+                user: {
+                    name: user,
+                },
             }),
         ],
         onCreate({ editor }) {

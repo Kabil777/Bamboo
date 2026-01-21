@@ -1,8 +1,8 @@
 "use client";
 
 import { Plus, Trash } from "lucide-react";
-import { useState } from "react";
-
+import { Input } from "@/components/shadcnUI/input";
+import { Button } from "@/components/shadcnUI/button";
 import {
     Sidebar,
     SidebarContent,
@@ -16,246 +16,110 @@ import {
     SidebarMenuSubButton,
     SidebarMenuSubItem,
 } from "@/components/shadcnUI/sidebar";
-import { Input } from "@/components/shadcnUI/input";
-import { Button } from "@/components/shadcnUI/button";
 
-import { useAppDispatch, useAppState } from "@/hooks/ReduxHooks";
-import { setPages } from "@/store/reducers/PostContent";
+import { useState } from "react";
+import { useDocsMetaProvider } from "@/hooks/useDocsMetaProvider";
+import { useDocsTree } from "@/hooks/useDocsTree";
 
+export function EditorSidebar({
+    docId,
+    ...props
+}: { docId: string } & React.ComponentProps<typeof Sidebar>) {
+    const provider = useDocsMetaProvider(
+        "0b428649-7ad9-453b-8619-79ed9b099925",
+    );
 
-export function EditorSidebar(props: React.ComponentProps<typeof Sidebar>) {
-    const dispatch = useAppDispatch();
-    const type = useAppState((s) => s.postReducer.type);
-    const pages = useAppState((s) => s.postReducer.Pages);
+    const { tree, addPage, deletePage } = useDocsTree(provider);
 
-    const [editing, setEditing] = useState<{
-        type: "main" | "sub" | null;
-        sectionIndex?: number;
-        subIndex?: number;
-    }>({ type: null });
+    const [editingId, setEditingId] = useState<string | null>(null);
 
-    if (type !== "docs") return null;
+    if (!provider) return null;
 
-    /* ------------------ Add ------------------ */
+    const updateTitle = (id: string, title: string) => {
+        const ydoc = provider.document;
+        const pages = ydoc.getArray<Y.Map<any>>("pages");
 
-    const addMainSection = () => {
-        dispatch(
-            setPages([
-                ...pages,
-                {
-                    id: crypto.randomUUID(),
-                    title: `New Section`,
-                    content: { type: "doc", content: [] },
-                    subPages: [],
-                },
-            ])
-        );
+        ydoc.transact(() => {
+            const page = pages.toArray().find((p) => p.get("id") === id);
+            if (page) {
+                page.set("title", title);
+            }
+        });
     };
 
-    const addSubItem = (sectionIndex: number) => {
-        dispatch(
-            setPages(
-                pages.map((section, i) =>
-                    i === sectionIndex
-                        ? {
-                            ...section,
-                            subPages: [
-                                ...(section.subPages ?? []),
-                                {
-                                    id: crypto.randomUUID(),
-                                    title: "New Sub Page",
-                                    content: { type: "doc", content: [] },
-                                },
-                            ],
-                        }
-                        : section
-                )
-            )
-        );
-    };
-
-    /* ------------------ Delete ------------------ */
-
-    const deleteMainSection = (sectionIndex: number) => {
-        dispatch(setPages(pages.filter((_, i) => i !== sectionIndex)));
-    };
-
-    const deleteSubItem = (sectionIndex: number, subIndex: number) => {
-        dispatch(
-            setPages(
-                pages.map((section, i) =>
-                    i === sectionIndex
-                        ? {
-                            ...section,
-                            subPages: section.subPages?.filter(
-                                (_, j) => j !== subIndex
-                            ),
-                        }
-                        : section
-                )
-            )
-        );
-    };
-
-    /* ------------------ Edit ------------------ */
-
-    const saveTitle = (title: string) => {
-        if (editing.type === "main" && editing.sectionIndex !== undefined) {
-            dispatch(
-                setPages(
-                    pages.map((section, i) =>
-                        i === editing.sectionIndex
-                            ? { ...section, title }
-                            : section
-                    )
-                )
-            );
-        }
-
-        if (
-            editing.type === "sub" &&
-            editing.sectionIndex !== undefined &&
-            editing.subIndex !== undefined
-        ) {
-            dispatch(
-                setPages(
-                    pages.map((section, i) =>
-                        i === editing.sectionIndex
-                            ? {
-                                ...section,
-                                subPages: section.subPages?.map((sub, j) =>
-                                    j === editing.subIndex
-                                        ? { ...sub, title }
-                                        : sub
-                                ),
+    const renderNode = (node: any) => (
+        <SidebarMenuItem key={node.id}>
+            <div className="flex items-center justify-between group">
+                {editingId === node.id ? (
+                    <Input
+                        autoFocus
+                        defaultValue={node.title}
+                        onBlur={(e) => {
+                            updateTitle(node.id, e.target.value);
+                            setEditingId(null);
+                        }}
+                        onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                                updateTitle(
+                                    node.id,
+                                    (e.target as HTMLInputElement).value,
+                                );
+                                setEditingId(null);
                             }
-                            : section
-                    )
-                )
-            );
-        }
+                        }}
+                        className="w-full rounded border px-1 text-sm"
+                    />
+                ) : (
+                    <SidebarMenuButton onClick={() => setEditingId(node.id)}>
+                        <span className="cursor-text">{node.title}</span>
+                    </SidebarMenuButton>
+                )}
 
-        setEditing({ type: null });
-    };
- console.log('pages', pages);
+                <div className="flex gap-1 invisible group-hover:visible">
+                    <Button
+                        size="icon"
+                        variant="ghost"
+                        onClick={() => addPage(node.id)}
+                    >
+                        <Plus className="w-4 h-4" />
+                    </Button>
+                    <Button
+                        size="icon"
+                        variant="ghost"
+                        onClick={() => deletePage(node.id)}
+                    >
+                        <Trash className="w-4 h-4 text-red-500" />
+                    </Button>
+                </div>
+            </div>
+
+            {node.children?.length > 0 && (
+                <SidebarMenuSub>{node.children.map(renderNode)}</SidebarMenuSub>
+            )}
+        </SidebarMenuItem>
+    );
+
     return (
         <Sidebar {...props}>
             <SidebarHeader>
                 <SidebarMenu>
                     <SidebarMenuItem>
-                        <SidebarMenuButton size="lg" asChild>
-                            <span className="font-medium">Pages</span>
-                        </SidebarMenuButton>
+                        <SidebarMenuButton size="lg">Pages</SidebarMenuButton>
                     </SidebarMenuItem>
                 </SidebarMenu>
             </SidebarHeader>
 
-            <SidebarContent className="custom-scroll scroll-smooth">
+            <SidebarContent>
                 <SidebarGroup>
-                    <SidebarMenu>
-                        {pages.map((item, sectionIndex) => (
-                            <SidebarMenuItem key={sectionIndex}>
-                                <div className="flex items-center justify-between group/btnvisible">
-                                    {editing.type === "main" && editing.sectionIndex === sectionIndex ? (
-                                        <Input
-                                            autoFocus
-                                            defaultValue={item.title}
-                                            onBlur={(e) => saveTitle(e.target.value)}
-                                            onKeyDown={(e) => {
-                                                if (e.key === "Enter") saveTitle((e.target as HTMLInputElement).value)
-                                            }}
-                                            className="w-full rounded border px-1 text-sm"
-                                        />
-                                    ) : (
-                                        <SidebarMenuButton
-                                            asChild
-                                            onClick={() => setEditing({ type: "main", sectionIndex })}
-                                        >
-                                            <span className="font-medium cursor-text">{item.title}</span>
-                                        </SidebarMenuButton>
-                                    )}
-
-                                    <div className="flex items-center group-hover/btnvisible:visible invisible">
-                                        {/* Add sub-item button */}
-                                        <Button
-                                            onClick={() => addSubItem(sectionIndex)}
-                                            variant="link"
-                                            size="icon"
-                                        >
-                                            <Plus className="w-4 h-4" />
-                                        </Button>
-                                        {/* Delete main section */}
-                                        <Button
-                                            onClick={() => deleteMainSection(sectionIndex)}
-                                            variant="link"
-                                            size="icon"
-                                            className="text-red-500 group-hover/btnvisible:visible invisible"
-                                        >
-                                            <Trash className="w-4 h-4" />
-                                        </Button>
-                                    </div>
-                                </div>
-
-                                {item.subPages?.length ? (
-                                    <SidebarMenuSub className="!pr-0 mr-0">
-                                        {item.subPages.map((sub, subIndex) => (
-                                            <SidebarMenuSubItem key={subIndex}>
-                                                <div className="flex items-center justify-between w-full group/btnvisible">
-                                                    {editing.type === "sub" &&
-                                                        editing.sectionIndex === sectionIndex &&
-                                                        editing.subIndex === subIndex ? (
-                                                        <Input
-                                                            autoFocus
-                                                            defaultValue={sub.title}
-                                                            onBlur={(e) => saveTitle(e.target.value)}
-                                                            onKeyDown={(e) => {
-                                                                if (e.key === "Enter")
-                                                                    saveTitle((e.target as HTMLInputElement).value)
-                                                            }}
-                                                            className="w-full rounded border px-1 !h-fit text-sm !py-1"
-                                                        />
-                                                    ) : (
-                                                        <SidebarMenuSubButton
-                                                            asChild
-                                                            isActive={sub.id === "1-1"}
-                                                            onClick={() =>
-                                                                setEditing({
-                                                                    type: "sub",
-                                                                    sectionIndex,
-                                                                    subIndex,
-                                                                })
-                                                            }
-                                                            className="w-full"
-                                                        >
-                                                            <span className="cursor-text">{sub.title}</span>
-                                                        </SidebarMenuSubButton>
-                                                    )}
-
-                                                    {/* Delete sub-item */}
-                                                    <Button
-                                                        onClick={() => deleteSubItem(sectionIndex, subIndex)}
-                                                        variant="link"
-                                                        size="icon"
-                                                        className={`text-red-500 group-hover/btnvisible:visible invisible`}
-                                                    >
-                                                        <Trash className="w-4 h-4" />
-                                                    </Button>
-                                                </div>
-                                            </SidebarMenuSubItem>
-                                        ))}
-                                    </SidebarMenuSub>
-                                ) : null}
-                            </SidebarMenuItem>
-                        ))}
-                    </SidebarMenu>
+                    <SidebarMenu>{tree.map(renderNode)}</SidebarMenu>
                 </SidebarGroup>
             </SidebarContent>
 
             <SidebarFooter>
-                <Button onClick={addMainSection} className="w-full">
+                <Button className="w-full" onClick={() => addPage(null)}>
                     <Plus className="w-4 h-4" /> Add Section
                 </Button>
             </SidebarFooter>
         </Sidebar>
-    )
+    );
 }

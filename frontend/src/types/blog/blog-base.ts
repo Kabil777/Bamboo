@@ -32,6 +32,8 @@ interface BlogCursorResponse {
     hasNext: Boolean;
 }
 
+interface BlogEditorState extends BlogPage {}
+
 export type {
     UUID,
     BlogBase,
@@ -39,4 +41,5 @@ export type {
     BlogPage,
     BlogCursorResponse,
     BlogContentState,
+    BlogEditorState,
 };
