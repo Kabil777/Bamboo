@@ -28,13 +28,8 @@ import {
 import { motion } from "framer-motion";
 import { extractToc } from "@/lib/utils";
 import { BlogPageRtk } from "@/store/reducers/BlogPageReducer";
-import { useSelector } from "react-redux";
 import { useParams } from "next/navigation";
-import {
-    blogCoverSelectors,
-    selectById,
-} from "@/store/reducers/BlogCoverReducer";
-import { BlogHomeCard, BlogPage } from "@/types/blog/blog-base";
+import { BlogPage } from "@/types/blog/blog-base";
 import { useApiLoading } from "@/hooks/useApiLoading";
 import { BlogPageSkeleton } from "@/components/atomsComponents/skleton/BlogPageSkleton";
 
@@ -62,8 +57,6 @@ export default function BlogRenderPage() {
     const blog: BlogPage = useAppState(
         (state) => state.blogPageReducer.entities[id],
     );
-
-    const pages = useAppState((state) => state.postReducer.Pages);
     if (!id || isPageApiLoading || !blog) {
         return <BlogPageSkeleton />;
     }
@@ -204,7 +197,7 @@ export default function BlogRenderPage() {
                             {/* Article Content */}
                             <ArticleRender content={content} />
 
-                            {pages && pages.length > 0 && (
+                            {/* {pages && pages.length > 0 && (
                                 <div className="p-4 md:p-5 bg-muted/30 rounded-xl border border-border/50 backdrop-blur-sm mb-4">
                                     <h4 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
                                         <svg
@@ -233,7 +226,7 @@ export default function BlogRenderPage() {
                                         ))}
                                     </div>
                                 </div>
-                            )}
+                            )} */}
                         </div>
                     </article>
 

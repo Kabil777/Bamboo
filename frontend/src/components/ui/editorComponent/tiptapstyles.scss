@@ -21,7 +21,7 @@
       position: relative;
       vertical-align: top;
 
-      >* {
+      > * {
         margin-bottom: 0;
       }
     }
@@ -64,8 +64,21 @@
     cursor: ew-resize;
     cursor: col-resize;
   }
+  .tiptap.ProseMirror pre {
+  display: block;
+  padding: 0.5rem 1rem;
+  overflow-x: auto;
+  border-radius: 6px;
+  background: #1a1b26 !important; /* allow HLJS theme to apply */
+  color: #a9b1d6 !important;
+}
 
-  .collaboration-carets__caret {
+.simple-editor-content pre {
+  background: unset; /* remove editor wrapper background */
+  padding: 0; /* optional: no extra padding */
+  margin: 0; /* optional */
+}
+.collaboration-carets__caret {
     border-left: 1px solid #0d0d0d;
     border-right: 1px solid #0d0d0d;
     margin-left: -1px;
@@ -90,4 +103,5 @@
     user-select: none;
     white-space: nowrap;
   }
+
 }

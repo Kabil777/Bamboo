@@ -11,11 +11,11 @@ import { Superscript } from "@tiptap/extension-superscript";
 import { CharacterCount } from "@tiptap/extensions";
 import CodeBlockLowlight from "@tiptap/extension-code-block-lowlight";
 import {
-    Table,
-    TableCell,
-    TableHeader,
-    TableKit,
-    TableRow,
+  Table,
+  TableCell,
+  TableHeader,
+  TableKit,
+  TableRow,
 } from "@tiptap/extension-table";
 
 // --- Custom Extensions ---
@@ -51,58 +51,58 @@ lowlight.register("c", c);
 lowlight.register("cpp", cpp);
 
 const extensions = [
-    StarterKit.configure({
-        link: false,
-        codeBlock: false,
-    }),
-    TextAlign.configure({ types: ["heading", "paragraph"] }),
-    TaskList,
-    TaskItem.configure({ nested: true }),
-    Highlight.configure({ multicolor: true }),
-    Image,
-    Typography,
-    Superscript,
-    Subscript,
-    Table,
-    TableRow,
-    TableCell,
-    TableHeader,
-    Selection,
-    ImageUploadNode.configure({
-        accept: "image/*",
-        maxSize: MAX_FILE_SIZE,
-        limit: 3,
-        upload: handleImageUpload,
-        onError: (error) => console.error("Upload failed:", error),
-    }),
-    CharacterCount,
-    TrailingNode,
-    Link.configure({
-        openOnClick: false,
-        autolink: true,
-        defaultProtocol: "https",
-        protocols: ["http", "https"],
-        shouldAutoLink: (url) => {
-            try {
-                const parsedUrl = url.includes(":")
-                    ? new URL(url)
-                    : new URL(`https://${url}`);
-                const disallowedDomains = [
-                    "example-no-autolink.com",
-                    "another-no-autolink.com",
-                ];
-                const domain = parsedUrl.hostname;
+  StarterKit.configure({
+    link: false,
+    codeBlock: false,
+  }),
+  TextAlign.configure({ types: ["heading", "paragraph"] }),
+  TaskList,
+  TaskItem.configure({ nested: true }),
+  Highlight.configure({ multicolor: true }),
+  Image,
+  Typography,
+  Superscript,
+  Subscript,
+  Table,
+  TableRow,
+  TableCell,
+  TableHeader,
+  Selection,
+  ImageUploadNode.configure({
+    accept: "image/*",
+    maxSize: MAX_FILE_SIZE,
+    limit: 3,
+    upload: handleImageUpload,
+    onError: (error) => console.error("Upload failed:", error),
+  }),
+  CharacterCount,
+  TrailingNode,
+  Link.configure({
+    openOnClick: false,
+    autolink: true,
+    defaultProtocol: "https",
+    protocols: ["http", "https"],
+    shouldAutoLink: (url) => {
+      try {
+        const parsedUrl = url.includes(":")
+          ? new URL(url)
+          : new URL(`https://${url}`);
+        const disallowedDomains = [
+          "example-no-autolink.com",
+          "another-no-autolink.com",
+        ];
+        const domain = parsedUrl.hostname;
 
-                return !disallowedDomains.includes(domain);
-            } catch {
-                return false;
-            }
-        },
-    }),
+        return !disallowedDomains.includes(domain);
+      } catch {
+        return false;
+      }
+    },
+  }),
 
-    CodeBlockLowlight.configure({
-        lowlight,
-    }),
+  CodeBlockLowlight.configure({
+    lowlight,
+  }),
 ];
 
 export default extensions;

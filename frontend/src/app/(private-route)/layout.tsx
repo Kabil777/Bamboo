@@ -1,3 +1,5 @@
+// "use client";
+
 import { NavBar } from "@/components/ui";
 
 export default function RootLayout({

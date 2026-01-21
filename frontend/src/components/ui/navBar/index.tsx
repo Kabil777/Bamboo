@@ -1,4 +1,5 @@
 "use client";
+
 import React from "react";
 import { Book, CirclePlay, File, LifeBuoy, Zap } from "lucide-react";
 import {
@@ -54,7 +55,7 @@ const NavBar = ({
                     title: "Blog",
                     description: "The latest industry news, updates and info.",
                     icon: <Book className="size-5 shrink-0" />,
-                    url: "/blog",
+                    url: "/blog/hvjbfjh",
                 },
                 {
                     title: "Customer stories",
@@ -94,7 +95,7 @@ const NavBar = ({
 }: NavbarProps) => {
     return (
         <header className="py-2 z-50 border border-accent sticky top-0 bg-background shadow-none w-full ">
-            <nav className="justify-between md:px-12 px-2 sm:px-6 flex">
+            <div className="justify-between md:px-12 px-2 sm:px-6 flex">
                 <div className="flex items-center ">
                     <div className="flex items-center gap-1">
                         <div className="md:hidden flex items-center">
@@ -107,11 +108,11 @@ const NavBar = ({
                     </div>
                 </div>
                 <div className="flex gap-5 items-center">
-                    <SearchBox />
+                    <SearchBox /> 
                     <EditorModel />
-                    <DropDownProfileMenu />
+                    <DropDownProfileMenu  />
                 </div>
-            </nav>
+            </div>
         </header>
     );
 };

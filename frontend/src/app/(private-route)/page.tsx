@@ -58,14 +58,15 @@ export default function Home() {
     useEffect(() => {
         if (status !== "authenticated") return;
 
-        if (data.length === 0) {
+        if (!Array.isArray(data) || data.length === 0) {
             dispatch(getCoverBlog({ cursor: null, mode: "init" }));
         }
 
-        if (docs.length === 0) {
+        if (!Array.isArray(docs) || docs.length === 0) {
             dispatch(DocsCoverRtk());
         }
-    }, [status, data.length, docs.length, dispatch]);
+    }, [status, data?.length, docs?.length, dispatch]);
+    
     const isBlogApiLoading = useApiLoading(blogLoading);
     const isDocsApiLoading = useApiLoading(isDocsLoading);
 
@@ -81,7 +82,7 @@ export default function Home() {
                 </div>
 
                 {/* Main content */}
-                <div className="col-span-full xl:col-span-3 relative min-h-[800px]">
+                <div className="col-span-full xl:col-span-3 relative">
                     {isBlogApiLoading ? (
                         <div className="absolute inset-0 z-10">
                             {Array.from({ length: 6 }).map((_, i) => (
@@ -90,9 +91,19 @@ export default function Home() {
                         </div>
                     ) : (
                         <div>
-                            {data.map((d) => (
+                            {
+                                data == null || data.length === 0 ? (
+                                    <div className="p-4 justify-center flex">
+
+                                    <p className="text-sm text-muted-foreground px-2">
+                                        No blogs available
+                                    </p>
+                                    </div>
+                                ) : 
+                                (data ?? []).map((d) => (
                                 <BlogCard key={d.id} {...d} />
-                            ))}
+                            ))
+                            }
                         </div>
                     )}
                 </div>

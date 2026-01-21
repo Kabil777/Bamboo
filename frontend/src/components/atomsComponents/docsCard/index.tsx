@@ -25,10 +25,12 @@ export const DocsCard = ({
     active: UUID;
     setActiveCard: (id: UUID) => void;
 }) => {
-    const isActive = active === doc.id;
+
+    const isActive = active === doc?.id || false;
+
     return (
         <motion.div
-            key={doc.id}
+            key={doc?.id}
             layout
             onMouseEnter={() => setActiveCard(doc.id)}
             transition={{ layout: { duration: 0.3, type: "spring" } }}
@@ -40,7 +42,7 @@ export const DocsCard = ({
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2 text-xl font-medium">
                         <FaReact size={30} />
-                        {doc.title}
+                        {doc?.title || "Untitled Document"}
                     </div>
                     <Button className="text-sm font-semibold px-3 py-2 rounded-lg">
                         View Docs
@@ -50,7 +52,7 @@ export const DocsCard = ({
                 <>
                     <div className="flex items-center gap-2 text-xl font-medium">
                         <FaReact size={30} />
-                        {doc.title}
+                        {doc?.title || "Untitled Document"}
                     </div>
 
                     <motion.p
@@ -59,7 +61,7 @@ export const DocsCard = ({
                         transition={{ duration: 0.3 }}
                         className="text-base text-accent-foreground font-normal"
                     >
-                        {doc.description || "No description available."}
+                        {doc?.description || "No description available."}
                     </motion.p>
 
                     <div className="flex items-center justify-between text-sm text-accent-foreground">

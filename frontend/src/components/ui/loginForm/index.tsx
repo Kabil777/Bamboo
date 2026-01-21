@@ -21,7 +21,7 @@ import { toast } from "sonner";
 import { useRouter } from "nextjs-toploader/app";
 import { useAppDispatch } from "@/hooks/ReduxHooks";
 import { getAuthentication } from "@/store/reducers/AuthReducers";
-import { useEffect } from "react";
+import Link from "next/link";
 
 const formSchema = z.object({
     email: z.string().email("Please enter a valid email"),
@@ -58,8 +58,8 @@ export function LoginForm({
     });
     async function onSubmit() {
         const res = await dispatch(getAuthentication()).unwrap();
-        router.push("/");
         toast.success(`Login successful as ${res.data.email}`);
+        router.push("/");
     }
 
     return (
@@ -134,7 +134,7 @@ export function LoginForm({
                                 variant="outline"
                                 className="w-full"
                                 onClick={() => {
-                                    window.location.href = `${process.env.NEXT_PUBLIC_AUTH_SERVER_URL}${process.env.NEXT_PUBLIC_API_VERSION}/auth/login/google`;
+                                    router.push(`${process.env.NEXT_PUBLIC_AUTH_SERVER_URL}${process.env.NEXT_PUBLIC_API_VERSION}/auth/login/google`);
                                 }}
                             >
                                 <FcGoogle />
@@ -142,12 +142,12 @@ export function LoginForm({
                             </Button>
                             <div className="text-center text-sm">
                                 Don&apos;t have an account?{" "}
-                                <a
-                                    href="#"
+                                <Link
+                                    href="/signup"
                                     className="underline underline-offset-4"
                                 >
                                     Sign up
-                                </a>
+                                </Link>
                             </div>
                         </div>
                         <div className="relative hidden bg-muted md:block">

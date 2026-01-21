@@ -5,9 +5,9 @@ import store from "@/store/store";
 import { ThemeProvider } from "@/components/theme-provider";
 import NextTopLoader from "nextjs-toploader";
 import AuthBootstrap from "./AuthenticationBootstrap";
-import { Toaster } from "@/components/shadcnUI/sonner";
 import setupInterceptors from "@/api/interceptors";
 import api from "@/api/axios";
+import { Toaster } from "sonner";
 
 setupInterceptors(api);
 export function Providers({ children }: { children: React.ReactNode }) {
@@ -15,7 +15,11 @@ export function Providers({ children }: { children: React.ReactNode }) {
         <Provider store={store}>
             <AuthBootstrap />
             <ThemeProvider attribute="class" defaultTheme="light">
-                <NextTopLoader height={2} showSpinner />
+                <NextTopLoader
+                    color="linear-gradient(0.25turn, var(--background), var(--foreground))"
+                    height={2}
+                    showSpinner={true}
+                />
                 <Toaster />
                 {children}
             </ThemeProvider>

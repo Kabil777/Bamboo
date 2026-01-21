@@ -20,21 +20,13 @@ import {
 import { useAppState } from "@/hooks/ReduxHooks";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { DocsTreeNode } from "@/types/docs/docs-base";
-
-type ArticleSidebarProps = React.ComponentProps<typeof Sidebar> & {
-    navData: DocsTreeNode[];
-    activeId?: string;
-};
 
 export function ArticleSidebar({
-    navData,
-    activeId,
     ...props
-}: ArticleSidebarProps) {
+}: React.ComponentProps<typeof Sidebar>) {
     const { id } = useParams() as { id: string | string[] };
-    console.log("Params ID:", id);
-    const NavData = navData;
+    // console.log("Params ID:", id);
+    const NavData = useAppState((s) => s.docsReducer?.Pages || []);
     return (
         <Sidebar {...props}>
             <SidebarContent className="custom-scroll scroll-smooth !bg-background px-3">
@@ -42,18 +34,34 @@ export function ArticleSidebar({
 
                 <SidebarGroup className="px-0">
                     <SidebarMenu className="gap-2">
+                        <SidebarMenuButton
+                            asChild
+                            isActive={id[1]== null}
+                        >
+                            <Link
+                                href={
+                                    "/docs/" +
+                                    id[0]
+                                }
+                                className="font-semibold text-sm"
+                            >
+                                OverView
+                            </Link>
+                        </SidebarMenuButton>
                         {NavData.map((item) => (
                             <Collapsible
                                 key={item.id}
                                 defaultOpen
+                                
                                 className="group/collapsible"
                             >
-                                <SidebarMenuItem>
+                                <SidebarMenuItem
+                                
+                                >
                                     <CollapsibleTrigger className="flex items-center justify-between w-full px-2 py-1 rounded-md hover:bg-accent transition-colors">
                                         <SidebarMenuButton
                                             asChild
                                             isActive={id[1] === item.id}
-                                            className="hover:bg-transparent"
                                         >
                                             <Link
                                                 href={
@@ -67,42 +75,46 @@ export function ArticleSidebar({
                                                 {item.title}
                                             </Link>
                                         </SidebarMenuButton>
-                                        {item.subTree &&
-                                            item.subTree.length > 0 && (
+                                        {item.subPages &&
+                                            item.subPages.length > 0 && (
                                                 <ChevronDown className="size-4 transition-transform group-data-[state=open]/collapsible:rotate-180 text-muted-foreground" />
                                             )}
                                     </CollapsibleTrigger>
-                                    {item.subTree?.length ? (
+                                    {item.subPages?.length ? (
                                         <CollapsibleContent>
                                             <SidebarMenuSub className="ml-2 border-l border-border ">
-                                                {item.subTree.map((subitem) => (
-                                                    <SidebarMenuSubItem
-                                                        key={subitem.id}
-                                                        className="my-0.5"
-                                                    >
-                                                        <SidebarMenuSubButton
-                                                            asChild
-                                                            isActive={
-                                                                id[2] ===
-                                                                subitem.id
-                                                            }
-                                                            className="text-sm py-1"
+                                                {item.subPages.map(
+                                                    (subitem) => (
+                                                        <SidebarMenuSubItem
+                                                            key={subitem.id}
+                                                            className="my-0.5"
                                                         >
-                                                            <Link
-                                                                href={
-                                                                    "/docs/" +
-                                                                    id[0] +
-                                                                    "/" +
-                                                                    item.id +
-                                                                    "/" +
+                                                            <SidebarMenuSubButton
+                                                                asChild
+                                                                isActive={
+                                                                    id[2] ===
                                                                     subitem.id
                                                                 }
+                                                                className="text-sm py-1"
                                                             >
-                                                                {subitem.title}
-                                                            </Link>
-                                                        </SidebarMenuSubButton>
-                                                    </SidebarMenuSubItem>
-                                                ))}
+                                                                <Link
+                                                                    href={
+                                                                        "/docs/" +
+                                                                        id[0] +
+                                                                        "/" +
+                                                                        item.id +
+                                                                        "/" +
+                                                                        subitem.id
+                                                                    }
+                                                                >
+                                                                    {
+                                                                        subitem.title
+                                                                    }
+                                                                </Link>
+                                                            </SidebarMenuSubButton>
+                                                        </SidebarMenuSubItem>
+                                                    ),
+                                                )}
                                             </SidebarMenuSub>
                                         </CollapsibleContent>
                                     ) : null}

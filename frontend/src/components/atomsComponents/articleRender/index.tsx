@@ -43,9 +43,9 @@ function extractText(node: React.ReactNode): string {
     return node.map(extractText).join("");
   }
 
-  if (React.isValidElement(node)) {
-    return extractText(node.props.children);
-  }
+    if (React.isValidElement(node)) {
+        return extractText((node.props as { children?: React.ReactNode }).children);
+    }
 
   return "";
 }

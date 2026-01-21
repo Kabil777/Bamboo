@@ -3,46 +3,21 @@ import { useState } from "react";
 import { Button } from "@/components/shadcnUI/button";
 import { DocsCard } from "@/components/atomsComponents";
 import Link from "next/link";
-import { DocsHomeCard } from "@/types/docs/docs-base";
-import { UUID } from "@/types/blog/blog-base";
 
-const cardData = [
-    {
-        id: 1,
-        title: "React",
-        created: "Jan 2025",
-        description: "A JavaScript library for building user interfaces",
-    },
-    {
-        id: 2,
-        title: "Vue",
-        created: "Feb 2025",
-        description:
-            "A progressive JavaScript framework for building user interfaces",
-    },
-    {
-        id: 3,
-        title: "Angular",
-        created: "Mar 2025",
-        description:
-            "A platform for building mobile and desktop web applications",
-    },
-    {
-        id: 4,
-        title: "Svelte",
-        created: "Apr 2025",
-        description: "A radical new approach to building user interfaces",
-    },
-
-    { id: 5, title: "Next.js", created: "May 2025" },
-];
+type DocsHomeCard = {
+    id: string;
+    title: string;
+    coverUrl: string;
+    description: string;
+    createdAt: string;
+};
 
 interface DocsHomeProps {
     docs: DocsHomeCard[];
 }
 
 export const DocsHome = ({ docs }: DocsHomeProps) => {
-    const [activeCard, setActiveCard] = useState<UUID>(docs[0]?.id);
+    const [activeCard, setActiveCard] = useState<string>(docs[0]?.id ?? "");
     return (
         <div className="flex flex-col gap-4">
             <span className="flex items-center justify-between px-2">
@@ -53,18 +28,26 @@ export const DocsHome = ({ docs }: DocsHomeProps) => {
                     </Button>
                 </Link>
             </span>
-
-            {docs.map((doc) => {
-                return (
-                    <DocsCard
-                        key={doc.id}
-                        doc={doc}
-                        hoverOpen
-                        active={activeCard}
-                        setActiveCard={setActiveCard}
-                    />
-                );
-            })}
+            {
+                docs.length === 0 ? (
+                    <p className="text-sm text-muted-foreground px-2">
+                        No docs available
+                    </p>
+            ) : (
+                docs.map((card) => {
+                    return (
+                        <DocsCard
+                            key={card.id}
+                            doc={card}
+                            hoverOpen
+                            active={activeCard}
+                            setActiveCard={setActiveCard}
+                        />
+                    );
+                })
+            )
+            }
         </div>
     );
 };
+

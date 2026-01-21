@@ -35,8 +35,10 @@ export const BlogCard: React.FC<BlogHomeCard> = ({
     authorName,
 }) => {
     const [loading, setLoading] = useState(false);
+    const [imageError, setImageError] = useState(false);
     const router = useRouter();
     const dispatch = useDispatch();
+    console.log("BlogCard Rendered:", coverUrl);
     return (
         <div key={id}>
             <Card className="shadow-none rounded-none overflow-hidden items-center p-2 sm:p-4 gap-2 border-none transition duration-200 ease-in-out">
@@ -64,22 +66,27 @@ export const BlogCard: React.FC<BlogHomeCard> = ({
                             ))}
                         </div>
                     </div>
-                    {!loading && (
-                        <Skeleton className="sm:col-span-2 row-start-1 sm: col-span-full rounded-lg m-auto max-h-[160px] w-3/4  bg-neutral-200 dark:bg-neutral-800" />
-                    )}
-
-                    <Image
-                        src={coverUrl}
-                        loading="eager"
-                        alt="Card Image"
-                        width={300}
-                        height={200}
-                        className="sm:col-span-2 row-start-1 sm: col-span-full w-3/4  max-h-[160px] rounded-lg m-auto"
-                        style={{ aspectRatio: "300/300", objectFit: "cover" }}
-                        onLoad={() => {
-                            setLoading(true);
-                        }}
-                    />
+                    {
+                        coverUrl && !imageError && !loading ? (
+                            <Image
+                                src={coverUrl}
+                                loading="eager"
+                                alt="Blog Cover Image"
+                                width={300}
+                                height={200}
+                                className="sm:col-span-1 row-start-1 col-span-full max-h-[160px] rounded-lg m-auto"
+                                style={{ aspectRatio: "300/300", objectFit: "cover" }}
+                                onLoad={() => {
+                                    setLoading(true);
+                                }}
+                                onError={() => {
+                                    setImageError(true);
+                                }}
+                            />
+                        ) : (
+                            <Skeleton className="sm:col-span-2 h-full row-start-1 col-span-full rounded-lg m-auto max-h-[160px]  bg-border dark:bg-border w-full" />
+                        )
+                    }
                 </CardContent>
             </Card>
             <br />
