@@ -72,69 +72,78 @@ const cardData = [
 export default function Profile() {
 
     return (
-        <div className="container grid grid-cols-4 transition-all duration-200 ease-linear gap-4 md:gap-6 relative">
-            <div className="col-span-full xl:col-span-3 mx-2 md:mx-0 xl:border-r-1 p-0 sm:p-2 relative">
-                {cont.map((item) => (
-                    <BlogCard
-                        key={item.id}
-                        title={item.title}
-                        description={item.description}
-                        imageUrl={item.imageUrl}
-                        profileId={item.profileId}
-                    />
-                ))}
-            </div>
-            <div className="hidden xl:flex flex-col xl:col-span-1 line-clamp-2 p-2 gap-4 xl:sticky top-[140px] z-8 max-h-[calc(100vh-150px)] overflow-y-auto custom-scroll">
-                <div>
-                    <p className="font-semibold">Recommmend Profile : </p>
-                    {cardData.map((card) => {
-                        return (
-                            <span key={card.id}>
-                                <div  className="mb-4 flex flex-row items-center gap-3 justify-between my-5">
-                                    <div className="flex flex-row gap-2">
-                                        <Avatar className="w-12 h-12">
-                                            <AvatarImage src="https://i.pravatar.cc/150?img=12" />
-                                            <AvatarFallback>VC</AvatarFallback>
-                                        </Avatar>
-                                        <div className="flex flex-col justify-center">
-                                            <p>{card.title}</p>
-                                            <p className="text-xs text-muted-foreground line-clamp-1" title={card.description}>{card.description}</p>
-                                        </div>
-
-                                    </div>
-                                    <motion.div
-                                        initial={card.follow ? false : true}
-                                        animate={{
-                                            backgroundColor: card.follow
-                                                ? "hsl(var(--accent-foreground))"
-                                                : "hsl(var(--foreground))",
-                                            scale: 1,
-                                        }}
-                                        whileTap={{ scale: 0.95 }}
-                                        transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                                    >
-                                        <Button
-                                            className="p-2 py-1 h-fit text-xs font-normal align-[4px]"
-                                        >
-                                            <motion.span
-                                                key={card.follow ? "following" : "follow"}
-                                                initial={{ opacity: 0, y: -5 }}
-                                                animate={{ opacity: 1, y: 0 }}
-                                                exit={{ opacity: 0, y: 5 }}
-                                                transition={{ duration: 0.2 }}
-                                            >
-                                                {card.follow ? "Following" : "Follow"}
-                                            </motion.span>
-                                        </Button>
-                                    </motion.div>
-                                </div>
-                                <Separator orientation="horizontal" />
-
-                            </span>
-                        );
-                    })}
-                </div>
-            </div>
+      <div className="container grid grid-cols-4 transition-all duration-200 ease-linear gap-4 md:gap-6 relative">
+        <div className="col-span-full xl:col-span-3 mx-2 md:mx-0 xl:border-r-1 p-0 sm:p-2 relative">
+          {cont.map((item) => (
+            <BlogCard
+              key={item.id}
+              title={item.title}
+              description={item.description}
+              coverUrl={item.imageUrl}
+              authorId={item.profileId}
+              authorName={item.profileId}
+              id={item.id}
+              tags={["design", "ux", "ui"]}
+              createdAt={new Date().toISOString()}
+            />
+          ))}
         </div>
-    )
+        <div className="hidden xl:flex flex-col xl:col-span-1 line-clamp-2 p-2 gap-4 xl:sticky top-[140px] z-8 max-h-[calc(100vh-150px)] overflow-y-auto custom-scroll">
+          <div>
+            <p className="font-semibold">Recommmend Profile : </p>
+            {cardData.map((card) => {
+              return (
+                <span key={card.id}>
+                  <div className="mb-4 flex flex-row items-center gap-3 justify-between my-5">
+                    <div className="flex flex-row gap-2">
+                      <Avatar className="w-12 h-12">
+                        <AvatarImage src="https://i.pravatar.cc/150?img=12" />
+                        <AvatarFallback>VC</AvatarFallback>
+                      </Avatar>
+                      <div className="flex flex-col justify-center">
+                        <p>{card.title}</p>
+                        <p
+                          className="text-xs text-muted-foreground line-clamp-1"
+                          title={card.description}
+                        >
+                          {card.description}
+                        </p>
+                      </div>
+                    </div>
+                    <motion.div
+                      initial={card.follow ? false : true}
+                      animate={{
+                        backgroundColor: card.follow
+                          ? "hsl(var(--accent-foreground))"
+                          : "hsl(var(--foreground))",
+                        scale: 1,
+                      }}
+                      whileTap={{ scale: 0.95 }}
+                      transition={{
+                        type: "spring",
+                        stiffness: 300,
+                        damping: 20,
+                      }}
+                    >
+                      <Button className="p-2 py-1 h-fit text-xs font-normal align-[4px]">
+                        <motion.span
+                          key={card.follow ? "following" : "follow"}
+                          initial={{ opacity: 0, y: -5 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: 5 }}
+                          transition={{ duration: 0.2 }}
+                        >
+                          {card.follow ? "Following" : "Follow"}
+                        </motion.span>
+                      </Button>
+                    </motion.div>
+                  </div>
+                  <Separator orientation="horizontal" />
+                </span>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    );
 }

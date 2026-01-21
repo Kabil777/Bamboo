@@ -134,9 +134,10 @@ function Popup({ setOpen, editor }: props) {
       <DialogTrigger asChild>
         <Button
           variant={"outline"}
-          className="flex items-center transition-all delay-75 justify-between text-sm text-muted-foreground border border-input bg-accent rounded-md hover:bg-accent hover:text-foreground"
+          size="icon"
+          className="transition-all delay-75 rounded-full text-muted-foreground border border-input bg-accent hover:bg-accent hover:text-foreground"
         >
-          <IoLogoMarkdown className="pointer-events-none" />
+          <IoLogoMarkdown size={24} className="pointer-events-none" />
         </Button>
       </DialogTrigger>
       <DialogContent className="md:max-w-[700px]">

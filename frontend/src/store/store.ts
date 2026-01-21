@@ -5,16 +5,18 @@ import blogCoverReducer from "./reducers/BlogCoverReducer";
 import blogPageReducer from "./reducers/BlogPageReducer";
 import docsHomeReducer from "./reducers/DocsCoverReducer";
 import docsReducer from "./reducers/DocsReducer";
+import DocsSlice from "./reducers/DocsEditor";
 
 const store = configureStore({
-    reducer: {
-        postReducer: postReducer,
-        userReducer: userReducer,
-        blogReducer: blogCoverReducer,
-        blogPageReducer: blogPageReducer,
-        docsHomeReducer: docsHomeReducer,
-        docsReducer: docsReducer,
-    },
+  reducer: {
+    postReducer: postReducer,
+    userReducer: userReducer,
+    blogReducer: blogCoverReducer,
+    blogPageReducer: blogPageReducer,
+    docsHomeReducer: docsHomeReducer,
+    docsReducer: docsReducer,
+    DocsSlice: DocsSlice,
+  },
 });
 
 export default store;

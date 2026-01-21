@@ -64,4 +64,44 @@
     cursor: ew-resize;
     cursor: col-resize;
   }
+  .tiptap.ProseMirror pre {
+  display: block;
+  padding: 0.5rem 1rem;
+  overflow-x: auto;
+  border-radius: 6px;
+  background: #1a1b26 !important; /* allow HLJS theme to apply */
+  color: #a9b1d6 !important;
+}
+
+.simple-editor-content pre {
+  background: unset; /* remove editor wrapper background */
+  padding: 0; /* optional: no extra padding */
+  margin: 0; /* optional */
+}
+.collaboration-carets__caret {
+    border-left: 1px solid #0d0d0d;
+    border-right: 1px solid #0d0d0d;
+    margin-left: -1px;
+    margin-right: -1px;
+    pointer-events: none;
+    position: relative;
+    word-break: normal;
+  }
+
+  /* Render the username above the caret */
+  .collaboration-carets__label {
+    border-radius: 3px 3px 3px 0;
+    color: #0d0d0d;
+    font-size: 12px;
+    font-style: normal;
+    font-weight: 600;
+    left: -1px;
+    line-height: normal;
+    padding: 0.1rem 0.3rem;
+    position: absolute;
+    top: -1.4em;
+    user-select: none;
+    white-space: nowrap;
+  }
+
 }

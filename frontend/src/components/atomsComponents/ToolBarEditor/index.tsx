@@ -94,9 +94,7 @@ const MainToolbarContent = ({ onSave, editor }: MainToolbarContentProp) => {
         <MarkButton type="subscript" />
       </ToolbarGroup>
 
-      <MenuBar editor={editor} />
 
-      <TableMenu editor={editor} />
       {/* <TableDropdownMenu editor={editor} /> */}
 
       <ToolbarSeparator />
@@ -109,39 +107,9 @@ const MainToolbarContent = ({ onSave, editor }: MainToolbarContentProp) => {
       </ToolbarGroup>
 
       <ToolbarSeparator />
-      <ToolbarGroup>
-        <ImageUploadButton text="Add" />
-      </ToolbarGroup>
-      {editor && (
-        <Popup
-          open={open}
-          setOpen={setOpen}
-          onClick={() => {
-            setOpen(true);
-          }}
-          editor={editor}
-        />
-      )}
 
-      <Dialog open={open} onOpenChange={setOpen} >
-        <DialogTrigger asChild className="ml-2">
-          <Button>Upload</Button>
-        </DialogTrigger>
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader className="mt-5">
-            <DialogTitle>Upload the blog</DialogTitle>
-          </DialogHeader>
-          <DialogDescription className="mb-5">
-            Upload the current content as a blog post.
-          </DialogDescription>
-          <DialogFooter>
-            <DialogClose asChild>
-              <Button variant="outline">Cancel</Button>
-            </DialogClose>
-            <Button onClick={onSave}>Upload</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+
+
 
       <Spacer />
     </>
