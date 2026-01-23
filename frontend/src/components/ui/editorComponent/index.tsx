@@ -45,6 +45,8 @@ import Popup from "./Popup";
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/shadcnUI/dialog";
 import { getHocuspocusProvider } from "@/lib/hocuspocus";
 import { useAppState } from "@/hooks/ReduxHooks";
+import { Input } from "@/components/shadcnUI/input";
+import { Label } from "@/components/shadcnUI/label";
 //syntax highlighting
 
 export default function Editor({
@@ -170,7 +172,6 @@ export default function Editor({
             className="simple-editor-content w-full container max-w-5xl"
           />
 
-          
           <div className="fixed bottom-16 right-16 flex flex-col gap-2 z-10">
             {editor && (
               <Popup
@@ -211,17 +212,16 @@ export default function Editor({
                 </Button>
               </DialogTrigger>
               <DialogContent className="sm:max-w-[425px]">
-                <DialogHeader className="mt-5">
-                  <DialogTitle>Upload the blog</DialogTitle>
-                </DialogHeader>
-                <DialogDescription className="mb-5">
-                  Upload the current content as a blog post.
-                </DialogDescription>
+                <div className="grid gap-4">
+                    <Input
+                      className="w-full !rounded-full"
+                    />
+                </div>
                 <DialogFooter>
                   <DialogClose asChild>
                     <Button variant="outline">Cancel</Button>
                   </DialogClose>
-                  <Button onClick={onSave}>Upload</Button>
+                  <Button type="submit">Save changes</Button>
                 </DialogFooter>
               </DialogContent>
             </Dialog>
