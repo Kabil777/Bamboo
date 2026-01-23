@@ -43,13 +43,10 @@ export default function BlogRenderPage() {
 
     useEffect(() => {
         if (!id) return;
-        if (status === "authenticated") {
-            dispatch(BlogPageRtk(id));
-            console.log("called");
-        }
-    }, [dispatch, id, status]);
+        dispatch(BlogPageRtk(id));
+        console.log("called");
+    }, [dispatch, id]);
 
-    const isPageApiLoading = useApiLoading(loadingById[id]);
     const [accordionValue, setAccordionValue] = useState<string | undefined>(
         undefined,
     );
@@ -57,7 +54,7 @@ export default function BlogRenderPage() {
     const blog: BlogPage = useAppState(
         (state) => state.blogPageReducer.entities[id],
     );
-    if (!id || isPageApiLoading || !blog) {
+    if (!id || loadingById[id] || !blog) {
         return <BlogPageSkeleton />;
     }
 
@@ -65,7 +62,7 @@ export default function BlogRenderPage() {
     const toc = extractToc(content);
     return (
         <>
-            <div className="flex flex-1 flex-col w-full">
+            <div className="flex flex-1 flex-col w-full justify-center">
                 {/* Mobile Menu Trigger */}
                 <div className="sticky top-[var(--header-height)] w-full z-20 lg:hidden border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
                     <Accordion
@@ -115,7 +112,7 @@ export default function BlogRenderPage() {
                 </div>
                 <div className="flex justify-center relative w-full gap-10 ">
                     {/* Main Content */}
-                    <article className="flex-1 min-w-0 w-full max-w-2xl lg:translate-x-15">
+                    <article className="flex-1 min-w-0 w-full max-w-4xl lg:translate-x-15 p-2">
                         <div className="flex w-full min-w-0 flex-1 flex-col gap-8 py-6 lg:py-8 text-neutral-800 dark:text-neutral-300">
                             {/* Article Header */}
                             <header className="mb-6 md:mb-10 w-full">
@@ -147,7 +144,7 @@ export default function BlogRenderPage() {
                                             height={450}
                                             src={blog.coverUrl}
                                             alt="Article cover"
-                                            className="w-full h-auto object-cover"
+                                            className="w-full rounded-2xl h-auto object-cover"
                                         />
                                     </div>
                                 </figure>

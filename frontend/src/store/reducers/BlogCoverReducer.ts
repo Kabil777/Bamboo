@@ -22,12 +22,13 @@ export const getCoverBlog = createAsyncThunk<
         console.log(res);
         return res.data;
     } catch (e) {
+        console.log(e);
         return rejectWithValue("Failed to fetch data");
     }
 });
 
 const initialState: BlogCursorResponse = {
-    blogLoading: false,
+    blogLoading: true,
     blogLoadMore: false,
     data: [],
     cursor: null,

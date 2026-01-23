@@ -31,237 +31,297 @@ import MainToolbarContent from "@/components/atomsComponents/ToolBarEditor";
 import { FaToolbox } from "react-icons/fa";
 import { Group, Plus, Save, Table2, Upload, Users } from "lucide-react";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSub,
-  DropdownMenuSubContent,
-  DropdownMenuTrigger,
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSub,
+    DropdownMenuSubContent,
+    DropdownMenuTrigger,
 } from "@/components/shadcnUI/dropdown-menu";
 import { MenuBar } from "./customBlock";
 import { TableMenu } from "@/components/tiptap-ui/table-dropdown-menu/table-dropdown-menu";
 import Popup from "./Popup";
-import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/shadcnUI/dialog";
-import { getHocuspocusProvider } from "@/lib/hocuspocus";
-import { useAppState } from "@/hooks/ReduxHooks";
+import {
+    Dialog,
+    DialogClose,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+} from "@/components/shadcnUI/dialog";
+import { useHocuspocusProvider } from "@/lib/hocuspocus";
+import { useCollaborativeAwareness } from "@/hooks/useCollabrationAwareness";
+import { useCollabUser } from "@/hooks/useCollabUser";
 //syntax highlighting
 
 export default function Editor({
-  intialContent,
-  save,
+    intialContent,
+    save,
 }: {
-  intialContent: string;
-  save: (content: string) => void;
+    intialContent: string;
+    save: (content: string) => void;
 }) {
-  const provider = getHocuspocusProvider();
-  const user = useAppState((s) => s.userReducer.user?.name);
-  React.useEffect(() => {
-    if (!provider || !user) return;
+    const provider = useHocuspocusProvider("123", "blog");
 
-    if (provider) {
-      provider.setAwarenessField("user", {
-        name: user,
-        color: "#ffcc00",
-      });
-    }
-  }, [provider, user]);
-  const toolbarRef = React.useRef<HTMLDivElement>(null);
-  const raw = marked.parse(intialContent ?? "");
-  const [open, setOpen] = React.useState<boolean>(false);
-  const [word, setWord] = React.useState(0);
+    const collabUser = useCollabUser();
 
-  const editor = useEditor({
-    immediatelyRender: false,
-    editorProps: {
-      attributes: {
-        autocomplete: "on",
-        autocorrect: "on",
-        autocapitalize: "on",
-        "aria-label": "Start typing...",
-      },
-    },
-    autofocus: "end",
-    extensions: [
-      ...extensions,
-      Collaboration.configure({
-        field: "content",
-        document: provider.document,
-      }),
-      CollaborationCaret.configure({
-        provider: provider,
-        user: {
-          name: user,
+    const { onlineUsers, totalUsers, editorUsers } = useCollaborativeAwareness(
+        provider,
+        {
+            userId: collabUser.id,
+            name: collabUser.name,
+            color: collabUser.color,
         },
-      }),
-    ],
-    content: raw,
-    onCreate({ editor }) {
-      setWord(editor.storage.characterCount.characters());
-    },
-    onUpdate({ editor }) {
-      setWord(editor.storage.characterCount.characters());
-    },
-  });
-
-  const onSave = () => {
-    console.log(
-      renderToMarkdown({ extensions, content: editor?.getJSON() || {} }),
+        "editor",
     );
-    save(
-      renderToMarkdown({
-        extensions,
-        content: editor?.getJSON() || {},
-      }),
+
+    React.useEffect(() => {
+        console.log("=== Awareness Debug ===");
+        console.log("My user:", collabUser);
+        console.log("Online users:", onlineUsers);
+        console.log("Total users:", totalUsers);
+        console.log("Editor users:", editorUsers);
+    }, [collabUser, onlineUsers, totalUsers, editorUsers]);
+
+    console.log(onlineUsers, " ", totalUsers);
+    const toolbarRef = React.useRef<HTMLDivElement>(null);
+    const raw = marked.parse(intialContent ?? "");
+    const [open, setOpen] = React.useState<boolean>(false);
+    const [word, setWord] = React.useState(0);
+
+    const editor = useEditor(
+        provider?.document
+            ? {
+                  immediatelyRender: false,
+                  editorProps: {
+                      attributes: {
+                          autocomplete: "on",
+                          autocorrect: "on",
+                          autocapitalize: "on",
+                          "aria-label": "Start typing...",
+                      },
+                  },
+                  autofocus: "end",
+                  extensions: [
+                      ...extensions,
+                      Collaboration.configure({
+                          field: "content",
+                          document: provider.document,
+                      }),
+                      CollaborationCaret.configure({
+                          provider: provider,
+                          user: {
+                              name: collabUser.name,
+                              color: collabUser.color,
+                          },
+                      }),
+                  ],
+                  content: raw,
+                  onCreate({ editor }) {
+                      setWord(editor.storage.characterCount.characters());
+                  },
+                  onUpdate({ editor }) {
+                      setWord(editor.storage.characterCount.characters());
+                  },
+              }
+            : null,
     );
-  };
 
-  return (
-    <EditorContext.Provider value={{ editor }}>
-      <div className="content-wrapper">
-        <Toolbar ref={toolbarRef}>
-          <MainToolbarContent onSave={onSave} editor={editor} />
-        </Toolbar>
-        {editor && (
-          <>
-            <BubbleMenu
-              editor={editor}
-              className="!z-20 absolute"
-              options={{ placement: "bottom-start", offset: 5 }}
-              shouldShow={({ from, to }) => {
-                return from !== to;
-              }}
-            >
-              <div className="bubble-menu bg-background px-1 py-0.5 border-1 border-border/50 text-sm rounded-xl flex shadow-2xl">
-                <Button
-                  variant={"ghost"}
-                  onClick={() => editor.chain().focus().toggleBold().run()}
-                  className="transition-all delay-75 py-1 px-2 rounded-xl font-semibold text-sm text-muted-foreground bg-background hover:bg-accent hover:text-foreground"
+    const onSave = () => {
+        console.log(
+            renderToMarkdown({ extensions, content: editor?.getJSON() || {} }),
+        );
+        save(
+            renderToMarkdown({
+                extensions,
+                content: editor?.getJSON() || {},
+            }),
+        );
+    };
+
+    React.useEffect(() => {
+        return () => {
+            editor?.destroy();
+        };
+    }, [editor]);
+    return (
+        <EditorContext.Provider value={{ editor }}>
+            <div className="content-wrapper">
+                <Toolbar ref={toolbarRef}>
+                    <MainToolbarContent onSave={onSave} editor={editor} />
+                </Toolbar>
+                {editor && (
+                    <>
+                        <BubbleMenu
+                            editor={editor}
+                            className="!z-20 absolute"
+                            options={{ placement: "bottom-start", offset: 5 }}
+                            shouldShow={({ from, to }) => {
+                                return from !== to;
+                            }}
+                        >
+                            <div className="bubble-menu bg-background px-1 py-0.5 border-1 border-border/50 text-sm rounded-xl flex shadow-2xl">
+                                <Button
+                                    variant={"ghost"}
+                                    onClick={() =>
+                                        editor
+                                            .chain()
+                                            .focus()
+                                            .toggleBold()
+                                            .run()
+                                    }
+                                    className="transition-all delay-75 py-1 px-2 rounded-xl font-semibold text-sm text-muted-foreground bg-background hover:bg-accent hover:text-foreground"
+                                >
+                                    Bold
+                                </Button>
+                                <Button
+                                    onClick={() =>
+                                        editor
+                                            .chain()
+                                            .focus()
+                                            .toggleItalic()
+                                            .run()
+                                    }
+                                    className="transition-all delay-75 py-1 px-2 font-semibold  rounded-xl text-sm text-muted-foreground bg-background hover:bg-accent hover:text-foreground"
+                                >
+                                    Italic
+                                </Button>
+                                <Button
+                                    onClick={() => {
+                                        editor
+                                            .chain()
+                                            .focus()
+                                            .toggleStrike()
+                                            .run();
+                                    }}
+                                    className="transition-all delay-75 py-1 px-2 font-semibold  rounded-xl text-sm text-muted-foreground bg-background hover:bg-accent hover:text-foreground"
+                                >
+                                    Strike
+                                </Button>
+                            </div>
+                        </BubbleMenu>
+                    </>
+                )}
+
+                <div
+                    className="flex justify-center p-5 min-h-[calc(100vh-7rem)]"
+                    onClick={() => editor?.chain().focus().run()}
                 >
-                  Bold
-                </Button>
-                <Button
-                  onClick={() => editor.chain().focus().toggleItalic().run()}
-                  className="transition-all delay-75 py-1 px-2 font-semibold  rounded-xl text-sm text-muted-foreground bg-background hover:bg-accent hover:text-foreground"
-                >
-                  Italic
-                </Button>
-                <Button
-                  onClick={() => {
-                    editor.chain().focus().toggleStrike().run();
-                  }}
-                  className="transition-all delay-75 py-1 px-2 font-semibold  rounded-xl text-sm text-muted-foreground bg-background hover:bg-accent hover:text-foreground"
-                >
-                  Strike
-                </Button>
-              </div>
-            </BubbleMenu>
-          </>
-        )}
+                    <EditorContent
+                        editor={editor}
+                        placeholder="Type Here"
+                        role="presentation"
+                        className="simple-editor-content w-full container max-w-5xl"
+                    />
 
-        <div
-          className="flex justify-center p-5 min-h-[calc(100vh-7rem)]"
-          onClick={() => editor?.chain().focus().run()}
-        >
-          <EditorContent
-            editor={editor}
-            placeholder="Type Here"
-            role="presentation"
-            className="simple-editor-content w-full container max-w-5xl"
-          />
+                    <div className="fixed bottom-16 right-16 flex flex-col gap-2 z-10">
+                        {editor && (
+                            <Popup
+                                open={open}
+                                setOpen={setOpen}
+                                onClick={() => {
+                                    setOpen(true);
+                                }}
+                                editor={editor}
+                            />
+                        )}
+                        <Dialog open={open} onOpenChange={setOpen}>
+                            <DialogTrigger asChild>
+                                <Button size="icon" className="rounded-full">
+                                    <Upload size={24} />
+                                </Button>
+                            </DialogTrigger>
+                            <DialogContent className="sm:max-w-[425px]">
+                                <DialogHeader className="mt-5">
+                                    <DialogTitle>Upload the blog</DialogTitle>
+                                </DialogHeader>
+                                <DialogDescription className="mb-5">
+                                    Upload the current content as a blog post.
+                                </DialogDescription>
+                                <DialogFooter>
+                                    <DialogClose asChild>
+                                        <Button variant="outline">
+                                            Cancel
+                                        </Button>
+                                    </DialogClose>
+                                    <Button onClick={onSave}>Upload</Button>
+                                </DialogFooter>
+                            </DialogContent>
+                        </Dialog>
 
-          
-          <div className="fixed bottom-16 right-16 flex flex-col gap-2 z-10">
-            {editor && (
-              <Popup
-                open={open}
-                setOpen={setOpen}
-                onClick={() => {
-                  setOpen(true);
-                }}
-                editor={editor}
-              />
-            )}
-            <Dialog open={open} onOpenChange={setOpen}>
-              <DialogTrigger asChild>
-                <Button size="icon" className="rounded-full">
-                  <Upload size={24} />
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-[425px]">
-                <DialogHeader className="mt-5">
-                  <DialogTitle>Upload the blog</DialogTitle>
-                </DialogHeader>
-                <DialogDescription className="mb-5">
-                  Upload the current content as a blog post.
-                </DialogDescription>
-                <DialogFooter>
-                  <DialogClose asChild>
-                    <Button variant="outline">Cancel</Button>
-                  </DialogClose>
-                  <Button onClick={onSave}>Upload</Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
+                        <Dialog open={open} onOpenChange={setOpen}>
+                            <DialogTrigger asChild>
+                                <Button size="icon" className="rounded-full">
+                                    <Users size={24} />
+                                </Button>
+                            </DialogTrigger>
+                            <DialogContent className="sm:max-w-[425px]">
+                                <DialogHeader className="mt-5">
+                                    <DialogTitle>Upload the blog</DialogTitle>
+                                </DialogHeader>
+                                <DialogDescription className="mb-5">
+                                    Upload the current content as a blog post.
+                                </DialogDescription>
+                                <DialogFooter>
+                                    <DialogClose asChild>
+                                        <Button variant="outline">
+                                            Cancel
+                                        </Button>
+                                    </DialogClose>
+                                    <Button onClick={onSave}>Upload</Button>
+                                </DialogFooter>
+                            </DialogContent>
+                        </Dialog>
 
-            <Dialog open={open} onOpenChange={setOpen}>
-              <DialogTrigger asChild>
-                <Button size="icon" className="rounded-full">
-                  <Users size={24} />
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-[425px]">
-                <DialogHeader className="mt-5">
-                  <DialogTitle>Upload the blog</DialogTitle>
-                </DialogHeader>
-                <DialogDescription className="mb-5">
-                  Upload the current content as a blog post.
-                </DialogDescription>
-                <DialogFooter>
-                  <DialogClose asChild>
-                    <Button variant="outline">Cancel</Button>
-                  </DialogClose>
-                  <Button onClick={onSave}>Upload</Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button
+                                    variant="default"
+                                    size="icon"
+                                    className="rounded-full"
+                                >
+                                    <Plus size={24} />
+                                </Button>
+                            </DropdownMenuTrigger>
 
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="default" size="icon" className="rounded-full">
-                  <Plus size={24} />
-                </Button>
-              </DropdownMenuTrigger>
+                            <DropdownMenuContent
+                                side="top"
+                                align="end"
+                                className="!min-w-fit !bg-transparent border-none !shadow-none p-0 mr-10"
+                                sideOffset={10}
+                            >
+                                <div className="flex flex-col space-y-2 z-50">
+                                    <Button
+                                        variant="outline"
+                                        className="rounded-full"
+                                    >
+                                        <Save onClick={onSave} />
+                                        Save
+                                    </Button>
 
-              <DropdownMenuContent
-                side="top"
-                align="end"
-                className="!min-w-fit !bg-transparent border-none !shadow-none p-0 mr-10"
-                sideOffset={10}
-              >
-                <div className="flex flex-col space-y-2 z-50">
-                  <Button variant="outline" className="rounded-full">
-                    <Save onClick={onSave} />
-                    Save
-                  </Button>
+                                    <Button
+                                        variant="outline"
+                                        className="rounded-full"
+                                    >
+                                        <Save onClick={onSave} />
+                                        Save
+                                    </Button>
 
-                  <Button variant="outline" className="rounded-full">
-                    <Save onClick={onSave} />
-                    Save
-                  </Button>
-
-                  <MenuBar editor={editor} />
-                  <TableMenu editor={editor} />
+                                    <MenuBar editor={editor} />
+                                    <TableMenu editor={editor} />
+                                </div>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    </div>
                 </div>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-        </div>
-        <div className="fixed bottom-5 right-6 text-xs bg-border p-2 rounded-lg ">
-          {" "}
-          {word ?? 0} characters
-        </div>
-      </div>
-    </EditorContext.Provider>
-  );
+                <div className="fixed bottom-5 right-6 text-xs bg-border p-2 rounded-lg ">
+                    {" "}
+                    {word ?? 0} characters
+                </div>
+            </div>
+        </EditorContext.Provider>
+    );
 }
