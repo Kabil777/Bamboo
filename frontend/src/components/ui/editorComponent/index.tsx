@@ -55,6 +55,7 @@ import {
 import { useHocuspocusProvider } from "@/lib/hocuspocus";
 import { useCollaborativeAwareness } from "@/hooks/useCollabrationAwareness";
 import { useCollabUser } from "@/hooks/useCollabUser";
+import { toast } from "sonner";
 //syntax highlighting
 
 export default function Editor({
@@ -85,6 +86,25 @@ export default function Editor({
         console.log("Total users:", totalUsers);
         console.log("Editor users:", editorUsers);
     }, [collabUser, onlineUsers, totalUsers, editorUsers]);
+
+    React.useEffect(() => {
+        if (!provider) return;
+
+        const meta = provider.document.getMap("meta");
+
+        const observer = () => {
+            const status = meta.get("saveStatus");
+            if (status === "SAVED") {
+                toast.success("Saved successfully");
+            }
+            if (status === "FAILED") {
+                toast.error("Save failed. Try again.");
+            }
+        };
+
+        meta.observe(observer);
+        return () => meta.unobserve(observer);
+    }, [provider]);
 
     console.log(onlineUsers, " ", totalUsers);
     const toolbarRef = React.useRef<HTMLDivElement>(null);
@@ -140,13 +160,14 @@ export default function Editor({
                 content: editor?.getJSON() || {},
             }),
         );
+        if (!editor) return;
+
+        if (!provider) return;
+        const yDoc = provider.document;
+        const meta = yDoc.getMap("meta");
+        meta.set("saveRequestedAt", Date.now());
     };
 
-    React.useEffect(() => {
-        return () => {
-            editor?.destroy();
-        };
-    }, [editor]);
     return (
         <EditorContext.Provider value={{ editor }}>
             <div className="content-wrapper">

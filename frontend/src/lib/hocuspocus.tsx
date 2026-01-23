@@ -11,7 +11,7 @@ export function useHocuspocusProvider(
     if (!providerRef.current) {
         providerRef.current = new HocuspocusProvider({
             url: "ws://127.0.0.1:1234/collaboration",
-            name: `52a41c68-c2fe-4fee-b894-8467c2ea6b8d`,
+            name: `69eede4a-3af3-4bdf-910f-2abdd80af03a`,
         });
     }
 
