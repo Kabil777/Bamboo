@@ -39,72 +39,102 @@ import {
   DropdownMenuSubContent,
   DropdownMenuTrigger,
 } from "@/components/shadcnUI/dropdown-menu";
-import { MenuBar } from "./customBlock";
 import { TableMenu } from "@/components/tiptap-ui/table-dropdown-menu/table-dropdown-menu";
 import Popup from "./Popup";
-import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/shadcnUI/dialog";
-import { getHocuspocusProvider } from "@/lib/hocuspocus";
-import { useAppState } from "@/hooks/ReduxHooks";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/shadcnUI/dialog";
+import { useHocuspocusProvider } from "@/lib/hocuspocus";
+import { useCollaborativeAwareness } from "@/hooks/useCollabrationAwareness";
+import { useCollabUser } from "@/hooks/useCollabUser";
 import { Input } from "@/components/shadcnUI/input";
-import { Label } from "@/components/shadcnUI/label";
 //syntax highlighting
 
 export default function Editor({
-  intialContent,
+  //   intialContent,
   save,
 }: {
-  intialContent: string;
+  //   intialContent: string;
   save: (content: string) => void;
 }) {
-  const provider = getHocuspocusProvider();
-  const user = useAppState((s) => s.userReducer.user?.name);
-  React.useEffect(() => {
-    if (!provider || !user) return;
+  const provider = useHocuspocusProvider(
+    "1add6f66-f67f-4e18-8f2f-405a8de5cdc0",
+    "blog",
+  );
 
-    if (provider) {
-      provider.setAwarenessField("user", {
-        name: user,
-        color: "#ffcc00",
-      });
-    }
-  }, [provider, user]);
+  const collabUser = useCollabUser();
+
+  const { onlineUsers, totalUsers, editorUsers } = useCollaborativeAwareness(
+    provider,
+    {
+      userId: collabUser.id,
+      name: collabUser.name,
+      color: collabUser.color,
+    },
+    "editor",
+  );
+
+  // Collab invite state (now with role)
+  type InvitedUser = { email: string; role: string };
+  const [invitedUsers, setInvitedUsers] = React.useState<InvitedUser[]>([]);
+
+  React.useEffect(() => {
+    console.log("=== Awareness Debug ===");
+    console.log("My user:", collabUser);
+    console.log("Online users:", onlineUsers);
+    console.log("Total users:", totalUsers);
+    console.log("Editor users:", editorUsers);
+  }, [collabUser, onlineUsers, totalUsers, editorUsers]);
+
+  console.log(onlineUsers, " ", totalUsers);
   const toolbarRef = React.useRef<HTMLDivElement>(null);
-  const raw = marked.parse(intialContent ?? "");
+  const raw = marked.parse("");
   const [open, setOpen] = React.useState<boolean>(false);
   const [word, setWord] = React.useState(0);
 
-  const editor = useEditor({
-    immediatelyRender: false,
-    editorProps: {
-      attributes: {
-        autocomplete: "on",
-        autocorrect: "on",
-        autocapitalize: "on",
-        "aria-label": "Start typing...",
-      },
-    },
-    autofocus: "end",
-    extensions: [
-      ...extensions,
-      Collaboration.configure({
-        field: "content",
-        document: provider.document,
-      }),
-      CollaborationCaret.configure({
-        provider: provider,
-        user: {
-          name: user,
+  let editor = null;
+  if (provider?.document) {
+    editor = useEditor({
+      immediatelyRender: false,
+      editorProps: {
+        attributes: {
+          autocomplete: "on",
+          autocorrect: "on",
+          autocapitalize: "on",
+          "aria-label": "Start typing...",
         },
-      }),
-    ],
-    content: raw,
-    onCreate({ editor }) {
-      setWord(editor.storage.characterCount.characters());
-    },
-    onUpdate({ editor }) {
-      setWord(editor.storage.characterCount.characters());
-    },
-  });
+      },
+      autofocus: "end",
+      extensions: [
+        ...extensions,
+        Collaboration.configure({
+          field: "content",
+          document: provider.document,
+        }),
+        CollaborationCaret.configure({
+          provider: provider,
+          user: {
+            name: collabUser.name,
+            color: collabUser.color,
+          },
+        }),
+      ],
+      content: raw,
+      onCreate({ editor }) {
+        setWord(editor.storage.characterCount.characters());
+      },
+      onUpdate({ editor }) {
+        setWord(editor.storage.characterCount.characters());
+      },
+    });
+  }
 
   const onSave = () => {
     console.log(
@@ -118,6 +148,11 @@ export default function Editor({
     );
   };
 
+  React.useEffect(() => {
+    return () => {
+      editor?.destroy();
+    };
+  }, [editor]);
   return (
     <EditorContext.Provider value={{ editor }}>
       <div className="content-wrapper">
@@ -167,7 +202,6 @@ export default function Editor({
         >
           <EditorContent
             editor={editor}
-            placeholder="Type Here"
             role="presentation"
             className="simple-editor-content w-full container max-w-5xl"
           />
@@ -211,17 +245,99 @@ export default function Editor({
                   <Users size={24} />
                 </Button>
               </DialogTrigger>
-              <DialogContent className="sm:max-w-[425px]">
-                <div className="grid gap-4">
+              <DialogContent className="sm:max-w-[480px]">
+                <div className="space-y-6 mt-4">
+                  {/* Invite input */}
+                  <form
+                    className="flex gap-2 items-center"
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      const email = e.currentTarget.email.value.trim();
+                      if (
+                        email &&
+                        !invitedUsers.some((u) => u.email === email)
+                      ) {
+                        setInvitedUsers((prev) => [
+                          ...prev,
+                          { email, role: "Editor" },
+                        ]);
+                        e.currentTarget.reset();
+                      }
+                    }}
+                  >
                     <Input
-                      className="w-full !rounded-full"
+                      name="email"
+                      placeholder="Email to invite..."
+                      autoComplete="off"
+                      className="flex-1"
                     />
+                    <Button type="submit" variant="default" className="px-4">
+                      Invite
+                    </Button>
+                  </form>
+                  {/* User list */}
+                  <div>
+                    <div className="font-semibold mb-2 text-sm text-muted-foreground">
+                      People with access
+                    </div>
+                    <ul className="space-y-2">
+                      {/* Owner (current user) */}
+                      <li className="flex items-center gap-3 bg-background rounded px-2 py-2 border">
+                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white font-bold text-lg">
+                          {collabUser.name?.[0]?.toUpperCase() || "A"}
+                        </div>
+                        <div className="flex-1">
+                          <div className="font-medium">
+                            {collabUser.name || "You"}
+                          </div>
+                          <div className="text-xs text-muted-foreground">
+                            Owner
+                          </div>
+                        </div>
+                        <span className="text-xs px-2 py-0.5 rounded bg-blue-100 text-blue-700">
+                          You
+                        </span>
+                      </li>
+                      {/* Invited users */}
+                      {invitedUsers.length === 0 && (
+                        <li className="text-muted-foreground text-sm px-2">
+                          No invites yet.
+                        </li>
+                      )}
+                      {invitedUsers.map(({ email, role }) => (
+                        <li
+                          key={email}
+                          className="flex items-center gap-3 bg-accent rounded px-2 py-2"
+                        >
+                          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-gray-300 to-gray-400 flex items-center justify-center text-gray-700 font-bold text-lg">
+                            {email[0]?.toUpperCase()}
+                          </div>
+                          <div className="flex-1">
+                            <div className="font-medium">{email}</div>
+                            <div className="text-xs text-muted-foreground">
+                              {role}
+                            </div>
+                          </div>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() =>
+                              setInvitedUsers((prev) =>
+                                prev.filter((u) => u.email !== email),
+                              )
+                            }
+                          >
+                            Remove
+                          </Button>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
                 </div>
                 <DialogFooter>
                   <DialogClose asChild>
-                    <Button variant="outline">Cancel</Button>
+                    <Button variant="outline">Close</Button>
                   </DialogClose>
-                  <Button type="submit">Save changes</Button>
                 </DialogFooter>
               </DialogContent>
             </Dialog>
@@ -250,7 +366,6 @@ export default function Editor({
                     Save
                   </Button>
 
-                  <MenuBar editor={editor} />
                   <TableMenu editor={editor} />
                 </div>
               </DropdownMenuContent>

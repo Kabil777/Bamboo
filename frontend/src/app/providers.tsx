@@ -13,7 +13,6 @@ setupInterceptors(api);
 export function Providers({ children }: { children: React.ReactNode }) {
     return (
         <Provider store={store}>
-            <AuthBootstrap />
             <ThemeProvider attribute="class" defaultTheme="light">
                 <NextTopLoader
                     color="linear-gradient(0.25turn, var(--background), var(--foreground))"

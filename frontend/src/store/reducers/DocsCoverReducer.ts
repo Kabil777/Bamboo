@@ -25,7 +25,7 @@ interface initialType {
     isError: boolean;
 }
 const initialState: initialType = {
-    isDocsLoading: false,
+    isDocsLoading: true,
     docs: [],
     isError: false,
 };
