@@ -6,6 +6,7 @@ import blogPageReducer from "./reducers/BlogPageReducer";
 import docsHomeReducer from "./reducers/DocsCoverReducer";
 import docsReducer from "./reducers/DocsReducer";
 import DocsSlice from "./reducers/DocsEditor";
+import setProfileReducers from "./reducers/setProfileReducers";
 
 const store = configureStore({
   reducer: {
@@ -16,6 +17,7 @@ const store = configureStore({
     docsHomeReducer: docsHomeReducer,
     docsReducer: docsReducer,
     DocsSlice: DocsSlice,
+    setProfileReducers: setProfileReducers,
   },
 });
 
