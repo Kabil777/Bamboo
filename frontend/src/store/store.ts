@@ -1,21 +1,23 @@
 import { configureStore } from "@reduxjs/toolkit";
-import postReducer from "./reducers/BlogEditor";
+import CreateCoverDetailsBlogDocs from "./reducers/CreateCoverDetialsBlogDocs";
 import userReducer from "./reducers/AuthReducers";
 import blogCoverReducer from "./reducers/BlogCoverReducer";
 import blogPageReducer from "./reducers/BlogPageReducer";
 import docsHomeReducer from "./reducers/DocsCoverReducer";
 import docsReducer from "./reducers/DocsReducer";
 import DocsSlice from "./reducers/DocsEditor";
+import setProfileReducers from "./reducers/setProfileReducers";
 
 const store = configureStore({
   reducer: {
-    postReducer: postReducer,
+    createCoverDetailsBlogDocs: CreateCoverDetailsBlogDocs,
     userReducer: userReducer,
     blogReducer: blogCoverReducer,
     blogPageReducer: blogPageReducer,
     docsHomeReducer: docsHomeReducer,
     docsReducer: docsReducer,
     DocsSlice: DocsSlice,
+    setProfileReducers: setProfileReducers,
   },
 });
 

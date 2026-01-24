@@ -54,7 +54,6 @@ interface MainToolbarContentProp {
   editor: ReturnType<typeof useEditor> | null;
 }
 
-
 const MainToolbarContent = ({ onSave, editor }: MainToolbarContentProp) => {
   const [open, setOpen] = React.useState<boolean>(false);
   return (
@@ -70,7 +69,6 @@ const MainToolbarContent = ({ onSave, editor }: MainToolbarContentProp) => {
         <HeadingDropdownMenu levels={[1, 2, 3, 4]} />
         <ListDropdownMenu types={["bulletList", "orderedList", "taskList"]} />
         <BlockquoteButton />
-        <CodeBlockButton />
       </ToolbarGroup>
 
       <ToolbarSeparator />
@@ -81,9 +79,12 @@ const MainToolbarContent = ({ onSave, editor }: MainToolbarContentProp) => {
         <MarkButton type="strike" />
         <MarkButton type="code" />
         <MarkButton type="underline" />
+      </ToolbarGroup>
+      <ToolbarSeparator />
 
+      <ToolbarGroup>
+        <MenuBar editor={editor} />
         <ColorHighlightPopover />
-
         <LinkPopover />
       </ToolbarGroup>
 
@@ -94,22 +95,18 @@ const MainToolbarContent = ({ onSave, editor }: MainToolbarContentProp) => {
         <MarkButton type="subscript" />
       </ToolbarGroup>
 
-
       {/* <TableDropdownMenu editor={editor} /> */}
 
-      <ToolbarSeparator />
+      {/* <ToolbarSeparator /> */}
 
-      <ToolbarGroup>
+      {/* <ToolbarGroup>
         <TextAlignButton align="left" />
         <TextAlignButton align="center" />
         <TextAlignButton align="right" />
         <TextAlignButton align="justify" />
-      </ToolbarGroup>
+      </ToolbarGroup> */}
 
-      <ToolbarSeparator />
-
-
-
+      {/* <ToolbarSeparator /> */}
 
       <Spacer />
     </>

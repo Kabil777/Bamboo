@@ -12,6 +12,7 @@ import { useAppDispatch, useAppState } from "@/hooks/ReduxHooks";
 import { getCoverBlog } from "@/store/reducers/BlogCoverReducer";
 import { useApiLoading } from "@/hooks/useApiLoading";
 import { DocsCoverRtk } from "@/store/reducers/DocsCoverReducer";
+import BambooLoader from "@/components/atomsComponents/logo/BambooLoader";
 
 export default function Home() {
     const tabs = [
@@ -77,6 +78,7 @@ export default function Home() {
 
                 {/* Main content */}
                 <div className="col-span-full xl:col-span-3 relative">
+                    <BambooLoader variant="sway" />
                     {blogLoading ? (
                         <div className="absolute inset-0 z-10">
                             {Array.from({ length: 6 }).map((_, i) => (

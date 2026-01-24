@@ -1,22 +1,18 @@
-"use client"
+"use client";
 import Editor from "@/components/ui/editorComponent";
-import { useAppDispatch, useAppState } from "@/hooks/ReduxHooks";
-import { setContent } from "@/store/reducers/BlogEditor";
+import { useParams } from "next/navigation";
 
 export default function BlogEditor() {
+  const params = useParams();
+  const id = typeof params?.id === "string" ? params.id : "";
+  const save = (content: string) => {
+    console.log("Saving content:", content);
+    ``;
+  };
 
-    const dispatch = useAppDispatch();
-    const intialContent = useAppState((s) => s.blogReducer.content);
-    const save = (content: string) => {
-        dispatch(
-            setContent({
-                content: content,
-            }),
-        );
-    };
-    return (
-        <div className="w-full">
-            <Editor intialContent={intialContent} save={save} />
-        </div>
-    )
+  return (
+    <div className="w-full">
+      <Editor id={id} save={save} />
+    </div>
+  );
 }

@@ -42,26 +42,6 @@ const BambooLoader: React.FC<BambooLoaderProps> = ({
           <path className="bamboo-path path-13 stem" d="M121.534 198.124L108.215 191.048C107.672 190.76 107.518 190.052 107.886 189.56C116.862 177.596 122.049 170.288 129.406 158.789C130.515 157.056 132.43 155.995 134.487 156.014C138.514 156.051 141.842 156.157 146.267 156.347C147.794 156.412 148.682 158.101 147.873 159.399L124.169 197.415C123.613 198.307 122.462 198.617 121.534 198.124Z" fill="currentColor" stroke="currentColor" />
           <path className="bamboo-path path-14 stem" d="M149.289 152.913C140.082 152.353 137.954 152.477 134.953 152.891C134.592 152.941 134.3 152.598 134.406 152.25C138.906 137.522 146.359 129.947 153.935 114.089C154.368 113.183 155.399 112.724 156.358 113.024L169.482 117.125C170.096 117.317 170.371 118.031 170.044 118.585C162.887 130.704 157.437 138.162 151.253 151.732C150.907 152.493 150.123 152.964 149.289 152.913Z" fill="currentColor" stroke="currentColor" />
         </g>
-        <defs>
-          <filter id="filter0_g_1348_332" x="0" y="0" width="135.182" height="231.668" filterUnits="userSpaceOnUse" colorInterpolationFilters="sRGB">
-            <feFlood floodOpacity="0" result="BackgroundImageFix" />
-            <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape" />
-            <feTurbulence type="fractalNoise" baseFrequency="3.3333332538604736 3.3333332538604736" numOctaves="3" seed="2249" />
-            <feDisplacementMap in="shape" scale="2" xChannelSelector="R" yChannelSelector="G" result="displacedImage" width="100%" height="100%" />
-            <feMerge result="effect1_texture_1348_332">
-              <feMergeNode in="displacedImage" />
-            </feMerge>
-          </filter>
-          <filter id="filter1_g_1348_332" x="66.7783" y="39.2114" width="165.234" height="205.789" filterUnits="userSpaceOnUse" colorInterpolationFilters="sRGB">
-            <feFlood floodOpacity="0" result="BackgroundImageFix" />
-            <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape" />
-            <feTurbulence type="fractalNoise" baseFrequency="3.3333332538604736 3.3333332538604736" numOctaves="3" seed="7193" />
-            <feDisplacementMap in="shape" scale="2" xChannelSelector="R" yChannelSelector="G" result="displacedImage" width="100%" height="100%" />
-            <feMerge result="effect1_texture_1348_332">
-              <feMergeNode in="displacedImage" />
-            </feMerge>
-          </filter>
-        </defs>
       </svg>
     </div>
   );
