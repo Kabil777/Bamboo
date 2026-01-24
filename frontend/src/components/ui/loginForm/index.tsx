@@ -134,7 +134,9 @@ export function LoginForm({
                                 variant="outline"
                                 className="w-full"
                                 onClick={() => {
-                                    router.push(`${process.env.NEXT_PUBLIC_AUTH_SERVER_URL}${process.env.NEXT_PUBLIC_API_VERSION}/auth/login/google`);
+                                    router.push(
+                                        `${process.env.NEXT_PUBLIC_AUTH_SERVER_URL}${process.env.NEXT_PUBLIC_API_VERSION}/auth/login/google`,
+                                    );
                                 }}
                             >
                                 <FcGoogle />
