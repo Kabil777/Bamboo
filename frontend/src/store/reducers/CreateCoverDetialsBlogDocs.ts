@@ -25,10 +25,10 @@ interface CreateCoverDetailsBlogDocsState {
 export const CreateNewBlog = createAsyncThunk<{id: string}, Blog>(
   "/blog/createNew",
   async (details, { rejectWithValue }) => {
-    const URL = `${process.env.NEXT_PUBLIC_API_SERVER_URL}${process.env.NEXT_PUBLIC_API_VERSION}/blog/meta/`;
+    const URL = `${process.env.NEXT_PUBLIC_API_SERVER_URL}${process.env.NEXT_PUBLIC_API_VERSION}/blog/meta`;
     try {
       const res = await api.post(URL, details);
-      return res.data;
+      return res.data.data;
     } catch (error) {
       return rejectWithValue("Failed to create blog");
     }
@@ -38,10 +38,10 @@ export const CreateNewBlog = createAsyncThunk<{id: string}, Blog>(
 export const CreateNewDocs = createAsyncThunk<{id: string}, Docs>(
   "/docs/createNew",
   async (details, { rejectWithValue }) => {
-    const URL = `${process.env.NEXT_PUBLIC_API_SERVER_URL}${process.env.NEXT_PUBLIC_API_VERSION}/docs/meta/`;
+    const URL = `${process.env.NEXT_PUBLIC_API_SERVER_URL}${process.env.NEXT_PUBLIC_API_VERSION}/docs/meta`;
     try {
       const res = await api.post(URL, details);
-      return res.data;
+      return res.data.data;
     } catch (error) {
       return rejectWithValue("Failed to create docs");
     }

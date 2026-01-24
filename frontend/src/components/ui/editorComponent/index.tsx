@@ -55,19 +55,19 @@ import { useHocuspocusProvider } from "@/lib/hocuspocus";
 import { useCollaborativeAwareness } from "@/hooks/useCollabrationAwareness";
 import { useCollabUser } from "@/hooks/useCollabUser";
 import { Input } from "@/components/shadcnUI/input";
+import { toast } from "sonner";
 //syntax highlighting
 
 export default function Editor({
   //   intialContent,
+  id,
   save,
 }: {
   //   intialContent: string;
+  id: string;
   save: (content: string) => void;
 }) {
-  const provider = useHocuspocusProvider(
-    "1add6f66-f67f-4e18-8f2f-405a8de5cdc0",
-    "blog",
-  );
+  const provider = useHocuspocusProvider(id, "blog");
 
   const collabUser = useCollabUser();
 
@@ -93,48 +93,68 @@ export default function Editor({
     console.log("Editor users:", editorUsers);
   }, [collabUser, onlineUsers, totalUsers, editorUsers]);
 
+  React.useEffect(() => {
+    if (!provider) return;
+
+    const meta = provider.document.getMap("meta");
+
+    const observer = () => {
+      const status = meta.get("saveStatus");
+      if (status === "SAVED") {
+        toast.success("Saved successfully");
+      }
+      if (status === "FAILED") {
+        toast.error("Save failed. Try again.");
+      }
+    };
+
+    meta.observe(observer);
+    return () => meta.unobserve(observer);
+  }, [provider]);
+
   console.log(onlineUsers, " ", totalUsers);
   const toolbarRef = React.useRef<HTMLDivElement>(null);
   const raw = marked.parse("");
   const [open, setOpen] = React.useState<boolean>(false);
   const [word, setWord] = React.useState(0);
 
-  let editor = null;
-  if (provider?.document) {
-    editor = useEditor({
-      immediatelyRender: false,
-      editorProps: {
-        attributes: {
-          autocomplete: "on",
-          autocorrect: "on",
-          autocapitalize: "on",
-          "aria-label": "Start typing...",
-        },
-      },
-      autofocus: "end",
-      extensions: [
-        ...extensions,
-        Collaboration.configure({
-          field: "content",
-          document: provider.document,
-        }),
-        CollaborationCaret.configure({
-          provider: provider,
-          user: {
-            name: collabUser.name,
-            color: collabUser.color,
+  const editor = useEditor(
+    provider?.document
+      ? {
+          immediatelyRender: false,
+          editorProps: {
+            attributes: {
+              autocomplete: "on",
+              autocorrect: "on",
+              autocapitalize: "on",
+              "aria-label": "Start typing...",
+            },
           },
-        }),
-      ],
-      content: raw,
-      onCreate({ editor }) {
-        setWord(editor.storage.characterCount.characters());
-      },
-      onUpdate({ editor }) {
-        setWord(editor.storage.characterCount.characters());
-      },
-    });
-  }
+          autofocus: "end",
+          extensions: [
+            ...extensions,
+            Collaboration.configure({
+              field: "content",
+              document: provider.document,
+            }),
+            CollaborationCaret.configure({
+              provider: provider,
+              user: {
+                name: collabUser.name,
+                color: collabUser.color,
+              },
+            }),
+          ],
+          content: raw,
+          onCreate({ editor }) {
+            setWord(editor.storage.characterCount.characters());
+          },
+          onUpdate({ editor }) {
+            setWord(editor.storage.characterCount.characters());
+          },
+        }
+      : null,
+  );
 
   const onSave = () => {
     console.log(
@@ -146,13 +166,14 @@ export default function Editor({
         content: editor?.getJSON() || {},
       }),
     );
+    if (!editor) return;
+
+    if (!provider) return;
+    const yDoc = provider.document;
+    const meta = yDoc.getMap("meta");
+    meta.set("saveRequestedAt", Date.now());
   };
 
-  React.useEffect(() => {
-    return () => {
-      editor?.destroy();
-    };
-  }, [editor]);
   return (
     <EditorContext.Provider value={{ editor }}>
       <div className="content-wrapper">
