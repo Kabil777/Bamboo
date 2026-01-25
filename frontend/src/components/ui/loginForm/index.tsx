@@ -135,7 +135,7 @@ export function LoginForm({
                                 className="w-full"
                                 onClick={() => {
                                     router.push(
-                                        `${process.env.NEXT_PUBLIC_AUTH_SERVER_URL}${process.env.NEXT_PUBLIC_API_VERSION}/auth/login/google`,
+                                        `${process.env.NEXT_PUBLIC_AUTH_SERVER_URL}${process.env.NEXT_PUBLIC_API_VERSION}/auth/login/google?mode=signup`,
                                     );
                                 }}
                             >
@@ -156,7 +156,7 @@ export function LoginForm({
                             <Image
                                 width={500}
                                 height={500}
-                                src="https://modii.org/wp-content/uploads/2020/12/random.png"
+                                src="https://simpleprogrammer.com/wp-content/uploads/2017/07/Blogging-for-Software-Developers.png"
                                 alt=""
                                 className="absolute inset-0 h-full w-full object-cover dark:brightness-[0.2] dark:grayscale"
                             />

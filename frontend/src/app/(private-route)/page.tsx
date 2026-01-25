@@ -7,12 +7,13 @@ import { RootState } from "@/store/store";
 import { Separator } from "@/components/shadcnUI/separator";
 import { useDispatch, useSelector } from "react-redux";
 import { SidebarSkeleton } from "@/components/atomsComponents/skleton/sidebarSkleton";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useAppDispatch, useAppState } from "@/hooks/ReduxHooks";
 import { getCoverBlog } from "@/store/reducers/BlogCoverReducer";
 import { useApiLoading } from "@/hooks/useApiLoading";
 import { DocsCoverRtk } from "@/store/reducers/DocsCoverReducer";
 import BambooLoader from "@/components/atomsComponents/logo/BambooLoader";
+import { getAuthentication } from "@/store/reducers/AuthReducers";
 
 export default function Home() {
     const tabs = [
@@ -52,19 +53,30 @@ export default function Home() {
 
     const { blogLoading, data } = useSelector((s: RootState) => s.blogReducer);
     const { isDocsLoading, docs } = useAppState((s) => s.docsHomeReducer);
+    const { status } = useAppState((s) => s.userReducer);
 
     const dispatch = useAppDispatch();
 
     useEffect(() => {
-        if (!Array.isArray(data) || data.length === 0) {
+        if (!data || data.length === 0) {
             dispatch(getCoverBlog({ cursor: null, mode: "init" }));
         }
+    }, [dispatch]);
 
-        if (!Array.isArray(docs) || docs.length === 0) {
+    useEffect(() => {
+        if (!docs || docs.length === 0) {
             dispatch(DocsCoverRtk());
         }
-    }, [data?.length, docs?.length, dispatch]);
+    }, [dispatch]);
 
+    const authFetched = useRef(false);
+
+    useEffect(() => {
+        if (!authFetched.current && status === "idle") {
+            authFetched.current = true;
+            dispatch(getAuthentication());
+        }
+    }, [status, dispatch, authFetched]);
     return (
         <main className="flex justify-center">
             <div className="container grid grid-cols-4 gap-4 md:gap-6">

@@ -1,31 +1,54 @@
-
-import {  createSlice, PayloadAction } from "@reduxjs/toolkit";
-
+import api from "@/api/axios";
+import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { toast } from "sonner";
+import { RootState } from "../store";
 
 interface SetProfileReducersState {
-  firstName: string;
-  lastName: string;
-  dob: string;
-  designation: string;
-  tags: string[];
+    designation: string;
+    userProfile: {
+        tags: string[];
+        social: {};
+    };
 }
 
 const initialState: SetProfileReducersState = {
-  firstName: "",
-  lastName: "",
-  dob: "",
-  designation: "",
-  tags: [],
+    designation: "",
+    userProfile: {
+        tags: [],
+        social: {},
+    },
 };
 
-const setProfileReducers = createSlice({
-  name: "setProfileReducers",
-  initialState: initialState,
-  reducers: {
-    setAllProfile: (state, action: PayloadAction<SetProfileReducersState>) => {
-      return action.payload;
+export const setProfileApi = createAsyncThunk<void, SetProfileReducersState>(
+    "/api/setprofile",
+    async (data, { rejectWithValue }) => {
+        const URL = `${process.env.NEXT_PUBLIC_API_SERVER_URL}${process.env.NEXT_PUBLIC_API_VERSION}/user/meta`;
+        try {
+            await api.post(URL, {
+                designation: data.designation,
+                userProfile: {
+                    tags: data.userProfile.tags,
+                    social: data.userProfile.social,
+                },
+            });
+        } catch (e) {
+            toast.warning("Failed to save user");
+        } finally {
+            toast.info("Form submitted successfully");
+        }
     },
-  },
+);
+const setProfileReducers = createSlice({
+    name: "setProfileReducers",
+    initialState: initialState,
+    reducers: {
+        setAllProfile: (
+            state,
+            action: PayloadAction<SetProfileReducersState>,
+        ) => {
+            return action.payload;
+        },
+    },
 });
 
 export const { setAllProfile } = setProfileReducers.actions;

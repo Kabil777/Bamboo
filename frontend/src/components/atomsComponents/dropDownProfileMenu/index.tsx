@@ -25,8 +25,10 @@ import { RootState } from "@/store/store";
 import Image from "next/image";
 import { StaticImport } from "next/dist/shared/lib/get-img-props";
 import { Skeleton } from "@/components/shadcnUI/skeleton";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
+import { useAppDispatch, useAppState } from "@/hooks/ReduxHooks";
+import { getAuthentication } from "@/store/reducers/AuthReducers";
 
 interface ProfileMode {
     profile: {
@@ -53,15 +55,14 @@ interface AuthMode {
 }
 
 export function DropDownProfileMenu() {
-    const userDetails = useSelector((store: RootState) => store.userReducer);
+    const { user } = useAppState((s) => s.userReducer);
     const profile = {
         profile: {
             profiledetails: {
-                title: userDetails.user?.name,
-                url: userDetails.user?.profileImg,
+                title: user?.name,
+                url: user?.profileImg,
             },
         },
-        auth: userDetails.authenticated,
     };
     const { profiledetails } = profile.profile ?? {};
     const { setTheme, theme } = useTheme();

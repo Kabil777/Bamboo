@@ -1,54 +1,28 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { jwtDecode } from "jwt-decode";
 import { authApi } from "@/api/authApi";
+import api from "@/api/axios";
 
 interface AuthState {
-    authenticated: boolean;
-    accessToken: string | null;
     user: {
         name: string;
+        handle: string;
         email: string;
         profileImg: string;
     } | null;
-    tokenExpiration: number | null;
-    status:
-        | "uninitialized"
-        | "loading"
-        | "authenticated"
-        | "unauthenticated"
-        | "logged_out";
-}
-
-interface JwtPayload {
-    id: string;
-    name: string;
-    email: string;
-    profile_url: string;
-    accessToken: string;
-    exp: number;
+    status: "loading" | "authorized" | "logged_out" | "unauthorized" | "idle";
 }
 
 export const getAuthentication = createAsyncThunk(
     "/login/google",
     async (_, { rejectWithValue }) => {
         try {
-            const response = await authApi.post(
-                `${process.env.NEXT_PUBLIC_AUTH_SERVER_URL}${process.env.NEXT_PUBLIC_API_VERSION}/auth/refresh`,
-                {
-                    redirectUrl: "/",
-                },
-                {
-                    withCredentials: true,
-                },
+            const response = await api.get(
+                `${process.env.NEXT_PUBLIC_AUTH_SERVER_URL}${process.env.NEXT_PUBLIC_API_VERSION}/user/meta`,
             );
-            const token = response.data.token;
-            const data = jwtDecode<JwtPayload>(token);
-            console.log("Data: ", data);
 
-            return {
-                token,
-                data,
-            };
+            console.log(response);
+            return response.data;
         } catch (e: unknown) {
             console.log(e);
             const error = e as {
@@ -63,15 +37,8 @@ export const getAuthentication = createAsyncThunk(
 );
 
 const inititialState: AuthState = {
-    authenticated: false,
-    accessToken: null,
-    user: {
-        name: "",
-        email: "",
-        profileImg: "",
-    },
-    tokenExpiration: null,
-    status: "loading",
+    user: null,
+    status: "idle",
 };
 
 const userDetailsSlice = createSlice({
@@ -83,37 +50,31 @@ const userDetailsSlice = createSlice({
             state.status = "logged_out";
         },
         setAuthentication: (s, a) => {
-            const { token, data } = a.payload;
+            const user = a.payload;
 
-            s.authenticated = true;
-            s.accessToken = token;
             s.user = {
-                name: data.name,
-                email: data.email,
-                profileImg: data.profile_url,
+                name: user.name,
+                handle: user.handle,
+                email: user.email,
+                profileImg: user.coverUrl,
             };
-            s.tokenExpiration = data.exp;
-            s.status = "authenticated";
+            s.status = "authorized";
         },
     },
     extraReducers: (builder) => {
         builder
             .addCase(getAuthentication.fulfilled, (s, a) => {
-                s.authenticated = true;
-                s.accessToken = a.payload.token;
                 s.user = {
-                    name: a.payload.data.name,
-                    email: a.payload.data.email,
-                    profileImg: a.payload.data.profile_url,
+                    name: a.payload.name,
+                    handle: a.payload.handle,
+                    email: a.payload.email,
+                    profileImg: a.payload.coverUrl,
                 };
-                s.tokenExpiration = a.payload.data.exp;
-                s.status = "authenticated";
+                s.status = "authorized";
                 console.log(JSON.parse(JSON.stringify(s)));
             })
             .addCase(getAuthentication.rejected, (state) => {
-                state.status = "unauthenticated";
-                state.authenticated = false;
-                state.accessToken = null;
+                state.status = "unauthorized";
                 state.user = null;
             });
     },
