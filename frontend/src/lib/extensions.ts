@@ -54,6 +54,7 @@ const extensions = [
   StarterKit.configure({
     link: false,
     codeBlock: false,
+    undoRedo: false,
   }),
   TextAlign.configure({ types: ["heading", "paragraph"] }),
   TaskList,
