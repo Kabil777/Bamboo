@@ -6,7 +6,7 @@ import blogPageReducer from "./reducers/BlogPageReducer";
 import docsHomeReducer from "./reducers/DocsCoverReducer";
 import docsReducer from "./reducers/DocsReducer";
 import DocsSlice from "./reducers/DocsEditor";
-import setProfileReducers from "./reducers/setProfileReducers";
+import setProfileReducers from "./reducers/Profile/setProfileReducers";
 
 const store = configureStore({
   reducer: {
