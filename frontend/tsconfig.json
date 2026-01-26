@@ -37,7 +37,7 @@
     "src/components/ui/editorComponent/codeFlask/codeflask.js",
     "src/components/tiptap-ui/code-block-button/code-block-button.tsx",
     ".next/dev/types/**/*.ts"
-  ],
+, "src/components/ui/editorComponent/editor.jsx"  ],
   "exclude": [
     "node_modules"
   ]

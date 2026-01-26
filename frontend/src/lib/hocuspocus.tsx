@@ -1,54 +1,38 @@
-"use client";
-
 import { HocuspocusProvider } from "@hocuspocus/provider";
-import { createContext, useContext, useEffect, useRef, useState } from "react";
-import * as Y from "yjs";
+import { useEffect, useRef, useState } from "react";
 
-const CollabContext = createContext<HocuspocusProvider | null>(null);
+export function useHocuspocusProvider(
+  documentId: string,
+  room: "blog" | "docs",
+) {
+  const providerRef = useRef<HocuspocusProvider | null>(null);
+  const [provider, setProvider] = useState<HocuspocusProvider | null>(null);
 
-export function CollabProvider({
-    documentId,
-    children,
-}: {
-    documentId: string;
-    children: React.ReactNode;
-}) {
-    const providerRef = useRef<HocuspocusProvider | null>(null);
-    const [ready, setReady] = useState(false);
+  useEffect(() => {
+    // Create provider only once when documentId changes
+    if (!providerRef.current || providerRef.current.configuration.name !== documentId) {
+      // Destroy existing provider if documentId changed
+      if (providerRef.current) {
+        providerRef.current.destroy();
+      }
 
-    useEffect(() => {
-        if (!documentId) return;
+      const newProvider = new HocuspocusProvider({
+        url: "ws://127.0.0.1:1234/",
+        name: documentId,
+      });
 
-        const provider = new HocuspocusProvider({
-            url: "ws://localhost:1234",
-            name: `docs-meta:${documentId}`,
-            document: new Y.Doc(),
-            connect: true,
-        });
-
-        providerRef.current = provider;
-        setReady(true); // 🔥 trigger re-render
-
-        return () => {
-            provider.destroy();
-            providerRef.current = null;
-            setReady(false);
-        };
-    }, [documentId]);
-
-    if (!ready || !providerRef.current) return null;
-
-    return (
-        <CollabContext.Provider value={providerRef.current}>
-            {children}
-        </CollabContext.Provider>
-    );
-}
-
-export const useCollab = () => {
-    const ctx = useContext(CollabContext);
-    if (!ctx) {
-        throw new Error("useCollab must be used inside CollabProvider");
+      providerRef.current = newProvider;
+      setProvider(newProvider);
     }
-    return ctx;
-};
+
+    return () => {
+      // Cleanup on unmount
+      if (providerRef.current) {
+        providerRef.current.destroy();
+        providerRef.current = null;
+      }
+    };
+  }, [documentId]);
+
+  return provider;
+}

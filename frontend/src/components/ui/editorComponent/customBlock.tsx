@@ -15,7 +15,7 @@ import { Code, TerminalSquare } from "lucide-react";
 import { SiYaml, SiXml, SiC } from "react-icons/si";
 import { FileCode2 } from "lucide-react";
 
-import { useEditor } from "@tiptap/react";
+import type { useEditor } from "@tiptap/react";
 import { Button } from "@/components/tiptap-ui-primitive/button";
 
 const languages = [
@@ -30,6 +30,7 @@ const languages = [
   { label: "YAML", value: "yaml", icon: SiYaml },
   { label: "C language", value: "c", icon: SiC },
 ];
+
 export function MenuBar({
   editor,
 }: {
@@ -60,7 +61,7 @@ export function MenuBar({
           tooltip="List"
           className="w-10 h-10 flex items-center justify-center"
         >
-          <Code className="tiptap-button-icon" />
+          <Code  className="tiptap-button-icon" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="min-w-[140px]">
