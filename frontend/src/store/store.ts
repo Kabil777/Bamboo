@@ -6,19 +6,21 @@ import blogPageReducer from "./reducers/BlogPageReducer";
 import docsHomeReducer from "./reducers/DocsCoverReducer";
 import docsReducer from "./reducers/DocsReducer";
 import DocsSlice from "./reducers/DocsEditor";
-import setProfileReducers from "./reducers/Profile/setProfileReducers";
+import getProfileReducer from "./reducers/Profile/profile.read";
+import setProfileReducer from "./reducers/Profile/profile.edit";
 
 const store = configureStore({
-  reducer: {
-    createCoverDetailsBlogDocs: CreateCoverDetailsBlogDocs,
-    userReducer: userReducer,
-    blogReducer: blogCoverReducer,
-    blogPageReducer: blogPageReducer,
-    docsHomeReducer: docsHomeReducer,
-    docsReducer: docsReducer,
-    DocsSlice: DocsSlice,
-    setProfileReducers: setProfileReducers,
-  },
+    reducer: {
+        createCoverDetailsBlogDocs: CreateCoverDetailsBlogDocs,
+        userReducer: userReducer,
+        blogReducer: blogCoverReducer,
+        blogPageReducer: blogPageReducer,
+        docsHomeReducer: docsHomeReducer,
+        docsReducer: docsReducer,
+        DocsSlice: DocsSlice,
+        setProfileReducers: setProfileReducer,
+        getProfileReducers: getProfileReducer,
+    },
 });
 
 export default store;

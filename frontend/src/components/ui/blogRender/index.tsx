@@ -59,6 +59,7 @@ export default function BlogRenderPage() {
     }
 
     const { content, title, description, tags } = blog;
+
     const toc = extractToc(content);
     return (
         <>

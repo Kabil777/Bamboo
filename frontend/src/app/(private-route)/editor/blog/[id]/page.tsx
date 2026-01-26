@@ -1,23 +1,19 @@
 "use client";
+
 import Editor from "@/components/ui/editorComponent";
+import { CollabProvider } from "@/lib/hocuspocus";
 import { useParams } from "next/navigation";
-import { useEffect, useState } from "react";
 
 export default function BlogEditor() {
-  const { id } = useParams<{ id: string }>();
-  const save = (content: string) => {
-    console.log("Saving content:", content);
-    ``;
-  };
-const [idContent, setIdContent] = useState(id);
+    const { id } = useParams<{ id: string }>();
 
-  useEffect(() => {
-    setIdContent(id);
-  }, [id]);
+    if (!id) return null;
 
-  return (
-    <div className="w-full">
-      {idContent && <Editor idContent={idContent} save={save} />}
-    </div>
-  );
+    return (
+        <div className="w-full">
+            <CollabProvider documentId={id}>
+                <Editor />
+            </CollabProvider>
+        </div>
+    );
 }

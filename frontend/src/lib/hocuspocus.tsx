@@ -1,26 +1,54 @@
-import { useAppState } from "@/hooks/ReduxHooks";
+"use client";
+
 import { HocuspocusProvider } from "@hocuspocus/provider";
-import React from "react";
+import { createContext, useContext, useEffect, useRef, useState } from "react";
+import * as Y from "yjs";
 
-export function useHocuspocusProvider(
-  documentId: string,
-  room: "blog" | "docs",
-) {
-  const providerRef = React.useRef<HocuspocusProvider | null>(null);
+const CollabContext = createContext<HocuspocusProvider | null>(null);
 
-  if (!providerRef.current) {
-    providerRef.current = new HocuspocusProvider({
-      url: "ws://127.0.0.1:1234/collaboration",
-      name: documentId,
-    });
-  }
+export function CollabProvider({
+    documentId,
+    children,
+}: {
+    documentId: string;
+    children: React.ReactNode;
+}) {
+    const providerRef = useRef<HocuspocusProvider | null>(null);
+    const [ready, setReady] = useState(false);
 
-  React.useEffect(() => {
-    return () => {
-      providerRef.current?.destroy();
-      providerRef.current = null;
-    };
-  }, []);
+    useEffect(() => {
+        if (!documentId) return;
 
-  return providerRef.current;
+        const provider = new HocuspocusProvider({
+            url: "ws://localhost:1234",
+            name: `docs-meta:${documentId}`,
+            document: new Y.Doc(),
+            connect: true,
+        });
+
+        providerRef.current = provider;
+        setReady(true); // 🔥 trigger re-render
+
+        return () => {
+            provider.destroy();
+            providerRef.current = null;
+            setReady(false);
+        };
+    }, [documentId]);
+
+    if (!ready || !providerRef.current) return null;
+
+    return (
+        <CollabContext.Provider value={providerRef.current}>
+            {children}
+        </CollabContext.Provider>
+    );
 }
+
+export const useCollab = () => {
+    const ctx = useContext(CollabContext);
+    if (!ctx) {
+        throw new Error("useCollab must be used inside CollabProvider");
+    }
+    return ctx;
+};
