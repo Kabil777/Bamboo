@@ -84,11 +84,6 @@
 		"yjs": "^13.6.29",
 		"zod": "^3.24.2"
 	},
-	"lint-staged": {
-		"*.{js,ts,jsx,tsx}": [
-			"biome check --write --no-errors-on-unmatched --files-ignore-unknown=true"
-		]
-	},
 	"devDependencies": {
 		"@eslint/eslintrc": "^3",
 		"@tailwindcss/postcss": "^4",
