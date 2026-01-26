@@ -1,26 +1,38 @@
-import { useAppState } from "@/hooks/ReduxHooks";
 import { HocuspocusProvider } from "@hocuspocus/provider";
-import React from "react";
+import { useEffect, useRef, useState } from "react";
 
 export function useHocuspocusProvider(
   documentId: string,
   room: "blog" | "docs",
 ) {
-  const providerRef = React.useRef<HocuspocusProvider | null>(null);
+  const providerRef = useRef<HocuspocusProvider | null>(null);
+  const [provider, setProvider] = useState<HocuspocusProvider | null>(null);
 
-  if (!providerRef.current) {
-    providerRef.current = new HocuspocusProvider({
-      url: "ws://127.0.0.1:1234/collaboration",
-      name: documentId,
-    });
-  }
+  useEffect(() => {
+    // Create provider only once when documentId changes
+    if (!providerRef.current || providerRef.current.configuration.name !== documentId) {
+      // Destroy existing provider if documentId changed
+      if (providerRef.current) {
+        providerRef.current.destroy();
+      }
 
-  React.useEffect(() => {
+      const newProvider = new HocuspocusProvider({
+        url: "ws://127.0.0.1:1234/",
+        name: documentId,
+      });
+
+      providerRef.current = newProvider;
+      setProvider(newProvider);
+    }
+
     return () => {
-      providerRef.current?.destroy();
-      providerRef.current = null;
+      // Cleanup on unmount
+      if (providerRef.current) {
+        providerRef.current.destroy();
+        providerRef.current = null;
+      }
     };
-  }, []);
+  }, [documentId]);
 
-  return providerRef.current;
+  return provider;
 }

@@ -151,7 +151,7 @@ export function SectionCards() {
 							profile: val.profile,
 						}) as ProfileData,
 				);
-        setLoading(true);
+        setLoading(false);
 			});
 		} catch {
 			setLoading(true);
@@ -165,10 +165,7 @@ export function SectionCards() {
 
 	return (
 		<div className="flex items-center justify-center flex-col sm:flex-row gap-2 sm:gap-4 mb-3 sm:mb-0 sm:p-4 rounded-md w-full relative">
-			<div className="relative w-full h-full max-w-60">
-				{loading && (
-					<Skeleton className="aspect-square w-full h-full rounded-xl" />
-				)}
+			<div className="relative w-full h-full max-w-60 rounded-xl overflow-hidden">
 				{profileData.coverUrl ? (
 					<Image
 						src={profileData.coverUrl}
@@ -176,13 +173,13 @@ export function SectionCards() {
 						width={160}
 						height={160}
 						onLoad={() => setLoading(false)}
-						className={`aspect-square object-cover w-full h-full border-4 border-white rounded-xl transition-opacity duration-300 ${
+						className={`aspect-square object-cover w-full h-full border-4 border-border/30 rounded-xl transition-opacity duration-300 ${
 							loading ? "opacity-0" : "opacity-100"
 						}`}
 					/>
 				) : (
 					!loading && (
-						<div className="aspect-square w-full h-full border-4 border-white rounded-xl bg-muted flex items-center justify-center">
+						<div className="aspect-square w-full h-full border-4 border-border/30 rounded-xl bg-muted flex items-center justify-center">
 							<span className="text-sm text-muted-foreground">No cover</span>
 						</div>
 					)
