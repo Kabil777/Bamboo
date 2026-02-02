@@ -83,20 +83,7 @@ export function useCollaborativeAwareness(
                 setOnlineUsers(uniqueUsers);
 
                 if (mountedRef.current) {
-                    currentUserIds.forEach((userId) => {
-                        if (
-                            !previousUserIdsRef.current.has(userId) &&
-                            userId !== localUserIdRef.current
-                        ) {
-                            const user = uniqueUsers.find(
-                                (u) => u.userId === userId,
-                            );
-                            if (user) {
-                                console.log(`${user.name} joined`);
-                                toast.success(`${user.name} joined`);
-                            }
-                        }
-                    });
+                    
 
                     previousUserIdsRef.current.forEach((userId) => {
                         if (

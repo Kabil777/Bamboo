@@ -59,7 +59,6 @@ export function SectionCards() {
         (s) => s.getProfileReducers,
     );
 
-    const [imageLoaded, setImageLoaded] = useState(false);
     const [follow, setFollow] = useState(false);
 
     // Mock followers data
@@ -127,8 +126,6 @@ export function SectionCards() {
         return <SectionCardsSkeleton />;
     }
 
-    const { profile } = profileData;
-
     return (
         <div className="flex items-center justify-center flex-col sm:flex-row gap-2 sm:gap-4 mb-3 sm:mb-0 sm:p-4 rounded-md w-full relative">
             <div className="relative w-full h-full max-w-60">
@@ -141,7 +138,7 @@ export function SectionCards() {
                         alt="Profile Image"
                         width={160}
                         height={160}
-                        className={`aspect-square object-cover w-full h-full border-4 border-white rounded-xl transition-opacity duration-300 ${
+                        className={`aspect-square object-cover w-full h-full border-4 border-border rounded-xl transition-opacity duration-300 ${
                             profileLoading ? "opacity-0" : "opacity-100"
                         }`}
                     />

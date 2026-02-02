@@ -40,10 +40,10 @@ export default function Editor({
 	const provider = useHocuspocusProvider(idContent, "blog");
 
 	const collabUser = useCollabUser();
-	
+
 	// Add null check before accessing provider.document
 	console.log("Docu :", provider?.document);
-	
+
 	const { onlineUsers, totalUsers, editorUsers } = useCollaborativeAwareness(
 		provider,
 		{
@@ -103,40 +103,43 @@ export default function Editor({
 	console.log(onlineUsers, " ", totalUsers);
 	const toolbarRef = useRef<HTMLDivElement>(null);
 
-	const editor = useEditor({
-	immediatelyRender: false,
-	autofocus: "end",
-	editorProps: {
-		attributes: {
-			autocomplete: "on",
-			autocorrect: "on",
-			autocapitalize: "on",
-			"aria-label": "Start typing...",
+	const editor = useEditor(
+		{
+			immediatelyRender: false,
+			autofocus: "end",
+			editorProps: {
+				attributes: {
+					autocomplete: "on",
+					autocorrect: "on",
+					autocapitalize: "on",
+					"aria-label": "Start typing...",
+				},
+			},
+			extensions: provider
+				? [
+						...extensions,
+						Collaboration.configure({
+							provider,
+							document: provider.document as Doc,
+						}),
+						CollaborationCaret.configure({
+							provider,
+							user: {
+								name: collabUser.name,
+								color: collabUser.color,
+							},
+						}),
+					]
+				: extensions, // Only add collaboration extensions when provider is ready
+			onCreate({ editor }) {
+				setWord(editor.storage.characterCount.characters());
+			},
+			onUpdate({ editor }) {
+				setWord(editor.storage.characterCount.characters());
+			},
 		},
-	},
-	extensions: provider
-		? [
-				...extensions,
-				Collaboration.configure({
-					provider,
-					document: provider.document as Doc,
-				}),
-				CollaborationCaret.configure({
-					provider,
-					user: {
-						name: collabUser.name,
-						color: collabUser.color,
-					},
-				}),
-		  ]
-		: extensions, // Only add collaboration extensions when provider is ready
-	onCreate({ editor }) {
-		setWord(editor.storage.characterCount.characters());
-	},
-	onUpdate({ editor }) {
-		setWord(editor.storage.characterCount.characters());
-	},
-}, [provider]); // Add provider as dependency
+		[provider],
+	); // Add provider as dependency
 
 	// Wait for provider sync before rendering editor content
 	useEffect(() => {
@@ -150,13 +153,16 @@ export default function Editor({
 
 	const onSave = () => {
 		if (!editor) return;
+		if (!provider) {
+			toast.error("Collaboration provider not ready");
+			return;
+		}
 		save(
 			renderToMarkdown({
 				extensions,
 				content: editor.getJSON() || {},
 			}),
 		);
-		if (!provider) return;
 		const yDoc = provider.document;
 		const meta = yDoc.getMap("meta");
 		meta.set("saveRequestedAt", Date.now());
