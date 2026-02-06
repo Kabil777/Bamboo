@@ -141,13 +141,13 @@ export function SectionCards() {
                         alt="Profile Image"
                         width={160}
                         height={160}
-                        className={`aspect-square object-cover w-full h-full border-4 border-white rounded-xl transition-opacity duration-300 ${
+                        className={`aspect-square object-cover w-full h-full m-1 rounded-xl transition-opacity duration-300 ${
                             profileLoading ? "opacity-0" : "opacity-100"
                         }`}
                     />
                 ) : (
                     !profileLoading && (
-                        <div className="aspect-square w-full h-full border-4 border-white rounded-xl bg-muted flex items-center justify-center">
+                        <div className="aspect-square w-full h-full m-1 rounded-xl bg-muted flex items-center justify-center">
                             <span className="text-sm text-muted-foreground">
                                 No cover
                             </span>
@@ -155,7 +155,7 @@ export function SectionCards() {
                     )
                 )}
             </div>
-            <div className="font-semibold p-5 text-wrap space-y-1 border border-border rounded-md bg-muted/50 relative w-full">
+            <div className="min-h-60 m-1  font-semibold p-5 text-wrap space-y-1 border border-border rounded-md bg-muted/50 relative w-full">
                 {/*Profile dashboard*/}
                 <div className="absolute top-2 right-2 sm:top-4 sm:right-4 flex gap-2 items-center text-muted-foreground ">
                     <SharePopover

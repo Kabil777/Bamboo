@@ -1,15 +1,24 @@
 import { HocuspocusProvider } from "@hocuspocus/provider";
-import { useRef } from "react";
+import { useEffect, useState } from "react";
 
-export function useDocsMetaProvider(docId: string) {
-    const ref = useRef<HocuspocusProvider | null>(null);
+export function useDocsMetaProvider(docId: string | undefined) {
+    const [provider, setProvider] = useState<HocuspocusProvider | null>(null);
 
-    if (!ref.current) {
-        ref.current = new HocuspocusProvider({
-            url: "ws://127.0.0.1:1234/collaboration",
-            name: `docs-meta:${docId}`,
+    useEffect(() => {
+        if (!docId) return;
+
+        const p = new HocuspocusProvider({
+            url: "ws://127.0.0.1:1234/",
+            name: `docs:sidebar:20b16ed6-50da-41a8-bc3a-e29b6920e3ba`,
         });
-    }
 
-    return ref.current;
+        setProvider(p);
+
+        return () => {
+            p.destroy();
+            setProvider(null);
+        };
+    }, [docId]);
+
+    return provider;
 }
