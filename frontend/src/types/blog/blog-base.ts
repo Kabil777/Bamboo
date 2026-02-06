@@ -12,6 +12,7 @@ interface BlogHomeCard extends BlogBase {
     createdAt: string;
     tags: string[];
     authorName: string | null;
+    
 }
 
 interface BlogPage extends BlogHomeCard {
@@ -24,12 +25,12 @@ interface BlogContentState {
     errorById: Record<UUID, string | null>;
 }
 interface BlogCursorResponse {
-    blogLoading: Boolean;
-    blogLoadMore: Boolean;
+    blogLoading: boolean;
+    blogLoadMore: boolean;
     error: string | null;
     data: BlogHomeCard[];
     cursor: UUID | null;
-    hasNext: Boolean;
+    hasNext: boolean;
 }
 
 interface BlogEditorState extends BlogPage {}

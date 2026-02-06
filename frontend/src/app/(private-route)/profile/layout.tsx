@@ -1,6 +1,7 @@
 "use client";
 import { ProfileRoutes } from "@/components/atomsComponents";
 import { SectionCards } from "@/components/atomsComponents/sectionCard";
+
 const tabs = [
 	{ label: "All", value: "all" },
 	{ label: "Posts", value: "posts" },
@@ -17,14 +18,16 @@ export default function Layout({
 		console.log("Selected Tab:", selecttab);
 	};
 	return (
-		<div className="container mx-auto p-2 sm:p-4 relative">
-			<div className="flex items-center space-x-4 w-full">
+		<div className="min-h-screen">
+			<div className="mx-auto py-8 space-y-6 container">
 				<SectionCards />
+				<div className="sticky top-[56px] z-10 bg-background/30 backdrop-blur-md -mx-4 px-4">
+					<div>
+						<ProfileRoutes tabs={tabs} onTabChange={handleTabChange} />
+					</div>
+				</div>
+				<div>{children}</div>
 			</div>
-			<div className="border-y border-border sticky top-[56px] z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 mt-4 mb-2">
-				<ProfileRoutes tabs={tabs} onTabChange={handleTabChange} />
-			</div>
-			{children}
 		</div>
 	);
 }

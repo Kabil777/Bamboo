@@ -54,7 +54,7 @@ export default function Profile() {
         if (!blogLoading && !blogs) {
             dispatch(getAllProfileBlog());
         }
-    }, [blogs, dispatch]);
+    }, [blogs, dispatch, blogLoading]);
     return (
         <div className="container grid grid-cols-4 transition-all duration-200 ease-linear gap-4 md:gap-6 relative">
             <div className="col-span-full xl:col-span-3 mx-2 md:mx-0 xl:border-r-1 p-0 sm:p-2 relative">
@@ -98,7 +98,7 @@ export default function Profile() {
                                         </div>
                                     </div>
                                     <motion.div
-                                        initial={card.follow ? false : true}
+                                        initial={!card.follow}
                                         animate={{
                                             backgroundColor: card.follow
                                                 ? "hsl(var(--accent-foreground))"

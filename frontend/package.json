@@ -9,6 +9,7 @@
 		"lint": "next lint"
 	},
 	"dependencies": {
+		"@base-ui/react": "^1.1.0",
 		"@floating-ui/react": "^0.27.13",
 		"@hocuspocus/provider": "^3.4.3",
 		"@hookform/resolvers": "^5.0.1",
@@ -50,6 +51,7 @@
 		"class-variance-authority": "^0.7.1",
 		"clsx": "^2.1.1",
 		"cmdk": "^1.1.1",
+		"colorthief": "^2.6.0",
 		"embla-carousel-react": "^8.6.0",
 		"highlight.js": "^11.11.1",
 		"input-otp": "^1.4.2",
@@ -61,6 +63,7 @@
 		"next": "^16.0.6",
 		"next-themes": "^0.4.6",
 		"nextjs-toploader": "^3.8.16",
+		"radix-ui": "^1.4.3",
 		"react": "^19.0.0",
 		"react-dom": "^19.0.0",
 		"react-hook-form": "^7.55.0",
@@ -83,11 +86,6 @@
 		"vaul": "^1.1.2",
 		"yjs": "^13.6.29",
 		"zod": "^3.24.2"
-	},
-	"lint-staged": {
-		"*.{js,ts,jsx,tsx}": [
-			"biome check --write --no-errors-on-unmatched --files-ignore-unknown=true"
-		]
 	},
 	"devDependencies": {
 		"@eslint/eslintrc": "^3",
