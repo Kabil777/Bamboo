@@ -98,7 +98,7 @@ export default function Profile() {
                                         </div>
                                     </div>
                                     <motion.div
-                                        initial={card.follow ? false : true}
+                                        initial={!card.follow}
                                         animate={{
                                             backgroundColor: card.follow
                                                 ? "hsl(var(--accent-foreground))"

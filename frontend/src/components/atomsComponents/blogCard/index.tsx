@@ -43,7 +43,7 @@ export const BlogCard: React.FC<BlogHomeCard> = ({
 								{description}
 							</CardDescription>
 						</Link>
-						<ProfileTag profileId={authorName ? authorName : "user101"} />
+						<ProfileTag idBlog={id} profileId={authorName ? authorName : "user101"} />
 						<div className="flex flex-wrap gap-2 mt-3">
 							{tags.map((tag) => (
 								<Badge

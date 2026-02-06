@@ -712,12 +712,7 @@ export const VisibilityPopover = ({
 					{/* Visibility Section - Only shown when published */}
 					{status === "publish" && (
 						<div className="space-y-2 animate-in fade-in-50 duration-200">
-							<label
-								htmlFor="visibility"
-								className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-							>
-								Visibility
-							</label>
+							
 							<Select
 								value={visibility}
 								onValueChange={handleVisibilityChange}

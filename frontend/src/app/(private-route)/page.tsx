@@ -63,7 +63,7 @@ export default function Home() {
 		if (!docs || docs.length === 0) {
 			dispatch(DocsCoverRtk());
 		}
-	}, [dispatch, docs]);
+	}, [dispatch]);
 
 	return (
 		<main className="flex justify-center">

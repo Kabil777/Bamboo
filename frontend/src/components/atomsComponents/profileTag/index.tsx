@@ -1,9 +1,17 @@
 "use client";
 import { motion } from "framer-motion";
-import { Bookmark, BookOpen, Ellipsis } from "lucide-react";
+import {
+	Bookmark,
+	BookOpen,
+	Ellipsis,
+	ExternalLink,
+	Eye,
+	Pencil,
+	Share2,
+	Trash2,
+} from "lucide-react";
+import Link from "next/link";
 import { useState } from "react";
-import { ProfileHoverTag } from "../profileHoverTag";
-import { BlogUpdateDetails, VisibilityPopover } from "../blogUpdateDetials";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -11,10 +19,17 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from "@/components/shadcnUI/dropdown-menu";
-import { Pencil, Trash2, Eye, ExternalLink, Share2 } from "lucide-react";
+import { BlogUpdateDetails, VisibilityPopover } from "../blogUpdateDetials";
+import { ProfileHoverTag } from "../profileHoverTag";
 import { SharePopover } from "../sharePopover";
 
-export const ProfileTag = ({ profileId }: { profileId?: string }) => {
+export const ProfileTag = ({
+	profileId,
+	idBlog,
+}: {
+	profileId?: string;
+	idBlog?: string;
+}) => {
 	const [bookmark, setBookmark] = useState(false);
 	const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 	const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -84,9 +99,11 @@ export const ProfileTag = ({ profileId }: { profileId?: string }) => {
 							<Pencil className="h-4 w-4" />
 							<span>Edit</span>
 						</DropdownMenuItem>
-						<DropdownMenuItem>
-							<ExternalLink className="h-4 w-4" />
-							<span>Open in Editor</span>
+						<DropdownMenuItem asChild>
+							<Link href={`/editor/blog/${idBlog}`}>
+								<ExternalLink className="h-4 w-4" />
+								<span>Open in Editor</span>
+							</Link>
 						</DropdownMenuItem>
 
 						<DropdownMenuSeparator />
