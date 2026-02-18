@@ -1,25 +1,31 @@
 import { HocuspocusProvider } from "@hocuspocus/provider";
 import { useEffect, useRef, useState } from "react";
+import { buildCollabRoomName, type CollabRoomType } from "./collabRoomName";
+
+const DEFAULT_COLLAB_URL = "ws://localhost:1234/collab";
+const COLLAB_URL = process.env.NEXT_PUBLIC_COLLAB_WS_URL || DEFAULT_COLLAB_URL;
 
 export function useHocuspocusProvider(
     documentId: string,
-    room: "blog" | "docs",
+    roomType: CollabRoomType,
 ) {
     const providerRef = useRef<HocuspocusProvider | null>(null);
     const [provider, setProvider] = useState<HocuspocusProvider | null>(null);
 
     useEffect(() => {
+        const roomName = buildCollabRoomName(roomType, documentId);
+
         if (
             !providerRef.current ||
-            providerRef.current.configuration.name !== documentId
+            providerRef.current.configuration.name !== roomName
         ) {
             if (providerRef.current) {
                 providerRef.current.destroy();
             }
 
             const newProvider = new HocuspocusProvider({
-                url: "ws://127.0.0.1:1234/",
-                name: `docs:page:${documentId}`,
+                url: COLLAB_URL,
+                name: roomName,
             });
 
             providerRef.current = newProvider;
@@ -33,7 +39,7 @@ export function useHocuspocusProvider(
                 providerRef.current = null;
             }
         };
-    }, [documentId]);
+    }, [documentId, roomType]);
 
     return provider;
 }

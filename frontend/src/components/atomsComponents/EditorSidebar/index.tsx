@@ -27,9 +27,7 @@ import * as Y from "yjs";
 
 export function EditorSidebar(props: React.ComponentProps<typeof Sidebar>) {
     const { id } = useParams() as { id: string | string[] };
-    const provider = useDocsMetaProvider(
-        "1add6f66-f67f-4e18-8f2f-405a8de5cdc0",
-    );
+    const provider = useDocsMetaProvider(id);
     const { tree, addPage, deletePage } = useDocsTree(provider);
 
     const [editingId, setEditingId] = useState<string | null>(null);
