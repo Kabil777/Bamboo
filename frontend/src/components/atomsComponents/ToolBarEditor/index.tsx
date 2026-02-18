@@ -35,6 +35,8 @@ import {
 	HoverCardTrigger,
 } from "@/components/shadcnUI/hover-card";
 import { TableMenu } from "@/components/tiptap-ui/table-dropdown-menu";
+import { RemoveFormatting } from "lucide-react";
+import { Button } from "@/components/tiptap-ui-primitive/button";
 
 interface MainToolbarContentProp {
 	usersOnline?: userAwareness[];
@@ -87,6 +89,18 @@ const MainToolbarContent = ({
 			<ToolbarGroup>
 				<MarkButton type="superscript" />
 				<MarkButton type="subscript" />
+				<Button
+					onClick={() => {
+						editor?.chain().focus().unsetAllMarks().run();
+					}}
+					data-style="ghost"
+					role="button"
+					tabIndex={-1}
+					aria-label="Remove Formatting"
+					tooltip="Remove Formatting"
+				>
+					<RemoveFormatting className="tiptap-button-icon" />
+				</Button>
 			</ToolbarGroup>
 
 			<AvatarGroup className="flex items-center">

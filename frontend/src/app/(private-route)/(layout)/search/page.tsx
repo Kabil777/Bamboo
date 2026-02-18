@@ -1,0 +1,104 @@
+"use client";
+import { X } from "lucide-react";
+import { useSearchParams } from "next/navigation";
+import { useRouter } from "nextjs-toploader/app";
+import * as React from "react";
+import { BiSearchAlt } from "react-icons/bi";
+import { Button } from "@/components/shadcnUI/button";
+import { Input } from "@/components/shadcnUI/input";
+import { DocsCards } from "@/components/ui";
+
+export default function Search() {
+	const inputRef = React.useRef<HTMLInputElement>(null);
+	const router = useRouter();
+	const searchParams = useSearchParams();
+	const [query, setQuery] = React.useState("");
+	const [inputValue, setInputValue] = React.useState("");
+
+	const handleSearch = () => {
+		const searchValue = inputRef.current?.value;
+		if (searchValue) {
+			router.push(`/search?query=${searchValue}`);
+		}
+	};
+
+	const handleClear = () => {
+		setInputValue("");
+		if (inputRef.current) {
+			inputRef.current.value = "";
+		}
+		router.push("/search");
+	};
+
+	const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+		if (e.key === "Enter") {
+			e.preventDefault();
+			handleSearch();
+		}
+	};
+
+	React.useEffect(() => {
+		function handleKeyDown(e: KeyboardEvent) {
+			if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
+				e.preventDefault();
+				inputRef.current?.focus();
+			}
+		}
+
+		window.addEventListener("keydown", handleKeyDown);
+		return () => window.removeEventListener("keydown", handleKeyDown);
+	}, []);
+
+	React.useEffect(() => {
+		const currentQuery = searchParams.get("query") || "";
+		setQuery(currentQuery);
+		setInputValue(currentQuery);
+		if (inputRef.current) {
+			inputRef.current.value = currentQuery;
+		}
+	}, [searchParams]);
+
+	return (
+		<main className="flex flex-col p-5 md:py-10 md:px-24 gap-5 md:gap-10">
+			<p className="text-base md:text-2xl font-bold break-words whitespace-normal">
+				{query ? `Search Result - '${query}'` : "Bamboo's Search"}
+			</p>
+			<div className="flex items-center gap-2 md:gap-3 sticky top-[58px] z-9 py-3 w-full bg-background">
+				<div className="relative w-full">
+					<Input
+						placeholder="Search..."
+						autoFocus
+						ref={inputRef}
+						value={inputValue}
+						onChange={(e) => setInputValue(e.target.value)}
+						onKeyDown={handleKeyDown}
+						className="flex h-12 items-center transition-all delay-75 justify-between md:pl-10 pl-8 pr-2 md:pr-24 font-medium md:flex py-1 text-sm text-muted-foreground border border-input  rounded-md hover:bg-accent hover:text-foreground"
+					/>
+
+					<span className="font-medium flex gap-1 items-center transition-all delay-75 absolute left-3 md:left-4 top-1/2 -translate-y-1/2 ">
+						<BiSearchAlt className="pointer-events-none" />
+					</span>
+					<span className="flex">
+						{inputValue && (
+							<button
+								type="button"
+								onClick={handleClear}
+								className="flex transition-all delay-75 items-center gap-1 px-1 py-0.5 rounded bg-muted font-mono absolute right-3 md:right-15 top-1/2 -translate-y-1/2 text-xs"
+								aria-label="Clear search"
+							>
+								<X className="w-4 h-4 text-muted-foreground" />
+							</button>
+						)}
+						<kbd className="hidden md:flex transition-all delay-75 items-center gap-1 px-1 py-0.5 rounded bg-muted font-mono absolute right-3 md:right-5 top-1/2 -translate-y-1/2 text-xs">
+							⌘ K
+						</kbd>
+					</span>
+				</div>
+				<Button onClick={handleSearch} variant="outline" className="h-12">
+					Search
+				</Button>
+			</div>
+			<div className="break-words">{query ? query : <DocsCards />}</div>
+		</main>
+	);
+}

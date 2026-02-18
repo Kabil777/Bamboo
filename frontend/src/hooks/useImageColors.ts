@@ -10,7 +10,7 @@ interface ImageColors {
 
 // Generate a deterministic color from a string (like username)
 function stringToColor(str: string): string {
-	if (!str) return "rgb(220, 38, 38)";
+	if (!str) return "rgba(0, 0, 0, 0)";
 
 	let hash = 0;
 	for (let i = 0; i < str.length; i++) {
@@ -48,7 +48,7 @@ export function useImageColors(
 	const [colors, setColors] = useState<ImageColors>({
 		dominant: fallbackString
 			? stringToColor(fallbackString)
-			: "rgb(220, 38, 38)",
+			: "rgba(0, 0, 0, 0)",
 		palette: [],
 		isLoading: !!imageUrl, // Only loading if we have an image URL to extract from
 	});
@@ -59,7 +59,7 @@ export function useImageColors(
 			setColors({
 				dominant: fallbackString
 					? stringToColor(fallbackString)
-					: "rgb(220, 38, 38)",
+					: "rgba(0, 0, 0, 0)",
 				palette: [],
 				isLoading: false,
 			});
@@ -114,7 +114,7 @@ export function useImageColors(
 						setColors({
 							dominant: fallbackString
 								? stringToColor(fallbackString)
-								: "rgb(220, 38, 38)",
+								: "rgba(0, 0, 0, 0)",
 							palette: [],
 							isLoading: false,
 						});
@@ -129,7 +129,7 @@ export function useImageColors(
 					setColors({
 						dominant: fallbackString
 							? stringToColor(fallbackString)
-							: "rgb(220, 38, 38)",
+							: "rgba(0, 0, 0, 0)",
 						palette: [],
 						isLoading: false,
 					});
@@ -141,7 +141,7 @@ export function useImageColors(
 				setColors({
 					dominant: fallbackString
 						? stringToColor(fallbackString)
-						: "rgb(220, 38, 38)",
+						: "rgba(0, 0, 0, 0)",
 					palette: [],
 					isLoading: false,
 				});

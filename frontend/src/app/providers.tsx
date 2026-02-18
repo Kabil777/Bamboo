@@ -7,7 +7,7 @@ import NextTopLoader from "nextjs-toploader";
 import AuthBootstrap from "./AuthenticationBootstrap";
 import setupInterceptors from "@/api/interceptors";
 import api from "@/api/axios";
-import { Toaster } from "sonner";
+import { Toaster } from "@/components/shadcnUI/sonner";
 
 setupInterceptors(api);
 export function Providers({ children }: { children: React.ReactNode }) {
@@ -19,7 +19,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
                     height={2}
                     showSpinner={true}
                 />
-                <Toaster />
+                <Toaster  />
                 {children}
             </ThemeProvider>
         </Provider>

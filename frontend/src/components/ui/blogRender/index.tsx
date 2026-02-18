@@ -10,192 +10,208 @@ import "@/components/tiptap-node/paragraph-node/paragraph-node.scss";
 // --- Lib ---
 import "highlight.js/styles/tokyo-night-dark.css";
 
-// import "./dummy.css";
-import { useAppDispatch, useAppState } from "@/hooks/ReduxHooks";
-import {
-    ArticleRender,
-    ArticleTableContent,
-} from "@/components/atomsComponents";
-import { ProfileHoverTag } from "@/components/atomsComponents/profileHoverTag";
+import { motion } from "framer-motion";
+import { FileQuestion } from "lucide-react";
 import NextImage from "next/image";
+import Link from "next/link";
+import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import {
-    Accordion,
-    AccordionContent,
-    AccordionItem,
-    AccordionTrigger,
+	ArticleRender,
+	ArticleTableContent,
+} from "@/components/atomsComponents";
+import { ProfileHoverTag } from "@/components/atomsComponents/profileHoverTag";
+import { BlogPageSkeleton } from "@/components/atomsComponents/skleton/BlogPageSkleton";
+import {
+	Accordion,
+	AccordionContent,
+	AccordionItem,
+	AccordionTrigger,
 } from "@/components/shadcnUI/accordion";
-import { motion } from "framer-motion";
+import { Button } from "@/components/shadcnUI/button";
+// import "./dummy.css";
+import { useAppDispatch, useAppState } from "@/hooks/ReduxHooks";
 import { extractToc } from "@/lib/utils";
 import { BlogPageRtk } from "@/store/reducers/BlogPageReducer";
-import { useParams } from "next/navigation";
-import { BlogPage } from "@/types/blog/blog-base";
-import { useApiLoading } from "@/hooks/useApiLoading";
-import { BlogPageSkeleton } from "@/components/atomsComponents/skleton/BlogPageSkleton";
+import type { BlogPage } from "@/types/blog/blog-base";
 
 export default function BlogRenderPage() {
-    const { id } = useParams<{ id: string }>();
-    const dispatch = useAppDispatch();
-    const { status } = useAppState((s) => s.userReducer);
-    const { loadingById } = useAppState((s) => s.blogPageReducer);
+	const { id } = useParams<{ id: string }>();
+	const dispatch = useAppDispatch();
+	const { status } = useAppState((s) => s.userReducer);
+	const { loadingById, errorById } = useAppState((s) => s.blogPageReducer);
 
-    console.log("id: \nstatus: ", id, status);
+	console.log("id: \nstatus: ", id, status);
 
-    useEffect(() => {
-        if (!id) return;
-        dispatch(BlogPageRtk(id));
-        console.log("called");
-    }, [dispatch, id]);
+	useEffect(() => {
+		if (!id) return;
+		dispatch(BlogPageRtk(id));
+		console.log("called");
+	}, [dispatch, id]);
 
-    const [accordionValue, setAccordionValue] = useState<string | undefined>(
-        undefined,
-    );
+	const [accordionValue, setAccordionValue] = useState<string | undefined>(
+		undefined,
+	);
 
-    const blog: BlogPage = useAppState(
-        (state) => state.blogPageReducer.entities[id],
-    );
-    if (!id || loadingById[id] || !blog) {
-        return <BlogPageSkeleton />;
-    }
+	const blog: BlogPage = useAppState(
+		(state) => state.blogPageReducer.entities[id],
+	);
 
-    const { content, title, description, tags } = blog;
+	// Show loading skeleton while fetching
+	if (!id || loadingById[id]) {
+		return <BlogPageSkeleton />;
+	}
 
-    const toc = extractToc(content);
-    return (
-        <>
-            <div className="flex flex-1 flex-col w-full justify-center">
-                {/* Mobile Menu Trigger */}
-                <div className="sticky top-[var(--header-height)] w-full z-20 lg:hidden border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
-                    <Accordion
-                        type="single"
-                        collapsible
-                        className="w-full"
-                        value={accordionValue}
-                        onValueChange={setAccordionValue}
-                    >
-                        <AccordionItem value="item-1">
-                            <div className="flex items-center gap-2 px-4  justify-end">
-                                <AccordionTrigger>
-                                    <span className="text-sm font-medium text-muted-foreground">
-                                        On This Page
-                                    </span>
-                                </AccordionTrigger>
-                            </div>
+	// Show not found UI if there's an error or no blog data
+	if (errorById[id] || !blog) {
+		return (
+			<div className="flex items-center justify-center w-full">
+				<div className="flex flex-col items-center justify-center space-y-4 p-8">
+					<FileQuestion className="w-24 h-24 text-muted-foreground" />
+					<h2 className="text-3xl font-bold">Blog Post Not Found</h2>
+					<p className="text-muted-foreground text-center max-w-md">
+						The blog post you're looking for doesn't exist or has been removed.
+					</p>
+					<div className="flex gap-3 pt-4">
+						<Link href="/">
+							<Button variant="default">Back to Home</Button>
+						</Link>
+						<Link href="/search">
+							<Button variant="outline">Search Posts</Button>
+						</Link>
+					</div>
+				</div>
+			</div>
+		);
+	}
 
-                            <AccordionContent className="overflow-hidden absolute w-full border-b border-border bg-background">
-                                <motion.div
-                                    initial={false}
-                                    animate={{
-                                        height:
-                                            accordionValue === "item-1"
-                                                ? "auto"
-                                                : 0,
-                                        opacity:
-                                            accordionValue === "item-1" ? 1 : 0,
-                                    }}
-                                    transition={{
-                                        duration: 0.3,
-                                        ease: "easeInOut",
-                                    }}
-                                    className="overflow-y-auto max-h-[60vh] px-4 pb-4"
-                                >
-                                    {toc.length > 0 ? (
-                                        <ArticleTableContent toc={toc} />
-                                    ) : (
-                                        <p className="text-xs text-muted-foreground italic mt-2 mx-auto">
-                                            No headings available
-                                        </p>
-                                    )}
-                                </motion.div>
-                            </AccordionContent>
-                        </AccordionItem>
-                    </Accordion>
-                </div>
-                <div className="flex justify-center relative w-full gap-10 ">
-                    {/* Main Content */}
-                    <article className="flex-1 min-w-0 w-full max-w-4xl lg:translate-x-15 p-2">
-                        <div className="flex w-full min-w-0 flex-1 flex-col gap-8 py-6 lg:py-8 text-neutral-800 dark:text-neutral-300">
-                            {/* Article Header */}
-                            <header className="mb-6 md:mb-10 w-full">
-                                <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold tracking-tight text-foreground mt-4 md:mt-6 leading-tight">
-                                    {title || "Untitled Article"}
-                                </h1>
-                                <div className="flex flex-wrap items-center gap-2 my-4">
-                                    <span className="capitalize inline-flex items-center px-2.5 sm:px-3 py-1 rounded-full text-xs font-semibold bg-primary/10 text-primary border border-primary/20">
-                                        {"blog"}
-                                    </span>
+	const { content, title, description, tags } = blog;
 
-                                    {tags &&
-                                        tags.length > 0 &&
-                                        tags.map((tag, index) => (
-                                            <span
-                                                key={index}
-                                                className="capitalize inline-flex items-center px-2.5 sm:px-3 py-1 rounded-full text-xs font-medium bg-secondary/80 text-secondary-foreground hover:bg-secondary transition-colors"
-                                            >
-                                                {tag}
-                                            </span>
-                                        ))}
-                                </div>
-                                <hr className="my-3 md:my-4" />
+	const toc = extractToc(content);
+	return (
+		<div className="flex flex-1 flex-col w-full justify-center">
+				{/* Mobile Menu Trigger */}
+				<div className="sticky top-[var(--header-height)] w-full z-20 lg:hidden border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
+					<Accordion
+						type="single"
+						collapsible
+						className="w-full"
+						value={accordionValue}
+						onValueChange={setAccordionValue}
+					>
+						<AccordionItem value="item-1">
+							<div className="flex items-center gap-2 px-4  justify-end">
+								<AccordionTrigger>
+									<span className="text-sm font-medium text-muted-foreground">
+										On This Page
+									</span>
+								</AccordionTrigger>
+							</div>
 
-                                <figure className="w-full mb-4 md:mb-5">
-                                    <div className="relative overflow-hidden bg-muted ">
-                                        <NextImage
-                                            width={800}
-                                            height={450}
-                                            src={blog.coverUrl}
-                                            alt="Article cover"
-                                            className="w-full rounded-2xl h-auto object-cover"
-                                        />
-                                    </div>
-                                </figure>
-                                {/* Author Profile Section */}
-                                <div className="flex items-center gap-3 sm:gap-4 py-4 md:py-6 border-y border-border">
-                                    <div className="relative flex-shrink-0">
-                                        <NextImage
-                                            width={800}
-                                            height={450}
-                                            src="https://i.pravatar.cc/150?img=12"
-                                            alt="Author profile"
-                                            className="w-12 h-12 sm:w-14 sm:h-14 rounded-full object-cover ring-2 ring-offset-2 ring-primary/50 hover:ring-primary transition-all"
-                                        />
-                                    </div>
+							<AccordionContent className="overflow-hidden absolute w-full border-b border-border bg-background">
+								<motion.div
+									initial={false}
+									animate={{
+										height: accordionValue === "item-1" ? "auto" : 0,
+										opacity: accordionValue === "item-1" ? 1 : 0,
+									}}
+									transition={{
+										duration: 0.3,
+										ease: "easeInOut",
+									}}
+									className="overflow-y-auto max-h-[60vh] px-4 pb-4"
+								>
+									{toc.length > 0 ? (
+										<ArticleTableContent toc={toc} />
+									) : (
+										<p className="text-xs text-muted-foreground italic mt-2 mx-auto">
+											No headings available
+										</p>
+									)}
+								</motion.div>
+							</AccordionContent>
+						</AccordionItem>
+					</Accordion>
+				</div>
+				<div className="flex justify-center relative w-full gap-10 ">
+					{/* Main Content */}
+					<article className="flex-1 min-w-0 w-full max-w-4xl lg:translate-x-15 p-2">
+						<div className="flex w-full min-w-0 flex-1 flex-col gap-8 py-6 lg:py-8 text-neutral-800 dark:text-neutral-300">
+							{/* Article Header */}
+							<header className="mb-6 md:mb-10 w-full">
+								<h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold tracking-tight text-foreground mt-4 md:mt-6 leading-tight">
+									{title || "Untitled Article"}
+								</h1>
+								<div className="flex flex-wrap items-center gap-2 my-4">
+									<span className="capitalize inline-flex items-center px-2.5 sm:px-3 py-1 rounded-full text-xs font-semibold bg-primary/10 text-primary border border-primary/20">
+										{"blog"}
+									</span>
 
-                                    <div className="flex flex-col justify-center flex-1 min-w-0">
-                                        <h3 className="text-sm sm:text-base font-bold text-foreground hover:text-primary transition-colors cursor-pointer truncate">
-                                            Kowsik
-                                        </h3>
-                                        <ProfileHoverTag
-                                            profileId={"author1"}
-                                        />
-                                    </div>
-                                    <div className="ml-auto text-right hidden sm:block flex-shrink-0">
-                                        <p className="text-xs text-muted-foreground">
-                                            Published
-                                        </p>
-                                        <p className="text-xs sm:text-sm font-medium text-foreground">
-                                            {new Date(
-                                                blog.createdAt,
-                                            ).toLocaleDateString("en-US", {
-                                                month: "short",
-                                                day: "numeric",
-                                                year: "numeric",
-                                            })}
-                                        </p>
-                                    </div>
-                                </div>
+									{tags &&
+										tags.length > 0 &&
+										tags.map((tag, index) => (
+											<span
+												key={index}
+												className="capitalize inline-flex items-center px-2.5 sm:px-3 py-1 rounded-full text-xs font-medium bg-secondary/80 text-secondary-foreground hover:bg-secondary transition-colors"
+											>
+												{tag}
+											</span>
+										))}
+								</div>
+								<hr className="my-3 md:my-4" />
 
-                                {description && (
-                                    <p className="text-sm sm:text-base text-muted-foreground leading-relaxed mt-2 mb-4 md:mb-6">
-                                        {description}
-                                    </p>
-                                )}
-                            </header>
+								<figure className="w-full mb-4 md:mb-5">
+									<div className="relative overflow-hidden bg-muted ">
+										<NextImage
+											width={800}
+											height={450}
+											src={blog.coverUrl}
+											alt="Article cover"
+											className="w-full rounded-2xl h-auto object-cover"
+										/>
+									</div>
+								</figure>
+								{/* Author Profile Section */}
+								<div className="flex items-center gap-3 sm:gap-4 py-4 md:py-6 border-y border-border">
+									<div className="relative flex-shrink-0">
+										<NextImage
+											width={800}
+											height={450}
+											src="https://i.pravatar.cc/150?img=12"
+											alt="Author profile"
+											className="w-12 h-12 sm:w-14 sm:h-14 rounded-full object-cover ring-2 ring-offset-2 ring-primary/50 hover:ring-primary transition-all"
+										/>
+									</div>
 
-                            {/* Article Content */}
-                            <ArticleRender content={content} />
+									<div className="flex flex-col justify-center flex-1 min-w-0">
+										<h3 className="text-sm sm:text-base font-bold text-foreground hover:text-primary transition-colors cursor-pointer truncate">
+											Kowsik
+										</h3>
+										<ProfileHoverTag profileId={"author1"} />
+									</div>
+									<div className="ml-auto text-right hidden sm:block flex-shrink-0">
+										<p className="text-xs text-muted-foreground">Published</p>
+										<p className="text-xs sm:text-sm font-medium text-foreground">
+											{new Date(blog.createdAt).toLocaleDateString("en-US", {
+												month: "short",
+												day: "numeric",
+												year: "numeric",
+											})}
+										</p>
+									</div>
+								</div>
 
-                            {/* {pages && pages.length > 0 && (
+								{description && (
+									<p className="text-sm sm:text-base text-muted-foreground leading-relaxed mt-2 mb-4 md:mb-6">
+										{description}
+									</p>
+								)}
+							</header>
+
+							{/* Article Content */}
+							<ArticleRender content={content} />
+
+							{/* {pages && pages.length > 0 && (
                                 <div className="p-4 md:p-5 bg-muted/30 rounded-xl border border-border/50 backdrop-blur-sm mb-4">
                                     <h4 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
                                         <svg
@@ -225,42 +241,41 @@ export default function BlogRenderPage() {
                                     </div>
                                 </div>
                             )} */}
-                        </div>
-                    </article>
+						</div>
+					</article>
 
-                    {/* Table of Contents - Right Sidebar */}
-                    <aside className="hidden lg:block shrink-0 w-56 xl:w-64 sticky top-24 self-start max-h-[calc(100vh-7rem)] overflow-y-auto pb-8 custom-scroll xl:translate-x-15">
-                        <div className="px-4 py-0">
-                            <div className="flex items-center gap-2 sticky top-0 bg-background pt-2 pb-2 z-10">
-                                <svg
-                                    className="w-4 h-4 text-primary flex-shrink-0"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    viewBox="0 0 24 24"
-                                >
-                                    <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth={2}
-                                        d="M4 6h16M4 12h16M4 18h7"
-                                    />
-                                </svg>
-                                <h2 className="text-sm font-bold text-foreground">
-                                    On This Page
-                                </h2>
-                            </div>
-                            {toc.length > 0 ? (
-                                <ArticleTableContent toc={toc} />
-                            ) : (
-                                <p className="text-xs text-muted-foreground italic mt-2 pr-2">
-                                    No headings available
-                                </p>
-                            )}
-                        </div>
-                        <div className="from-background via-background/80 to-background/50 sticky -bottom-10 z-10 h-15 shrink-0 bg-gradient-to-t"></div>
-                    </aside>
-                </div>
-            </div>
-        </>
-    );
+					{/* Table of Contents - Right Sidebar */}
+					<aside className="hidden lg:block shrink-0 w-56 xl:w-64 sticky top-24 self-start max-h-[calc(100vh-7rem)] overflow-y-auto pb-8 custom-scroll xl:translate-x-15">
+						<div className="px-4 py-0">
+							<div className="flex items-center gap-2 sticky top-0 bg-background pt-2 pb-2 z-10">
+								<svg
+									className="w-4 h-4 text-primary flex-shrink-0"
+									fill="none"
+									stroke="currentColor"
+									viewBox="0 0 24 24"
+								>
+									<path
+										strokeLinecap="round"
+										strokeLinejoin="round"
+										strokeWidth={2}
+										d="M4 6h16M4 12h16M4 18h7"
+									/>
+								</svg>
+								<h2 className="text-sm font-bold text-foreground">
+									On This Page
+								</h2>
+							</div>
+							{toc.length > 0 ? (
+								<ArticleTableContent toc={toc} />
+							) : (
+								<p className="text-xs text-muted-foreground italic mt-2 pr-2">
+									No headings available
+								</p>
+							)}
+						</div>
+						<div className="from-background via-background/80 to-background/50 sticky -bottom-10 z-10 h-15 shrink-0 bg-gradient-to-t"></div>
+					</aside>
+				</div>
+			</div>
+	);
 }

@@ -7,14 +7,25 @@ import {
 	EyeOff,
 	FileText,
 	Loader2,
-	Plus,
-	X,
 } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import type React from "react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/shadcnUI/button";
+import {
+	Combobox,
+	ComboboxChip,
+	ComboboxChips,
+	ComboboxChipsInput,
+	ComboboxContent,
+	ComboboxEmpty,
+	ComboboxItem,
+	ComboboxList,
+	ComboboxValue,
+	useComboboxAnchor,
+} from "@/components/shadcnUI/combobox";
 import {
 	Dialog,
 	DialogContent,
@@ -37,7 +48,6 @@ import {
 	CreateNewBlog,
 	CreateNewDocs,
 } from "@/store/reducers/CreateCoverDetialsBlogDocs";
-import { SharePopover } from "../sharePopover";
 
 interface CreateContentProps {
 	title: string;
@@ -58,10 +68,6 @@ export const BlogUpdateDetails = ({
 	setOpen,
 }: BlogUpdateDetailsProps) => {
 	const [tags, setTags] = useState<string[]>([]);
-	const [tagInput, setTagInput] = useState("");
-
-	const [showTagSuggestions, setShowTagSuggestions] = useState(false);
-
 	const predefinedTags = [
 		"Developer",
 		"Designer",
@@ -77,48 +83,10 @@ export const BlogUpdateDetails = ({
 		"Freelancer",
 	];
 
-	const filteredTags = tagInput.trim()
-		? predefinedTags.filter(
-				(tag) =>
-					tag.toLowerCase().includes(tagInput.toLowerCase()) &&
-					!tags.includes(tag),
-			)
-		: predefinedTags.filter((tag) => !tags.includes(tag));
-
-	const addTag = (tag: string) => {
-		const trimmedTag = tag.trim();
-		if (trimmedTag && !tags.includes(trimmedTag)) {
-			setTags([...tags, trimmedTag]);
-			setTagInput("");
-		}
-	};
-
-	const removeTag = (tagToRemove: string) => {
-		setTags(tags.filter((tag) => tag !== tagToRemove));
-	};
-
-	const handleTagInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-		if (e.key === "Enter" || e.key === ",") {
-			e.preventDefault();
-			addTag(tagInput);
-			setShowTagSuggestions(false);
-		} else if (e.key === "Backspace" && tagInput === "" && tags.length > 0) {
-			removeTag(tags[tags.length - 1]);
-		} else if (e.key === "Escape") {
-			setShowTagSuggestions(false);
-		} else if (
-			e.key === "ArrowDown" &&
-			showTagSuggestions &&
-			filteredTags.length > 0
-		) {
-			e.preventDefault();
-		}
-	};
-
 	const router = useRouter();
 	const dispatch = useAppDispatch();
-
-	const [type, setType] = useState<"blog" | "docs">("blog");
+	const anchor = useComboboxAnchor();
+	const type = "blog";
 	const [title, setTitle] = useState("");
 	const [description, setDescription] = useState("");
 	const [visibility, setVisibility] = useState<"public" | "private">("public");
@@ -137,7 +105,6 @@ export const BlogUpdateDetails = ({
 				setTitle("");
 				setDescription("");
 				setTags([]);
-				setTagInput("");
 				setVisibility("public");
 				setStatus("draft");
 				setFormErrors({});
@@ -230,6 +197,7 @@ export const BlogUpdateDetails = ({
 			}
 		} catch (error) {
 			toast.error("Failed to create content. Please try again.");
+			console.error("Error creating content:", error);
 			setLoading(false);
 		}
 	};
@@ -282,8 +250,9 @@ export const BlogUpdateDetails = ({
 						<Label htmlFor="thumbnail">
 							Thumbnail<span className="text-red-500">*</span>
 						</Label>
-						<div
-							className="flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-lg p-4 cursor-pointer hover:border-blue-400 transition-colors bg-gray-50 relative"
+						<button
+							type="button"
+							className="flex flex-col items-center justify-center border-2 border-dashed border-border rounded-lg p-4 cursor-pointer hover:border-foreground transition-colors hover:bg-foreground/10 bg-border/10 relative"
 							onDragOver={(e) => {
 								e.preventDefault();
 								e.stopPropagation();
@@ -305,6 +274,11 @@ export const BlogUpdateDetails = ({
 							onClick={() =>
 								document.getElementById("thumbnail-input")?.click()
 							}
+							onKeyDown={(e) => {
+								if (e.key === "Enter" || e.key === " ") {
+									document.getElementById("thumbnail-input")?.click();
+								}
+							}}
 						>
 							<input
 								id="thumbnail-input"
@@ -338,81 +312,54 @@ export const BlogUpdateDetails = ({
 									Drag & drop or click to upload
 								</span>
 							)}
-						</div>
+						</button>
 					</div>
 
 					<div className="grid flex-1 gap-3">
 						<Label htmlFor="tags" className="text-sm font-medium">
 							Tags <span className="text-red-500">*</span>
 						</Label>
-						<div className="relative">
-							<div className="flex items-center gap-2 min-h-[44px] p-2 border rounded-lg focus-within:ring-2 focus-within:ring-primary focus-within:ring-offset-2">
-								<div className="flex flex-wrap gap-1.5 flex-1">
-									{tags.map((tag, index) => (
-										<span
-											key={index}
-											className="inline-flex items-center gap-1 px-2.5 py-1 bg-foreground text-background rounded-md text-sm font-medium"
-										>
-											{tag}
-											<button
-												type="button"
-												onClick={() => removeTag(tag)}
-												className="hover:bg-primary/20 rounded-sm transition-colors"
-												disabled={loading}
-											>
-												<X className="h-3 w-3" />
-											</button>
-										</span>
-									))}
-									<input
-										type="text"
-										id="tags"
-										value={tagInput}
-										onChange={(e) => {
-											setTagInput(e.target.value);
-											setShowTagSuggestions(true);
-										}}
-										onFocus={() => setShowTagSuggestions(true)}
-										onBlur={() =>
-											setTimeout(() => setShowTagSuggestions(false), 200)
-										}
-										onKeyDown={handleTagInputKeyDown}
-										placeholder={
-											tags.length === 0 ? "Type to search or add tags..." : ""
-										}
-										className="flex-1 min-w-[120px] outline-none bg-transparent text-sm"
-										disabled={loading}
-									/>
+						<Combobox
+							autoHighlight
+							multiple
+							items={predefinedTags}
+							value={tags}
+							onValueChange={(value) => setTags(value as string[])}
+						>
+							<ComboboxChips ref={anchor}>
+								<ComboboxValue>
+									{(values) => (
+										<>
+											{values.map((value: string) => (
+												<ComboboxChip key={value}>{value}</ComboboxChip>
+											))}
+											<ComboboxChipsInput />
+										</>
+									)}
+								</ComboboxValue>
+							</ComboboxChips>
+							<ComboboxContent
+								anchor={anchor}
+								className="overscroll-contain isolate"
+							>
+								<ComboboxEmpty>No items found.</ComboboxEmpty>
+								<div
+									className="overflow-y-auto overscroll-contain"
+									onWheel={(e) => e.stopPropagation()}
+								>
+									<ComboboxList>
+										{(item) => (
+											<ComboboxItem key={item} value={item}>
+												{item}
+											</ComboboxItem>
+										)}
+									</ComboboxList>
 								</div>
-							</div>
-
-							{/* Autocomplete Dropdown */}
-							{showTagSuggestions && filteredTags.length > 0 && (
-								<div className="absolute z-[999] w-full mt-3 bg-background border rounded-lg shadow-lg max-h-[200px] overflow-y-auto custom-scroll">
-									{filteredTags.map((tag) => (
-										<button
-											key={tag}
-											type="button"
-											onMouseDown={(e) => {
-												e.preventDefault();
-												addTag(tag);
-												setShowTagSuggestions(false);
-											}}
-											className="w-full px-3 py-2 text-left text-sm hover:bg-muted transition-colors flex items-center gap-2"
-										>
-											<Plus className="h-3 w-3 text-muted-foreground" />
-											{tag}
-										</button>
-									))}
-								</div>
-							)}
-						</div>
+							</ComboboxContent>
+						</Combobox>
 						{formErrors.tags && (
 							<p className="text-sm text-red-500">{formErrors.tags}</p>
 						)}
-						<span className="text-xs text-muted-foreground">
-							Press Enter or comma to add. Start typing for suggestions.
-						</span>
 					</div>
 				</div>
 				<DialogFooter className="flex flex-col sm:flex-row gap-3 sm:justify-between sm:items-center">
@@ -712,7 +659,6 @@ export const VisibilityPopover = ({
 					{/* Visibility Section - Only shown when published */}
 					{status === "publish" && (
 						<div className="space-y-2 animate-in fade-in-50 duration-200">
-							
 							<Select
 								value={visibility}
 								onValueChange={handleVisibilityChange}
