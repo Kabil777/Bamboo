@@ -28,7 +28,12 @@ import {
 	SelectValue,
 } from "@/components/shadcnUI/select";
 import Popup from "@/components/ui/editorComponent/Popup";
-import { Avatar, AvatarBadge, AvatarFallback, AvatarImage } from "@/components/shadcnUI/avatar";
+import {
+	Avatar,
+	AvatarFallback,
+	AvatarImage,
+} from "@/components/shadcnUI/avatar";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/shadcnUI/alert-dialog";
 
 export const ToolBarBottom = ({
 	editor,
@@ -66,27 +71,25 @@ export const ToolBarBottom = ({
 					editor={editor}
 				/>
 			)}
-			<Dialog open={openUpload} onOpenChange={setOpenUpload}>
-				<DialogTrigger asChild>
+			<AlertDialog>
+				<AlertDialogTrigger asChild>
 					<Button size="icon" className="rounded-full">
 						<Upload size={24} />
 					</Button>
-				</DialogTrigger>
-				<DialogContent className="sm:max-w-[425px]">
-					<DialogHeader className="mt-5">
-						<DialogTitle>Upload the blog</DialogTitle>
-					</DialogHeader>
-					<DialogDescription className="mb-5">
-						Upload the current content as a blog post.
-					</DialogDescription>
-					<DialogFooter>
-						<DialogClose asChild>
-							<Button variant="outline">Cancel</Button>
-						</DialogClose>
-						<Button onClick={onSave}>Upload</Button>
-					</DialogFooter>
-				</DialogContent>
-			</Dialog>
+				</AlertDialogTrigger>
+				<AlertDialogContent>
+					<AlertDialogHeader>
+						<AlertDialogTitle>Upload the blog</AlertDialogTitle>
+						<AlertDialogDescription>
+							Upload the current content as a blog post.
+						</AlertDialogDescription>
+					</AlertDialogHeader>
+					<AlertDialogFooter>
+						<AlertDialogCancel>Cancel</AlertDialogCancel>
+						<AlertDialogAction onClick={onSave}>Upload</AlertDialogAction>
+					</AlertDialogFooter>
+				</AlertDialogContent>
+			</AlertDialog>
 
 			<Dialog open={openColab} onOpenChange={setOpenColab}>
 				<DialogTrigger asChild>
@@ -189,7 +192,9 @@ export const ToolBarBottom = ({
 										src="https://github.com/evilrabbit.png"
 										alt="@evilrabbit"
 									/>
-									<AvatarFallback>{collabUser.name?.[0]?.toUpperCase() || "Y"}</AvatarFallback>
+									<AvatarFallback>
+										{collabUser.name?.[0]?.toUpperCase() || "Y"}
+									</AvatarFallback>
 								</Avatar>
 								<div className="flex-1 min-w-0">
 									<div className="text-[13px] leading-tight truncate">
