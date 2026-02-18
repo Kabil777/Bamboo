@@ -6,6 +6,7 @@ export { DocsCard } from "./docsCard";
 export { DropDownProfileMenu } from "./dropDownProfileMenu";
 export { EditorSidebar } from "./EditorSidebar";
 export { EditorModel } from "./editorModel";
+export { EditProfileForm } from "./editProfileForm";
 export { Logo } from "./logo";
 export { MoreAbout } from "./moreAbout";
 export { NavigationMenuBar } from "./navigationMenuBar";

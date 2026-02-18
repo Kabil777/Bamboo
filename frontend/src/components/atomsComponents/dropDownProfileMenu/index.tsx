@@ -1,14 +1,18 @@
 "use client";
 import {
 	Bookmark,
+	Check,
 	FileText,
 	Heart,
 	HelpCircle,
 	LogIn,
 	LogOut,
+	Monitor,
+	Moon,
 	Palette,
 	Plus,
 	Settings,
+	Sun,
 	User,
 	Users,
 } from "lucide-react";
@@ -27,8 +31,6 @@ import {
 	DropdownMenuItem,
 	DropdownMenuLabel,
 	DropdownMenuPortal,
-	DropdownMenuRadioGroup,
-	DropdownMenuRadioItem,
 	DropdownMenuSeparator,
 	DropdownMenuSub,
 	DropdownMenuSubContent,
@@ -91,7 +93,7 @@ export function DropDownProfileMenu() {
 	return (
 		<DropdownMenu>
 			<DropdownMenuTrigger asChild>
-				<Button className="!p-0 w-10 h-10 rounded-full bg-transparent hover:bg-transparent ring-0 focus:ring-0">
+				<Button className="!p-0 w-10 h-10 rounded-full !bg-transparent hover:bg-transparent !ring-0 focus:ring-0 shadow-none">
 					{profiledetails ? (
 						<Avatar className="relative overflow-hidden">
 							{!loaded && (
@@ -162,15 +164,21 @@ export function DropDownProfileMenu() {
 					</DropdownMenuSubTrigger>
 					<DropdownMenuPortal>
 						<DropdownMenuSubContent>
-							<DropdownMenuRadioGroup value={theme} onValueChange={setTheme}>
-								<DropdownMenuRadioItem value="light">
-									Light
-								</DropdownMenuRadioItem>
-								<DropdownMenuRadioItem value="dark">Dark</DropdownMenuRadioItem>
-								<DropdownMenuRadioItem value="system">
-									System
-								</DropdownMenuRadioItem>
-							</DropdownMenuRadioGroup>
+							<DropdownMenuItem onClick={() => setTheme("light")}>
+								<Sun className="h-4 w-4" />
+								<span className="flex-1">Light</span>
+								{theme === "light" && <Check className="h-4 w-4" />}
+							</DropdownMenuItem>
+							<DropdownMenuItem onClick={() => setTheme("dark")}>
+								<Moon className="h-4 w-4" />
+								<span className="flex-1">Dark</span>
+								{theme === "dark" && <Check className="h-4 w-4" />}
+							</DropdownMenuItem>
+							<DropdownMenuItem onClick={() => setTheme("system")}>
+								<Monitor className="h-4 w-4" />
+								<span className="flex-1">System</span>
+								{theme === "system" && <Check className="h-4 w-4" />}
+							</DropdownMenuItem>
 						</DropdownMenuSubContent>
 					</DropdownMenuPortal>
 				</DropdownMenuSub>

@@ -1,4 +1,12 @@
-import { Plus, Save, Upload, Users } from "lucide-react";
+import {
+	Check,
+	ChevronRight,
+	Globe,
+	Link2,
+	Upload,
+	Users,
+	X,
+} from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/shadcnUI/button";
 import {
@@ -12,13 +20,15 @@ import {
 	DialogTrigger,
 } from "@/components/shadcnUI/dialog";
 import { Input } from "@/components/shadcnUI/input";
-import { TableMenu } from "@/components/tiptap-ui/table-dropdown-menu/table-dropdown-menu";
 import {
-	DropdownMenu,
-	DropdownMenuContent,
-	DropdownMenuTrigger,
-} from "@/components/tiptap-ui-primitive/dropdown-menu/dropdown-menu";
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/shadcnUI/select";
 import Popup from "@/components/ui/editorComponent/Popup";
+import { Avatar, AvatarBadge, AvatarFallback, AvatarImage } from "@/components/shadcnUI/avatar";
 
 export const ToolBarBottom = ({
 	editor,
@@ -36,6 +46,14 @@ export const ToolBarBottom = ({
 	const [openMd, setOpenMd] = useState(false);
 	const [openUpload, setOpenUpload] = useState(false);
 	const [openColab, setOpenColab] = useState(false);
+	const [linkCopied, setLinkCopied] = useState(false);
+
+	const handleCopyLink = () => {
+		// Copy the current URL to clipboard
+		navigator.clipboard.writeText(window.location.href);
+		setLinkCopied(true);
+		setTimeout(() => setLinkCopied(false), 2000);
+	};
 	return (
 		<>
 			{editor && (
@@ -76,21 +94,45 @@ export const ToolBarBottom = ({
 						<Users size={24} />
 					</Button>
 				</DialogTrigger>
-				<DialogContent
-					className="sm:max-w-[480px] !bg-transparent border-none shadow-none"
-					showCloseButton={false}
-				>
-					<DialogHeader className="h-fit">
-						<DialogTitle className="text-2xl font-bold" />
+				<DialogContent className="sm:max-w-[480px] pt-0 overflow-hidden">
+					{/* Header with title and copy link */}
+					<DialogHeader>
+						<div className="flex items-center justify-between border-b py-3 mr-3">
+							<DialogTitle className="text-base font-semibold">
+								Share this file
+							</DialogTitle>
+							<Button
+								variant="ghost"
+								size="sm"
+								className="h-7 text-xs text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-950 px-2"
+								onClick={handleCopyLink}
+							>
+								{linkCopied ? (
+									<>
+										<Check className="w-3.5 h-3.5" />
+										Copied!
+									</>
+								) : (
+									<>
+										<Link2 className="w-3.5 h-3.5" />
+										Copy link
+									</>
+								)}
+							</Button>
+						</div>
+					</DialogHeader>
+
+					<div className="space-y-3">
+						{/* Invite Input */}
 						<form
-							className="flex gap-2 items-center"
+							className="flex gap-2"
 							onSubmit={(e) => {
 								e.preventDefault();
 								const email = e.currentTarget.email.value.trim();
 								if (email && !invitedUsers.some((u) => u.email === email)) {
 									setInvitedUsers((prev) => [
 										...prev,
-										{ email, role: "Editor" },
+										{ email, role: "can edit" },
 									]);
 									e.currentTarget.reset();
 								}
@@ -99,109 +141,126 @@ export const ToolBarBottom = ({
 							<Input
 								name="email"
 								type="email"
-								placeholder="Email to invite..."
-								className="flex-1 bg-background px-4 py-4 rounded-lg"
+								placeholder="Add comma separated emails to invite"
+								className="h-9 flex-1 text-sm bg-muted/50"
 							/>
-							<Button type="submit" variant="default" className="px-4">
+							<Button
+								type="submit"
+								variant="outline"
+								className="h-9 px-4 text-sm"
+							>
 								Invite
 							</Button>
 						</form>
-					</DialogHeader>
-					<div className="space-y-6 bg-background p-4 rounded-lg">
-						{/* Invite input */}
 
-						{/* User list */}
-						<div>
-							<div className="font-semibold mb-2 text-sm text-muted-foreground">
-								People with access
+						{/* Who has access */}
+						<div className="space-y-2 pt-3">
+							<h3 className="text-xs font-medium mb-2 text-foreground/80">
+								Who has access
+							</h3>
+
+							{/* Anyone with link */}
+							<div className="flex items-center gap-2.5 py-1 -mx-1 px-1 hover:bg-accent/50 rounded">
+								<div className="w-7 h-7 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
+									<Globe className="w-3.5 h-3.5 text-muted-foreground" />
+								</div>
+								<div className="flex-1 min-w-0">
+									<div className="text-[13px] leading-tight">Anyone</div>
+								</div>
+								<Select defaultValue="can view">
+									<SelectTrigger className="text-xs gap-1 p-0 !h-fit border-0 text-muted-foreground !bg-transparent hover:bg-transparent focus:ring-0 shadow-none">
+										<SelectValue />
+									</SelectTrigger>
+									<SelectContent>
+										<SelectItem value="can edit" className="text-xs">
+											can edit
+										</SelectItem>
+										<SelectItem value="can view" className="text-xs">
+											can view
+										</SelectItem>
+									</SelectContent>
+								</Select>
 							</div>
-							<ul className="space-y-2">
-								{/* Owner (current user) */}
-								<li className="flex items-center gap-3 bg-background rounded px-2 py-2 border">
-									<div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white font-bold text-lg">
-										{collabUser.name?.[0]?.toUpperCase() || "A"}
+
+							{/* Owner */}
+							<div className="flex items-center gap-2.5 py-1 -mx-1 px-1 hover:bg-accent/50 rounded">
+								<Avatar className="w-7 h-7">
+									<AvatarImage
+										src="https://github.com/evilrabbit.png"
+										alt="@evilrabbit"
+									/>
+									<AvatarFallback>{collabUser.name?.[0]?.toUpperCase() || "Y"}</AvatarFallback>
+								</Avatar>
+								<div className="flex-1 min-w-0">
+									<div className="text-[13px] leading-tight truncate">
+										{collabUser.name || "You"}{" "}
+										<span className="text-muted-foreground">(you)</span>
 									</div>
-									<div className="flex-1">
-										<div className="font-medium">
-											{collabUser.name || "You"}
-										</div>
-										<div className="text-xs text-muted-foreground">Owner</div>
-									</div>
-									<span className="text-xs px-2 py-0.5 rounded bg-blue-100 text-blue-700">
-										You
-									</span>
-								</li>
-								{/* Invited users */}
-								{invitedUsers.length === 0 && (
-									<li className="text-muted-foreground text-sm px-2">
-										No invites yet.
-									</li>
-								)}
-								{invitedUsers.map(({ email, role }) => (
-									<li
-										key={email}
-										className="flex items-center gap-3 bg-accent rounded px-2 py-2"
-									>
-										<div className="w-8 h-8 rounded-full bg-gradient-to-br from-gray-300 to-gray-400 flex items-center justify-center text-gray-700 font-bold text-lg">
+								</div>
+								<span className="text-[11px] text-muted-foreground px-2">
+									owner
+								</span>
+							</div>
+
+							{/* Invited users */}
+							{invitedUsers.map(({ email, role }) => (
+								<div
+									key={email}
+									className="flex items-center gap-1 py-1 -mx-1 px-1 hover:bg-accent/50 rounded group"
+								>
+									<div className="w-7 h-7 rounded-full border-2 border-dashed border-muted-foreground/30 flex items-center justify-center flex-shrink-0">
+										<div className="w-5 h-5 rounded-full bg-pink-500 flex items-center justify-center text-white font-semibold text-[10px]">
 											{email[0]?.toUpperCase()}
 										</div>
-										<div className="flex-1">
-											<div className="font-medium">{email}</div>
-											<div className="text-xs text-muted-foreground">
-												{role}
-											</div>
+									</div>
+									<div className="flex-1 min-w-0">
+										<div className="text-[13px] leading-tight truncate">
+											{email}{" "}
+											<span className="text-muted-foreground text-[11px]">
+												(Invite sent)
+											</span>
 										</div>
-										<Button
-											size="sm"
-											variant="ghost"
-											onClick={() =>
-												setInvitedUsers((prev) =>
-													prev.filter((u) => u.email !== email),
-												)
-											}
-										>
-											Remove
-										</Button>
-									</li>
-								))}
-							</ul>
+									</div>
+									<Button
+										size="sm"
+										variant="link"
+										className="h-7 w-fit p-0"
+										onClick={() =>
+											setInvitedUsers((prev) =>
+												prev.filter((u) => u.email !== email),
+											)
+										}
+									>
+										<X className="w-3.5 h-3.5" />
+									</Button>
+									<Select
+										defaultValue={role}
+										onValueChange={(newRole) => {
+											setInvitedUsers((prev) =>
+												prev.map((u) =>
+													u.email === email ? { ...u, role: newRole } : u,
+												),
+											);
+										}}
+									>
+										<SelectTrigger className="text-xs gap-1 p-0 !h-fit border-0 text-muted-foreground !bg-transparent hover:bg-transparent focus:ring-0 shadow-none">
+											<SelectValue />
+										</SelectTrigger>
+										<SelectContent>
+											<SelectItem value="can edit" className="text-xs">
+												can edit
+											</SelectItem>
+											<SelectItem value="can view" className="text-xs">
+												can view
+											</SelectItem>
+										</SelectContent>
+									</Select>
+								</div>
+							))}
 						</div>
-						<DialogFooter>
-							<DialogClose asChild>
-								<Button type="button">Close</Button>
-							</DialogClose>
-						</DialogFooter>
 					</div>
 				</DialogContent>
 			</Dialog>
-
-			<DropdownMenu>
-				<DropdownMenuTrigger asChild>
-					<Button variant="default" size="icon" className="rounded-full">
-						<Plus size={24} />
-					</Button>
-				</DropdownMenuTrigger>
-
-				<DropdownMenuContent
-					side="top"
-					align="end"
-					className="!min-w-fit !bg-transparent border-none !shadow-none p-0 mr-10"
-				>
-					<div className="flex flex-col space-y-2 z-50">
-						<Button variant="outline" className="rounded-full">
-							<Save onClick={onSave} />
-							Save
-						</Button>
-
-						<Button variant="outline" className="rounded-full">
-							<Save onClick={onSave} />
-							Save
-						</Button>
-
-						<TableMenu editor={editor} />
-					</div>
-				</DropdownMenuContent>
-			</DropdownMenu>
 		</>
 	);
 };

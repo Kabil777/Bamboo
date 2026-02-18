@@ -55,7 +55,7 @@ const DocsCards = () => {
           key={card.id}
           hoverOpen={false}
           card={card}
-          active={card.id}
+          active=""
           setActiveCard={() => {}}
         />
       ))}

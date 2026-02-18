@@ -57,7 +57,7 @@ export default function NotFound() {
                 animate="visible"
             >
                 <motion.div variants={iconVariants} animate="animate">
-                    <CircleX size={60} className="text-danger" />
+                    <CircleX size={100} className="text-danger" />
                 </motion.div>
                 <motion.h1
                     variants={itemVariants}

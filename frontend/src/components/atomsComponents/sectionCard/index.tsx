@@ -1,8 +1,10 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { PencilIcon } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import {
 	FaFacebook,
@@ -30,7 +32,10 @@ import { Skeleton } from "@/components/shadcnUI/skeleton";
 
 import { useAppDispatch, useAppState } from "@/hooks/ReduxHooks";
 import { useImageColors } from "@/hooks/useImageColors";
-import { getProfileDetials } from "@/store/reducers/Profile/profile.read";
+import {
+	getProfileDetials,
+	getUserProfileByHandle,
+} from "@/store/reducers/Profile/profile.read";
 import { SharePopover } from "../sharePopover";
 import { SectionCardsSkeleton } from "../skleton/Profile/profileCardSkleton";
 
@@ -54,17 +59,24 @@ const platformNames = {
 	instagram: "Instagram",
 };
 
-export function SectionCards() {
+export function SectionCards({ viewingHandle }: { viewingHandle?: string }) {
 	const dispatch = useAppDispatch();
+	const router = useRouter();
 
 	const { profileData, profileLoading } = useAppState(
 		(s) => s.getProfileReducers,
 	);
 
+	// Get current logged-in user's info
+	const { user } = useAppState((s) => s.userReducer);
+
+	// Determine if viewing own profile
+	const isOwnProfile = !viewingHandle || viewingHandle === user?.handle;
+
 	const [follow, setFollow] = useState(false);
 	const [gradientColors, setGradientColors] = useState({
-		start: "rgba(220, 38, 38, 0.4)",
-		middle: "rgba(220, 38, 38, 0.15)",
+		start: "transparent",
+		middle: "transparent",
 	});
 
 	// Extract colors from profile image, with user handle as fallback for color generation
@@ -141,10 +153,15 @@ export function SectionCards() {
 	];
 
 	useEffect(() => {
-		if (!profileData) {
+		// Fetch profile data when component mounts or viewingHandle changes
+		if (viewingHandle && viewingHandle !== user?.handle) {
+			// Viewing another user's profile
+			dispatch(getUserProfileByHandle(viewingHandle));
+		} else if (!viewingHandle || viewingHandle === user?.handle) {
+			// Viewing own profile
 			dispatch(getProfileDetials());
 		}
-	}, [dispatch, profileData]);
+	}, [dispatch, viewingHandle, user?.handle]);
 
 	if (profileLoading || !profileData) {
 		return <SectionCardsSkeleton />;
@@ -208,7 +225,7 @@ export function SectionCards() {
 	return (
 		<div className="w-full space-y-3">
 			{/* Unified Profile Card */}
-			<div className="w-full bg-background rounded-2xl overflow-hidden">
+			<div className="w-full bg-background rounded-2xl overflow-hidden inset-shadow-sm">
 				{/* Gradient Banner with Extended Fade */}
 				<div className="-mb-5">
 					{colorLoading ? (
@@ -216,7 +233,7 @@ export function SectionCards() {
 					) : (
 						<div
 							key={`gradient-${dominant}`}
-							className="h-28 sm:h-32 transition-all duration-500"
+							className="h-28 sm:h-32 transition-all duration-500 "
 							style={{
 								backgroundImage: `linear-gradient(to bottom, ${gradientColors.start}, ${gradientColors.middle}, transparent)`,
 							}}
@@ -248,6 +265,16 @@ export function SectionCards() {
 
 						{/* Action Buttons */}
 						<div className="flex items-center gap-2 mb-1">
+							{isOwnProfile && (
+								<Button
+									variant="outline"
+									size="sm"
+									onClick={() => router.push("/profile/editprofile")}
+									className="rounded-full px-3 h-8 text-xs gap-1.5 font-medium shadow-sm"
+								>
+									<PencilIcon size={14} />
+								</Button>
+							)}
 							<SharePopover
 								text={`https://bamboo.com/user/profile/${profileData.handle}`}
 							>
@@ -259,23 +286,25 @@ export function SectionCards() {
 									<IoIosShareAlt size={14} />
 								</Button>
 							</SharePopover>
-							<motion.div whileTap={{ scale: 0.96 }}>
-								<Button
-									onClick={() => setFollow(!follow)}
-									variant={follow ? "outline" : "default"}
-									size="sm"
-									className="rounded-full px-5 h-8 text-xs font-semibold shadow-sm"
-								>
-									<motion.span
-										key={follow ? "ing" : "ow"}
-										initial={{ opacity: 0, y: -4 }}
-										animate={{ opacity: 1, y: 0 }}
-										transition={{ duration: 0.15 }}
+							{!isOwnProfile && (
+								<motion.div whileTap={{ scale: 0.96 }}>
+									<Button
+										onClick={() => setFollow(!follow)}
+										variant={follow ? "outline" : "default"}
+										size="sm"
+										className="rounded-full px-5 h-8 text-xs font-semibold shadow-sm"
 									>
-										{follow ? "Following" : "Follow"}
-									</motion.span>
-								</Button>
-							</motion.div>
+										<motion.span
+											key={follow ? "ing" : "ow"}
+											initial={{ opacity: 0, y: -4 }}
+											animate={{ opacity: 1, y: 0 }}
+											transition={{ duration: 0.15 }}
+										>
+											{follow ? "Following" : "Follow"}
+										</motion.span>
+									</Button>
+								</motion.div>
+							)}
 						</div>
 					</div>
 

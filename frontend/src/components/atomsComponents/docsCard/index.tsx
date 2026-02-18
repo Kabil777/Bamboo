@@ -32,7 +32,7 @@ export const DocsCard = ({
         <motion.div
             key={doc?.id}
             layout
-            onMouseEnter={() => setActiveCard(doc.id)}
+            onMouseEnter={() => setActiveCard(doc?.id)}
             transition={{ layout: { duration: 0.3, type: "spring" } }}
             className={`border rounded-xl p-4 flex flex-col justify-between gap-3 transition-colors  ${
                 isActive ? "bg-muted/50" : ""
@@ -68,7 +68,7 @@ export const DocsCard = ({
                         <div className="flex font-semibold items-center gap-2">
                             <Calendar size={18} />
                             Created on{" "}
-                            {new Date(doc.createdAt).toLocaleDateString(
+                            {new Date(doc?.createdAt).toLocaleDateString(
                                 "en-US",
                                 {
                                     month: "short",
@@ -77,7 +77,7 @@ export const DocsCard = ({
                                 },
                             )}
                         </div>
-                        <Link href={`/docs/${doc.id}`}>
+                        <Link href={`/docs/${doc?.id}`}>
                             <Button className="h-fit text-sm px-3 py-2 rounded-lg font-semibold">
                                 View Docs
                             </Button>

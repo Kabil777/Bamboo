@@ -1,5 +1,23 @@
 "use client";
+import { Loader2 } from "lucide-react";
+import Image from "next/image";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { FiEdit3 } from "react-icons/fi";
+import { toast } from "sonner";
 import { Button } from "@/components/shadcnUI/button";
+import {
+	Combobox,
+	ComboboxChip,
+	ComboboxChips,
+	ComboboxChipsInput,
+	ComboboxContent,
+	ComboboxEmpty,
+	ComboboxItem,
+	ComboboxList,
+	ComboboxValue,
+	useComboboxAnchor,
+} from "@/components/shadcnUI/combobox";
 import {
 	Dialog,
 	DialogClose,
@@ -19,17 +37,11 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/shadcnUI/select";
-import { useAppDispatch, useAppState } from "@/hooks/ReduxHooks";
+import { useAppDispatch } from "@/hooks/ReduxHooks";
 import {
 	CreateNewBlog,
 	CreateNewDocs,
 } from "@/store/reducers/CreateCoverDetialsBlogDocs";
-import { Loader2 } from "lucide-react";
-import Image from "next/image";
-import { useRouter, usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
-import { FiEdit3 } from "react-icons/fi";
-import { toast } from "sonner";
 
 interface CreateContentProps {
 	title: string;
@@ -57,11 +69,26 @@ export const EditorModel = () => {
 
 	const dispatch = useAppDispatch();
 
+	const anchor = useComboboxAnchor();
 	const [type, setType] = useState<"blog" | "docs">("blog");
 	const [title, setTitle] = useState("");
 	const [description, setDescription] = useState("");
 	const [open, setOpen] = useState<boolean>(false);
-	const [tags, setTags] = useState<string>("");
+	const [tags, setTags] = useState<string[]>([]);
+	const predefinedTags = [
+		"Developer",
+		"Designer",
+		"Writer",
+		"Photographer",
+		"Creator",
+		"Artist",
+		"Engineer",
+		"Entrepreneur",
+		"Student",
+		"Teacher",
+		"Manager",
+		"Freelancer",
+	];
 	const coverUrl =
 		"https://images.prismic.io/techloset/Z1_3cpbqstJ98iN__a-complete-guide-to-next-js-a-react-js-framework.webp";
 	const [loading, setLoading] = useState<boolean>(false);
@@ -89,17 +116,8 @@ export const EditorModel = () => {
 			errors.description = "Description must be at least 10 characters long.";
 		if (!(description.length <= 300))
 			errors.description = "Description must be less than 300 characters long.";
-		if (tags.trim().length == 0) {
+		if (tags.length === 0) {
 			errors.tags = "At least one tag is required.";
-		} else {
-			const tagsArray = tags
-				.split(",")
-				.map((tag) => tag.trim())
-				.filter((tag) => tag.length > 0);
-
-			if (tagsArray.length === 0) {
-				errors.tags = "Please enter valid tags (comma separated).";
-			}
 		}
 
 		setFormErrors(errors);
@@ -114,15 +132,11 @@ export const EditorModel = () => {
 		if (!validateForm()) return;
 
 		setLoading(true);
-		const tagsArray = tags
-			.split(",")
-			.map((tag) => tag.trim())
-			.filter((tag) => tag.length > 0);
 		const cover: CreateContentProps = {
 			title: title.trim(),
 			coverUrl: coverUrl,
 			description: description.trim(),
-			tags: tagsArray,
+			tags: tags,
 		};
 		console.log("Creating content with details:", cover);
 		try {
@@ -164,7 +178,7 @@ export const EditorModel = () => {
 					<FiEdit3 className="pointer-events-none" />
 				</Button>
 			</DialogTrigger>
-			<DialogContent className="sm:max-w-[425px]">
+			<DialogContent className="sm:max-w-[425px] pointer-events-auto">
 				<DialogHeader>
 					<DialogTitle>New Blog/Docs</DialogTitle>
 					<DialogDescription>
@@ -228,8 +242,9 @@ export const EditorModel = () => {
 						<Label htmlFor="thumbnail">
 							Thumbnail<span className="text-red-500">*</span>
 						</Label>
-						<div
-							className="flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-lg p-4 cursor-pointer hover:border-blue-400 transition-colors bg-gray-50 relative"
+						<button
+							type="button"
+							className="pointer-events-auto flex flex-col items-center justify-center border-2 border-dashed border-border rounded-lg p-4 cursor-pointer hover:border-foreground transition-colors hover:bg-foreground/10 bg-border/10 relative"
 							onDragOver={(e) => {
 								e.preventDefault();
 								e.stopPropagation();
@@ -251,18 +266,23 @@ export const EditorModel = () => {
 							onClick={() =>
 								document.getElementById("thumbnail-input")?.click()
 							}
+							onKeyDown={(e) => {
+								if (e.key === "Enter" || e.key === " ") {
+									document.getElementById("thumbnail-input")?.click();
+								}
+							}}
 						>
 							<input
 								id="thumbnail-input"
 								type="file"
 								accept="image/*"
 								className="hidden"
+								disabled={loading}
 								onChange={async (e) => {
 									const file = e.target.files?.[0];
 									if (!file) return;
 									const formData = new FormData();
 									formData.append("file", file);
-									// Example: POST to your API endpoint
 									const res = await fetch("/api/upload", {
 										method: "POST",
 										body: formData,
@@ -284,19 +304,51 @@ export const EditorModel = () => {
 									Drag & drop or click to upload
 								</span>
 							)}
-						</div>
+						</button>
 					</div>
 
 					<div className="grid gap-2">
-						<Label htmlFor="tags">
-							Tags (comma separated)<span className="text-red-500">*</span>
+						<Label htmlFor="tags" className="text-sm font-medium">
+							Tags <span className="text-red-500">*</span>
 						</Label>
-						<Input
-							onChange={(e) => setTags(e.target.value)}
-							id="tags"
-							name="tags"
-							placeholder="e.g. react, nextjs, typescript"
-						/>
+						<Combobox
+							autoHighlight
+							multiple
+							items={predefinedTags}
+							value={tags}
+							onValueChange={(value) => setTags(value as string[])}
+						>
+							<ComboboxChips ref={anchor}>
+								<ComboboxValue>
+									{(values) => (
+										<>
+											{values.map((value: string) => (
+												<ComboboxChip key={value}>{value}</ComboboxChip>
+											))}
+											<ComboboxChipsInput />
+										</>
+									)}
+								</ComboboxValue>
+							</ComboboxChips>
+							<ComboboxContent
+								anchor={anchor}
+								className="overscroll-contain isolate pointer-events-auto z-[9999]"
+							>
+								<ComboboxEmpty>No items found.</ComboboxEmpty>
+								<div
+									className="overflow-y-auto overscroll-contain"
+									onWheel={(e) => e.stopPropagation()}
+								>
+									<ComboboxList>
+										{(item) => (
+											<ComboboxItem key={item} value={item}>
+												{item}
+											</ComboboxItem>
+										)}
+									</ComboboxList>
+								</div>
+							</ComboboxContent>
+						</Combobox>
 						{formErrors.tags && (
 							<p className="text-sm text-red-500">{formErrors.tags}</p>
 						)}
