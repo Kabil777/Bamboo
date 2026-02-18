@@ -47,12 +47,6 @@ export function useCollaborativeAwareness(
             timeoutId = setTimeout(() => {
                 const usersByUserId = new Map<string, userAwareness>();
 
-                console.log("=== Awareness States ===");
-                console.log(
-                    "Total awareness states:",
-                    awareness?.getStates().size,
-                );
-
                 awareness?.getStates().forEach((state, clientId) => {
                     console.log(`Client ${clientId}:`, state);
 
@@ -69,12 +63,10 @@ export function useCollaborativeAwareness(
                         location: state.user.location,
                     };
 
-                    console.log(`Adding user:`, user);
                     usersByUserId.set(user.userId, user);
                 });
 
                 const uniqueUsers = Array.from(usersByUserId.values());
-                console.log("Unique users:", uniqueUsers);
 
                 const currentUserIds = new Set(
                     uniqueUsers.map((u) => u.userId),

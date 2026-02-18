@@ -1,38 +1,45 @@
 import { HocuspocusProvider } from "@hocuspocus/provider";
 import { useEffect, useRef, useState } from "react";
+import { buildCollabRoomName, type CollabRoomType } from "./collabRoomName";
+
+const DEFAULT_COLLAB_URL = "ws://localhost:1234/collab";
+const COLLAB_URL = process.env.NEXT_PUBLIC_COLLAB_WS_URL || DEFAULT_COLLAB_URL;
 
 export function useHocuspocusProvider(
-  documentId: string,
-  room: "blog" | "docs",
+    documentId: string,
+    roomType: CollabRoomType,
 ) {
-  const providerRef = useRef<HocuspocusProvider | null>(null);
-  const [provider, setProvider] = useState<HocuspocusProvider | null>(null);
+    const providerRef = useRef<HocuspocusProvider | null>(null);
+    const [provider, setProvider] = useState<HocuspocusProvider | null>(null);
 
-  useEffect(() => {
-    // Create provider only once when documentId changes
-    if (!providerRef.current || providerRef.current.configuration.name !== documentId) {
-      // Destroy existing provider if documentId changed
-      if (providerRef.current) {
-        providerRef.current.destroy();
-      }
+    useEffect(() => {
+        const roomName = buildCollabRoomName(roomType, documentId);
 
-      const newProvider = new HocuspocusProvider({
-        url: "ws://127.0.0.1:1234/",
-        name: documentId,
-      });
+        if (
+            !providerRef.current ||
+            providerRef.current.configuration.name !== roomName
+        ) {
+            if (providerRef.current) {
+                providerRef.current.destroy();
+            }
 
-      providerRef.current = newProvider;
-      setProvider(newProvider);
-    }
+            const newProvider = new HocuspocusProvider({
+                url: COLLAB_URL,
+                name: roomName,
+            });
 
-    return () => {
-      // Cleanup on unmount
-      if (providerRef.current) {
-        providerRef.current.destroy();
-        providerRef.current = null;
-      }
-    };
-  }, [documentId]);
+            providerRef.current = newProvider;
+            setProvider(newProvider);
+        }
 
-  return provider;
+        return () => {
+            // Cleanup on unmount
+            if (providerRef.current) {
+                providerRef.current.destroy();
+                providerRef.current = null;
+            }
+        };
+    }, [documentId, roomType]);
+
+    return provider;
 }

@@ -16,6 +16,51 @@ export function useDocsTree(provider: any) {
     const [tree, setTree] = useState<any[]>([]);
 
     useEffect(() => {
+        if (!provider) return;
+
+        const ydoc = provider.document;
+        const pages = ydoc.getArray<Y.Map<any>>("pages");
+
+        const ensureOverview = () => {
+            const exists = pages
+                .toArray()
+                .some(
+                    (p) => p.get("level") === 0 && p.get("parentId") === null,
+                );
+
+            if (exists) return;
+
+            ydoc.transact(() => {
+                const overview = new Y.Map();
+                overview.set("id", uuidv7());
+                overview.set("title", "Overview");
+                overview.set("parentId", null);
+                overview.set("level", 0);
+                overview.set("order", 0);
+                overview.set("isRoot", true);
+
+                pages.unshift([overview]);
+            });
+        };
+
+        const onSynced = () => {
+            ensureOverview();
+            provider.off("synced", onSynced);
+        };
+
+        if (provider.synced) {
+            ensureOverview();
+        } else {
+            provider.on("synced", onSynced);
+        }
+
+        return () => {
+            provider.off("synced", ensureOverview);
+        };
+    }, [provider]);
+
+    useEffect(() => {
+        if (!provider) return;
         const ydoc = provider.document;
         const pages = ydoc.getArray("pages");
 
@@ -37,6 +82,7 @@ export function useDocsTree(provider: any) {
     }, [provider]);
 
     const addPage = (parentId: string | null) => {
+        if (!provider) return;
         const ydoc = provider.document;
         const pages = ydoc.getArray("pages");
 
@@ -63,6 +109,7 @@ export function useDocsTree(provider: any) {
     };
 
     const deletePage = (pageId: string) => {
+        if (!provider) return;
         const pages = provider.document.getArray("pages");
         const index = pages.toArray().findIndex((p) => p.get("id") === pageId);
         if (index !== -1) pages.delete(index, 1);
