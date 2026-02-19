@@ -11,10 +11,9 @@ import {
 import Image from "next/image";
 import { useRef, useState } from "react";
 import {
-	FaFacebook,
+	FaDiscord,
 	FaGithub,
 	FaGlobe,
-	FaInstagram,
 	FaLinkedin,
 	FaTwitter,
 	FaYoutube,
@@ -55,23 +54,21 @@ interface EditProfileFormProps {
 }
 
 const platformIcons = {
-	github: FaGithub,
-	linkedin: FaLinkedin,
-	twitter: FaTwitter,
-	website: FaGlobe,
-	youtube: FaYoutube,
-	facebook: FaFacebook,
-	instagram: FaInstagram,
+	GITHUB: FaGithub,
+	LINKEDIN: FaLinkedin,
+	YOUTUBE: FaYoutube,
+	TWITTER: FaTwitter,
+	DISCORD: FaDiscord,
+	WEBSITE: FaGlobe,
 };
 
 const socialPlatforms = [
-	{ value: "github", label: "GitHub", icon: FaGithub },
-	{ value: "linkedin", label: "LinkedIn", icon: FaLinkedin },
-	{ value: "twitter", label: "Twitter", icon: FaTwitter },
-	{ value: "website", label: "Website", icon: FaGlobe },
-	{ value: "youtube", label: "YouTube", icon: FaYoutube },
-	{ value: "facebook", label: "Facebook", icon: FaFacebook },
-	{ value: "instagram", label: "Instagram", icon: FaInstagram },
+	{ value: "GITHUB", label: "Github", icon: FaGithub },
+	{ value: "LINKEDIN", label: "LinkedIn", icon: FaLinkedin },
+	{ value: "YOUTUBE", label: "YouTube", icon: FaYoutube },
+	{ value: "TWITTER", label: "Twitter", icon: FaTwitter },
+	{ value: "DISCORD", label: "Discord", icon: FaDiscord },
+	{ value: "WEBSITE", label: "Website", icon: FaGlobe },
 ];
 
 const defaultProfileImages = [
@@ -130,18 +127,28 @@ export const EditProfileForm = ({
 	const fileInputRef = useRef<HTMLInputElement>(null);
 
 	const predefinedTags = [
-		"Developer",
-		"Designer",
-		"Writer",
-		"Photographer",
-		"Creator",
-		"Artist",
-		"Engineer",
-		"Entrepreneur",
-		"Student",
-		"Teacher",
-		"Manager",
-		"Freelancer",
+		"DEVELOPER",
+		"DESIGNER",
+		"WRITER",
+		"PHOTOGRAPHER",
+		"CREATOR",
+		"ARTIST",
+		"ENGINEER",
+		"ENTREPRENEUR",
+		"STUDENT",
+		"TEACHER",
+		"MANAGER",
+		"FREELANCER",
+		"PRODUCT_MANAGER",
+		"DATA_SCIENTIST",
+		"DEVOPS",
+		"QA_ENGINEER",
+		"BACKEND",
+		"FRONTEND",
+		"FULL_STACK",
+		"MOBILE_DEV",
+		"UI_UX",
+		"CONTENT_CREATOR",
 	];
 
 	const designations = [
@@ -215,9 +222,9 @@ export const EditProfileForm = ({
 				...socialLinks,
 				{
 					id: Date.now().toString(),
-					platform: "github",
+					platform: "GITHUB",
 					url: "",
-					icon: "github",
+					icon: "GITHUB",
 				},
 			]);
 		}
@@ -399,6 +406,7 @@ export const EditProfileForm = ({
 												height={192}
 												src={profileImage}
 												alt="Profile"
+												loading="eager"
 												className={`w-full h-full object-cover transition-opacity ${isDragging ? "opacity-50" : "opacity-100"}`}
 											/>
 										) : (
@@ -659,8 +667,9 @@ export const EditProfileForm = ({
 																{IconComponent && (
 																	<IconComponent className="h-4 w-4" />
 																)}
-																<span className="capitalize">
-																	{link.platform}
+																<span className="normal-case">
+																	{link.platform.charAt(0) +
+																		link.platform.slice(1).toLowerCase()}
 																</span>
 															</div>
 														</SelectValue>
@@ -686,7 +695,7 @@ export const EditProfileForm = ({
 											<div className="grid flex-[2] gap-3">
 												<Label className="text-sm font-semibold">URL</Label>
 												<Input
-													placeholder={`https://${link.platform}.com/username`}
+													placeholder={`https://${link.platform.toLowerCase()}.com/username`}
 													value={link.url}
 													onChange={(e) =>
 														updateSocialLink(link.id, "url", e.target.value)

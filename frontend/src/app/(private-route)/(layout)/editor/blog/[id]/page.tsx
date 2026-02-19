@@ -1,19 +1,29 @@
 "use client";
 
-import Editor from "@/components/ui/editorComponent";
 import { useParams } from "next/navigation";
+import { saveBlogContent } from "@/api/blogApi";
+import Editor from "@/components/ui/editorComponent";
+import { toast } from "sonner";
 
 export default function BlogEditor() {
-    const save = (content: string) => {
-        console.log(content);
-    };
-    const { id } = useParams<{ id: string }>();
+	const { id } = useParams<{ id: string }>();
 
-    if (!id) return null;
+	const save = async () => {
+		if (!id) return;
+		try {
+			await saveBlogContent(id);
+            toast.success("Blog saved successfully!");
+		} catch (err) {
+			toast.error("Failed to save blog. Please try again.");
+			console.error("Failed to save blog:", err);
+		}
+	};
 
-    return (
-        <div className="w-full">
-            <Editor idContent={id} save={save} />
-        </div>
-    );
+	if (!id) return null;
+
+	return (
+		<div className="w-full">
+			<Editor idContent={id} save={save} />
+		</div>
+	);
 }
