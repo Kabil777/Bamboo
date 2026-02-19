@@ -1,5 +1,5 @@
 import store from "@/store/store";
-import { InternalAxiosRequestConfig } from "axios";
+import type { InternalAxiosRequestConfig } from "axios";
 import { authResolved } from "../auth/authGate";
 
 export const requestInterceptor = async (

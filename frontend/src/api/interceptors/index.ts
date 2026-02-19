@@ -1,4 +1,4 @@
-import { AxiosInstance } from "axios";
+import type { AxiosInstance } from "axios";
 import { responseInterceptor } from "./response";
 
 let initialized = false;
