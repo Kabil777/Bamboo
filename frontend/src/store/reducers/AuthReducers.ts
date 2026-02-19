@@ -49,9 +49,14 @@ const userDetailsSlice = createSlice({
 		},
 		setAuthentication: (s, a) => {
 			const user = a.payload;
+			const normalizedName =
+				user.name?.trim() ||
+				user.handle?.trim() ||
+				user.email?.trim() ||
+				"User";
 
 			s.user = {
-				name: user.name,
+				name: normalizedName,
 				handle: user.handle,
 				email: user.email,
 				profileImg: user.coverUrl,
@@ -62,13 +67,39 @@ const userDetailsSlice = createSlice({
 	extraReducers: (builder) => {
 		builder
 			.addCase(getAuthentication.fulfilled, (s, a) => {
+				const normalizedName =
+					a.payload.name?.trim() ||
+					a.payload.handle?.trim() ||
+					a.payload.email?.trim() ||
+					"User";
+
 				s.user = {
-					name: a.payload.name,
+					name: normalizedName,
 					handle: a.payload.handle,
 					email: a.payload.email,
 					profileImg: a.payload.coverUrl,
 				};
 				s.status = "authorized";
+				try {
+					const collabId =
+						a.payload.email?.trim() ||
+						a.payload.handle?.trim() ||
+						"";
+					if (collabId) {
+						sessionStorage.setItem(
+							"bamboo_collab_user_id",
+							collabId,
+						);
+					}
+					if (normalizedName.trim()) {
+						sessionStorage.setItem(
+							"bamboo_collab_user_name",
+							normalizedName.trim(),
+						);
+					}
+				} catch {
+					// Ignore storage errors (private mode, etc.)
+				}
 				console.log(JSON.parse(JSON.stringify(s)));
 			})
 			.addCase(getAuthentication.rejected, (state) => {

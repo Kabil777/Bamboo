@@ -15,30 +15,48 @@ export function useCollaborativeAwareness(
     provider: HocuspocusProvider | null,
     currentUser: { name: string; userId: string; color?: string },
     location: "editor" | "sidebar",
+    options?: { suppressNotifications?: boolean },
 ) {
     const [onlineUsers, setOnlineUsers] = useState<userAwareness[]>([]);
     const previousUsersRef = useRef<Map<string, string>>(new Map());
     const mountedRef = useRef(false);
     const localUserIdRef = useRef<string>(String(currentUser.userId));
+    const readyToNotifyRef = useRef(false);
+    const authenticatedRef = useRef(false);
 
     useEffect(() => {
         if (!provider) return;
 
         const awareness = provider.awareness;
         const setLocalAwareness = () => {
+            if (!authenticatedRef.current) return;
+            const nameReady =
+                typeof currentUser.name === "string" &&
+                currentUser.name.trim().length > 0 &&
+                currentUser.name !== "Anonymous";
+            if (!nameReady) return;
+
             provider.awareness?.setLocalStateField("user", {
                 userId: String(currentUser.userId),
                 name: currentUser.name,
                 color: currentUser.color,
                 location,
             });
+            if (!readyToNotifyRef.current) {
+                readyToNotifyRef.current = true;
+            }
         };
         const handleStatus = ({ status }: { status: string }) => {
             if (status === "connected") {
                 setLocalAwareness();
             }
         };
+        const handleAuthenticated = () => {
+            authenticatedRef.current = true;
+            setLocalAwareness();
+        };
         provider.on("status", handleStatus);
+        provider.on("authenticated", handleAuthenticated);
         setLocalAwareness();
 
         localUserIdRef.current = String(currentUser.userId);
@@ -52,28 +70,37 @@ export function useCollaborativeAwareness(
                 const usersByUserId = new Map<string, userAwareness>();
 
                 awareness?.getStates().forEach((state, clientId) => {
-                    const userId = state.user?.userId
-                        ? String(state.user.userId)
+                    const userState = state?.user ?? {};
+                    const userId = userState.userId
+                        ? String(userState.userId)
                         : `client-${clientId}`;
                     const name =
-                        typeof state.user?.name === "string" &&
-                        state.user.name.trim().length > 0
-                            ? state.user.name
+                        typeof userState.name === "string" &&
+                        userState.name.trim().length > 0
+                            ? userState.name
                             : "Anonymous";
 
                     const user: userAwareness = {
                         clientId,
                         userId,
                         name,
-                        color: state.user.color,
-                        cursor: state.user.cursor,
-                        location: state.user.location === "sidebar" ? "sidebar" : "editor",
+                        color: userState.color,
+                        cursor: userState.cursor,
+                        location:
+                            userState.location === "sidebar"
+                                ? "sidebar"
+                                : "editor",
                     };
 
                     usersByUserId.set(user.userId, user);
                 });
 
-                const uniqueUsers = Array.from(usersByUserId.values());
+                const uniqueUsers = Array.from(usersByUserId.values()).filter(
+                    (user) =>
+                        user.name.trim().length > 0 &&
+                        user.name !== "Anonymous" &&
+                        !user.userId.startsWith("client-"),
+                );
 
                 const currentUserIds = new Set(
                     uniqueUsers.map((u) => u.userId),
@@ -81,7 +108,11 @@ export function useCollaborativeAwareness(
 
                 setOnlineUsers(uniqueUsers);
 
-                if (mountedRef.current) {
+                if (
+                    mountedRef.current &&
+                    readyToNotifyRef.current &&
+                    !options?.suppressNotifications
+                ) {
                     uniqueUsers.forEach((user) => {
                         if (
                             !previousUsersRef.current.has(user.userId) &&
@@ -118,8 +149,10 @@ export function useCollaborativeAwareness(
             clearTimeout(timeoutId);
             awareness?.off("change", handleChange);
             provider.off("status", handleStatus);
+            provider.off("authenticated", handleAuthenticated);
             mountedRef.current = false;
             previousUsersRef.current.clear();
+            authenticatedRef.current = false;
         };
     }, [
         provider,

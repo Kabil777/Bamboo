@@ -1,7 +1,7 @@
 "use client";
 import { motion } from "framer-motion";
-import { useEffect } from "react";
-import { BlogCard } from "@/components/atomsComponents";
+import { useEffect, useState } from "react";
+import { BlogCard, DocsProfileCard, useProfileTab } from "@/components/atomsComponents";
 import {
     Avatar,
     AvatarFallback,
@@ -10,7 +10,10 @@ import {
 import { Button } from "@/components/shadcnUI/button";
 import { Separator } from "@/components/shadcnUI/separator";
 import { useAppDispatch, useAppState } from "@/hooks/ReduxHooks";
-import { getAllProfileBlog } from "@/store/reducers/Profile/profile.read";
+import {
+    getAllProfileBlog,
+    getAllProfileDocs,
+} from "@/store/reducers/Profile/profile.read";
 import { ProfileBlogListSkeleton } from "@/components/atomsComponents/skleton/Profile/profileBlogSkleton";
 import { BlogCardSkeleton } from "@/components/atomsComponents/skleton/blogCardSkleton";
 
@@ -49,31 +52,66 @@ const cardData = [
 
 export default function Profile() {
     const dispatch = useAppDispatch();
-    const { blogLoading, blogs } = useAppState((s) => s.getProfileReducers);
+    const { blogLoading, blogs, docsLoading, docs } = useAppState(
+        (s) => s.getProfileReducers,
+    );
+    const { user } = useAppState((s) => s.userReducer);
+    const [activeDocId, setActiveDocId] = useState<string>("");
+    const { selectedTab } = useProfileTab();
     useEffect(() => {
         if (!blogLoading && !blogs) {
             dispatch(getAllProfileBlog());
         }
-    }, [blogs, dispatch, blogLoading]);
+        if (!docsLoading && !docs) {
+            dispatch(getAllProfileDocs());
+        }
+    }, [blogs, dispatch, blogLoading, docsLoading, docs]);
     return (
         <div className="container grid grid-cols-4 transition-all duration-200 ease-linear gap-4 md:gap-6 relative">
             <div className="col-span-full xl:col-span-3 mx-2 md:mx-0 xl:border-r-1 p-0 sm:p-2 relative">
-                {blogLoading && <BlogCardSkeleton />}
+                {selectedTab === "posts" && (
+                    <>
+                        {blogLoading && <BlogCardSkeleton />}
+                        {!blogLoading &&
+                            blogs?.blogPagesDto?.map((item) => (
+                                <BlogCard
+                                    key={item.id}
+                                    title={item.title}
+                                    description={item.description}
+                                    coverUrl={item.coverUrl}
+                                    authorId={item.authorId}
+                                    authorName={item.authorId}
+                                    id={item.id}
+                                    tags={item.tags}
+                                    createdAt={item.createdAt}
+                                />
+                            ))}
+                    </>
+                )}
 
-                {!blogLoading &&
-                    blogs?.blogPagesDto?.map((item) => (
-                        <BlogCard
-                            key={item.id}
-                            title={item.title}
-                            description={item.description}
-                            coverUrl={item.coverUrl}
-                            authorId={item.authorId}
-                            authorName={item.authorId}
-                            id={item.id}
-                            tags={item.tags}
-                            createdAt={item.createdAt}
-                        />
-                    ))}
+                {selectedTab === "docs" && (
+                    <>
+                        {docsLoading && <BlogCardSkeleton />}
+                        {!docsLoading && docs?.docs?.length
+                            ? docs.docs.map((doc) => (
+                                  <DocsProfileCard
+                                      key={doc.id}
+                                      id={doc.id}
+                                      title={doc.title}
+                                      description={doc.description}
+                                      coverUrl={doc.coverUrl}
+                                      createdAt={doc.createdAt}
+                                      authorName={
+                                          user?.handle ||
+                                          user?.name ||
+                                          user?.email ||
+                                          "user101"
+                                      }
+                                  />
+                              ))
+                            : null}
+                    </>
+                )}
             </div>
             <div className="hidden xl:flex flex-col xl:col-span-1 line-clamp-2 p-2 gap-4 xl:sticky top-[140px] z-8 max-h-[calc(100vh-150px)] overflow-y-auto custom-scroll">
                 <div>

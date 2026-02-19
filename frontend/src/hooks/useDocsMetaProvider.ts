@@ -9,11 +9,19 @@ import {
     shouldRefreshWsAuth,
 } from "@/lib/collabAuth";
 
-export function useDocsMetaProvider(docId: string | undefined) {
+export function useDocsMetaProvider(
+    docId: string | undefined,
+    options?: { enabled?: boolean },
+) {
     const router = useRouter();
     const [provider, setProvider] = useState<HocuspocusProvider | null>(null);
 
     useEffect(() => {
+        const enabled = options?.enabled ?? true;
+        if (!enabled) {
+            setProvider(null);
+            return;
+        }
         if (!docId) return;
         let provider: HocuspocusProvider | null = null;
 
@@ -63,7 +71,7 @@ export function useDocsMetaProvider(docId: string | undefined) {
             p.destroy();
             setProvider(null);
         };
-    }, [docId, router]);
+    }, [docId, router, options?.enabled]);
 
     return provider;
 }

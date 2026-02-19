@@ -35,7 +35,13 @@ import * as Y from "yjs";
 
 export function EditorSidebar(props: React.ComponentProps<typeof Sidebar>) {
     const { id } = useParams() as { id: string | string[] };
-    const provider = useDocsMetaProvider(id);
+    const docId = Array.isArray(id) ? id[0] : id;
+    const provider = useDocsMetaProvider(docId, {
+        enabled:
+            typeof id === "string"
+                ? id.length > 0
+                : Array.isArray(id) && id.length > 0,
+    });
     const { tree, addPage, deletePage } = useDocsTree(provider);
 
     const [editingId, setEditingId] = useState<string | null>(null);
@@ -53,7 +59,7 @@ export function EditorSidebar(props: React.ComponentProps<typeof Sidebar>) {
             }
         });
     };
-    const docId = id[0]; // First part is always the doc ID
+    // First part is always the doc ID when using catch-all routes.
 
     return (
         <Sidebar

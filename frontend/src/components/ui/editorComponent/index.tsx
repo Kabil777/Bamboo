@@ -23,6 +23,7 @@ import { ToolBarBottom } from "@/components/atomsComponents/toolBarBottom";
 import { Toolbar } from "@/components/tiptap-ui-primitive/toolbar";
 import { useCollaborativeAwareness } from "@/hooks/useCollabrationAwareness";
 import { useCollabUser } from "@/hooks/useCollabUser";
+import { useDocsMetaProvider } from "@/hooks/useDocsMetaProvider";
 import type { CollabRoomType } from "@/lib/collabRoomName";
 import extensions from "@/lib/extensions";
 import { useHocuspocusProvider } from "@/lib/hocuspocus";
@@ -49,18 +50,31 @@ export default function Editor({
 
     const roomType: CollabRoomType =
         resourceType === "blog" ? "blog" : "docs-page";
-    const provider = useHocuspocusProvider(idContent, roomType);
+    const collabUser = useCollabUser();
+    const isCollabReady =
+        typeof collabUser.name === "string" &&
+        collabUser.name.trim().length > 0;
+    const provider = useHocuspocusProvider(
+        idContent,
+        roomType,
+        resourceType === "docs" ? resourceId : undefined,
+    );
+    const sidebarProvider =
+        resourceType === "docs" ? useDocsMetaProvider(resourceId) : null;
 
-	const collabUser = useCollabUser();
+    const awarenessProvider =
+        resourceType === "docs" ? sidebarProvider : provider;
+    const awarenessLocation = resourceType === "docs" ? "sidebar" : "editor";
 
     const { onlineUsers, totalUsers } = useCollaborativeAwareness(
-        provider,
+        awarenessProvider,
         {
             userId: collabUser.id,
             name: collabUser.name,
             color: collabUser.color,
         },
-        "editor",
+        awarenessLocation,
+        { suppressNotifications: true },
     );
 
 	const [invitedUsers, setInvitedUsers] = useState<InvitedUser[]>([]);
@@ -109,13 +123,17 @@ export default function Editor({
 							provider,
 							document: provider.document as Doc,
 						}),
-						CollaborationCaret.configure({
-							provider,
-							user: {
-								name: collabUser.name,
-								color: collabUser.color,
-							},
-						}),
+						...(isCollabReady
+							? [
+									CollaborationCaret.configure({
+										provider,
+										user: {
+											name: collabUser.name,
+											color: collabUser.color,
+										},
+									}),
+								]
+							: []),
 					]
 				: extensions, // Only add collaboration extensions when provider is ready
 			onCreate({ editor }) {
@@ -125,7 +143,7 @@ export default function Editor({
 				setWord(editor.storage.characterCount.characters());
 			},
 		},
-		[provider],
+		[provider, collabUser.name, collabUser.color, isCollabReady],
 	); // Add provider as dependency
 
 	// Wait for provider sync before rendering editor content
@@ -189,6 +207,12 @@ export default function Editor({
                                 onlineUsers={onlineUsers}
                             />
                         </div>
+                    </div>
+                    <div className="fixed bottom-5 left-6 text-xs bg-white text-black border border-black/10 px-3 py-1.5 rounded-full shadow-sm">
+                        <span className="inline-flex items-center gap-2">
+                            <span className="h-2 w-2 rounded-full bg-green-500" />
+                            Live · {totalUsers} online
+                        </span>
                     </div>
                     <div className="fixed bottom-5 right-6 text-xs bg-border p-2 rounded-lg ">
                         {" "}

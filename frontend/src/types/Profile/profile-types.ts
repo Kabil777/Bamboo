@@ -39,4 +39,27 @@ type AllProfileBlog = {
     cursor: null | string;
 };
 
-export type { Profile, UserProfile, SocialLinks, AllProfileBlog, ProfileBlog };
+type ProfileDoc = {
+    id: string;
+    title: string;
+    description: string;
+    coverUrl: string;
+    createdAt: string;
+    authorName?: string;
+};
+
+type AllProfileDocs = {
+    docs: ProfileDoc[];
+    hasNext: boolean;
+    cursor: null | string;
+};
+
+export type {
+    Profile,
+    UserProfile,
+    SocialLinks,
+    AllProfileBlog,
+    ProfileBlog,
+    AllProfileDocs,
+    ProfileDoc,
+};

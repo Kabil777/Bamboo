@@ -1,22 +1,30 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { toast } from "sonner";
 import api from "@/api/axios";
-import { AllProfileBlog, Profile } from "@/types/Profile/profile-types";
+import {
+	AllProfileBlog,
+	AllProfileDocs,
+	Profile,
+} from "@/types/Profile/profile-types";
 
 interface ProfileReducersState {
 	profileData: Profile | null;
 	blogs: AllProfileBlog | null;
+	docs: AllProfileDocs | null;
 
 	profileLoading: boolean;
 	blogLoading: boolean;
+	docsLoading: boolean;
 	error: string | null;
 }
 
 const profileInitialState: ProfileReducersState = {
 	profileData: null,
 	blogs: null,
+	docs: null,
 	profileLoading: false,
 	blogLoading: false,
+	docsLoading: false,
 	error: null,
 };
 
@@ -75,6 +83,20 @@ export const getAllProfileBlog = createAsyncThunk<AllProfileBlog, void>(
 	},
 );
 
+export const getAllProfileDocs = createAsyncThunk<AllProfileDocs, void>(
+	"/api/getallprofiledocs",
+	async (_, { rejectWithValue }) => {
+		const URL = `${process.env.NEXT_PUBLIC_API_SERVER_URL}${process.env.NEXT_PUBLIC_API_VERSION}/user/profile/me/docs`;
+		try {
+			const response = await api.get<AllProfileDocs>(URL);
+			return response.data;
+		} catch (e: any) {
+			toast.error(e.message.status || "Failed to fetch user docs");
+			return rejectWithValue("Failed to fetch user docs");
+		}
+	},
+);
+
 const getProfile = createSlice({
 	name: "getProfileReducers",
 	initialState: profileInitialState,
@@ -128,6 +150,24 @@ const getProfile = createSlice({
 			.addCase(getAllProfileBlog.rejected, (state, action) => {
 				state.blogLoading = false;
 				state.error = action.payload as string;
+			});
+
+		// ======================
+		// GET PROFILE DOCS
+		// ======================
+		builder
+			.addCase(getAllProfileDocs.pending, (state) => {
+				state.docsLoading = true;
+				state.error = null;
+			})
+			.addCase(getAllProfileDocs.fulfilled, (state, action) => {
+				state.docsLoading = false;
+				state.docs = action.payload;
+			})
+			.addCase(getAllProfileDocs.rejected, (state, action) => {
+				state.docsLoading = false;
+				state.error = action.payload as string;
+				state.docs = { docs: [], hasNext: false, cursor: null };
 			});
 	},
 });

@@ -14,17 +14,84 @@ export function useCollabUser() {
     const stableDataRef = React.useRef<{
         id: string;
         color: string;
-    }>({
-        id: crypto.randomUUID(),
-        color: randomLightColor(),
-    });
+    }>();
+    const stableNameRef = React.useRef<string>("");
+
+    if (!stableDataRef.current) {
+        const storageKey = "bamboo_collab_user_id";
+        const nameKey = "bamboo_collab_user_name";
+        let persistedId = "";
+        let persistedName = "";
+        try {
+            persistedId = sessionStorage.getItem(storageKey) || "";
+            persistedName = sessionStorage.getItem(nameKey) || "";
+        } catch {
+            // Ignore storage errors (private mode, etc.)
+        }
+
+        const fallbackId = persistedId || crypto.randomUUID();
+        stableDataRef.current = {
+            id: fallbackId,
+            color: randomLightColor(),
+        };
+        const inferredName =
+            persistedId && !persistedId.startsWith("client-")
+                ? persistedId
+                : "";
+        stableNameRef.current = persistedName || inferredName || "";
+
+        if (!persistedId) {
+            try {
+                sessionStorage.setItem(storageKey, fallbackId);
+            } catch {
+                // Ignore storage errors
+            }
+        }
+    }
+
+    React.useEffect(() => {
+        if (!user) return;
+        const storageKey = "bamboo_collab_user_id";
+        const nameKey = "bamboo_collab_user_name";
+        let persistedId = "";
+        try {
+            persistedId = sessionStorage.getItem(storageKey) || "";
+        } catch {
+            // Ignore storage errors
+        }
+
+        if (!persistedId) {
+            const preferredId = user.email?.trim() || user.handle?.trim();
+            if (!preferredId) return;
+            try {
+                sessionStorage.setItem(storageKey, preferredId);
+            } catch {
+                // Ignore storage errors
+            }
+            stableDataRef.current = {
+                id: preferredId,
+                color: stableDataRef.current!.color,
+            };
+        }
+
+        const preferredName =
+            user.name?.trim() || user.handle?.trim() || user.email?.trim();
+        if (preferredName) {
+            try {
+                sessionStorage.setItem(nameKey, preferredName);
+            } catch {
+                // Ignore storage errors
+            }
+            stableNameRef.current = preferredName;
+        }
+    }, [user]);
 
     return React.useMemo(
         () => ({
-            id: stableDataRef.current.id,
-            name: user?.name || "Anonymous",
-            color: stableDataRef.current.color,
+            id: stableDataRef.current!.id,
+            name: stableNameRef.current || "",
+            color: stableDataRef.current!.color,
         }),
-        [user?.name],
+        [user?.name, user?.handle, user?.email],
     );
 }

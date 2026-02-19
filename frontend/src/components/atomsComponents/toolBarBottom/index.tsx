@@ -58,6 +58,14 @@ type BlogMemberRoleResponse = {
     userEmail: string | null;
     role: ApiRole;
 };
+type DocsMemberRoleResponse = {
+    userId: string;
+    name: string | null;
+    handle: string | null;
+    coverUrl: string | null;
+    email: string | null;
+    role: ApiRole;
+};
 
 const buildApiUrl = (path: string) => {
     const base = (process.env.NEXT_PUBLIC_API_SERVER_URL || "").replace(
@@ -101,6 +109,7 @@ export const ToolBarBottom = ({
     const [isOwner, setIsOwner] = useState(false);
     const [isLoadingMembers, setIsLoadingMembers] = useState(false);
     const isBlogInviteSupported = resourceType === "blog";
+    const isDocsInviteSupported = resourceType === "docs";
 
     const roleToApi = (role: string) =>
         role === "can view" ? "READER" : "EDITOR";
@@ -120,25 +129,48 @@ export const ToolBarBottom = ({
     );
 
     const loadRoleAndMembers = async () => {
-        if (!isBlogInviteSupported) return;
+        if (!isBlogInviteSupported && !isDocsInviteSupported) return;
 
         setIsLoadingMembers(true);
         try {
+            if (isBlogInviteSupported) {
+                const [roleRes, membersRes] = await Promise.all([
+                    api.get(buildApiUrl(`/blog/role/${resourceId}`)),
+                    api.get(buildApiUrl(`/blog/${resourceId}/roles`)),
+                ]);
+
+                setIsOwner(roleRes.data?.role === "OWNER");
+
+                const members =
+                    (membersRes.data || []) as BlogMemberRoleResponse[];
+                setInvitedUsers(
+                    members.map((m) => ({
+                        userId: m.userId,
+                        email: m.userEmail,
+                        name: m.userName,
+                        handle: m.userHandle,
+                        coverUrl: m.userCoverUrl,
+                        role: apiToUiRole(m.role),
+                    })),
+                );
+                return;
+            }
+
             const [roleRes, membersRes] = await Promise.all([
-                api.get(buildApiUrl(`/blog/role/${resourceId}`)),
-                api.get(buildApiUrl(`/blog/${resourceId}/roles`)),
+                api.get(buildApiUrl(`/docs/role/${resourceId}`)),
+                api.get(buildApiUrl(`/docs/${resourceId}/roles`)),
             ]);
 
             setIsOwner(roleRes.data?.role === "OWNER");
 
-            const members = (membersRes.data || []) as BlogMemberRoleResponse[];
+            const members = (membersRes.data || []) as DocsMemberRoleResponse[];
             setInvitedUsers(
                 members.map((m) => ({
                     userId: m.userId,
-                    email: m.userEmail,
-                    name: m.userName,
-                    handle: m.userHandle,
-                    coverUrl: m.userCoverUrl,
+                    email: m.email,
+                    name: m.name,
+                    handle: m.handle,
+                    coverUrl: m.coverUrl,
                     role: apiToUiRole(m.role),
                 })),
             );
@@ -150,10 +182,17 @@ export const ToolBarBottom = ({
     };
 
     useEffect(() => {
-        if (!openColab || !isBlogInviteSupported) return;
+        if (!openColab || (!isBlogInviteSupported && !isDocsInviteSupported))
+            return;
 
         void loadRoleAndMembers();
-    }, [openColab, isBlogInviteSupported, resourceId, setInvitedUsers]);
+    }, [
+        openColab,
+        isBlogInviteSupported,
+        isDocsInviteSupported,
+        resourceId,
+        setInvitedUsers,
+    ]);
 
     const inviteUsers = async (rawInput: string, role: InviteRole) => {
         const emails = rawInput
@@ -162,10 +201,7 @@ export const ToolBarBottom = ({
             .filter(Boolean);
 
         if (emails.length === 0) return;
-        if (!isBlogInviteSupported) {
-            toast.error("Invite for docs is not available yet");
-            return;
-        }
+        if (!isBlogInviteSupported && !isDocsInviteSupported) return;
         if (!isOwner) {
             toast.error("Only owner can share and manage access");
             return;
@@ -184,10 +220,17 @@ export const ToolBarBottom = ({
                     continue;
                 }
 
-                await api.post(buildApiUrl(`/blog/${resourceId}/roles`), {
-                    userEmail: email,
-                    role: roleToApi(role),
-                });
+                if (isBlogInviteSupported) {
+                    await api.post(buildApiUrl(`/blog/${resourceId}/roles`), {
+                        userEmail: email,
+                        role: roleToApi(role),
+                    });
+                } else {
+                    await api.post(buildApiUrl(`/docs/${resourceId}/roles`), {
+                        userEmail: email,
+                        role: roleToApi(role),
+                    });
+                }
             }
 
             await loadRoleAndMembers();
@@ -200,17 +243,17 @@ export const ToolBarBottom = ({
     };
 
     const updateUserRole = async (email: string, role: InviteRole) => {
-        if (!isBlogInviteSupported) {
-            toast.error("Invite for docs is not available yet");
-            return;
-        }
+        if (!isBlogInviteSupported && !isDocsInviteSupported) return;
         if (!isOwner) {
             toast.error("Only owner can update access");
             return;
         }
         try {
+            const endpoint = isBlogInviteSupported
+                ? `/blog/${resourceId}/roles`
+                : `/docs/${resourceId}/roles`;
             await api.patch(
-                buildApiUrl(`/blog/${resourceId}/roles`),
+                buildApiUrl(endpoint),
                 { role: roleToApi(role) },
                 {
                     params: { targetEmail: email },
@@ -224,16 +267,16 @@ export const ToolBarBottom = ({
     };
 
     const removeUserRole = async (email: string) => {
-        if (!isBlogInviteSupported) {
-            toast.error("Invite for docs is not available yet");
-            return;
-        }
+        if (!isBlogInviteSupported && !isDocsInviteSupported) return;
         if (!isOwner) {
             toast.error("Only owner can revoke access");
             return;
         }
         try {
-            await api.delete(buildApiUrl(`/blog/${resourceId}/roles`), {
+            const endpoint = isBlogInviteSupported
+                ? `/blog/${resourceId}/roles`
+                : `/docs/${resourceId}/roles`;
+            await api.delete(buildApiUrl(endpoint), {
                 params: { targetEmail: email },
             });
             await loadRoleAndMembers();
