@@ -1,6 +1,14 @@
 "use client";
 
-import { Plus, Trash, Pencil } from "lucide-react";
+import {
+    ChevronRight,
+    FileText,
+    Folder,
+    Home,
+    Plus,
+    Trash,
+    Pencil,
+} from "lucide-react";
 import { useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
@@ -48,31 +56,54 @@ export function EditorSidebar(props: React.ComponentProps<typeof Sidebar>) {
     const docId = id[0]; // First part is always the doc ID
 
     return (
-        <Sidebar {...props}>
-            <SidebarHeader>
+        <Sidebar
+            {...props}
+            variant="sidebar"
+            collapsible="offcanvas"
+            className="top-14 h-[calc(100svh-56px)] bg-white text-black"
+        >
+            <SidebarHeader className="bg-white">
                 <SidebarMenu>
                     <SidebarMenuItem>
-                        <SidebarMenuButton size="lg" asChild>
-                            <span className="font-medium" />
+                        <SidebarMenuButton
+                            size="lg"
+                            className="group-data-[collapsible=icon]:justify-center"
+                            tooltip="Docs"
+                        >
+                            <div className="flex items-center gap-3">
+                                <div className="flex h-9 w-9 items-center justify-center rounded-2xl bg-black text-white shadow-sm">
+                                    <div className="h-3 w-3 rounded-full bg-white/90" />
+                                </div>
+                                <div className="flex flex-col leading-tight group-data-[collapsible=icon]:hidden">
+                                    <span className="text-sm font-semibold">
+                                        Docs
+                                    </span>
+                                    <span className="text-xs text-black/60">
+                                        Editor
+                                    </span>
+                                </div>
+                            </div>
                         </SidebarMenuButton>
                     </SidebarMenuItem>
                 </SidebarMenu>
             </SidebarHeader>
 
-            <SidebarContent className="custom-scroll scroll-smooth">
-                <SidebarGroup>
-                    <SidebarMenu>
+            <SidebarContent className="custom-scroll scroll-smooth px-3 pb-3 flex-1 bg-white">
+                <SidebarGroup className="px-1">
+                    <SidebarMenu className="gap-2">
                         {/* Overview - Cannot be edited or deleted */}
                         <SidebarMenuItem>
                             <SidebarMenuButton
                                 asChild
                                 isActive={id.length === 1}
-                                className="hover:bg-transparent"
+                                tooltip="Overview"
+                                className="h-10 rounded-xl px-3 text-sm font-medium data-[active=true]:bg-black/5 data-[active=true]:text-black"
                             >
                                 <Link
                                     href={`/editor/docs/${docId}`}
-                                    className="font-semibold text-sm"
+                                    className="flex items-center gap-3"
                                 >
+                                    <Home className="h-4 w-4 text-black/70" />
                                     Overview
                                 </Link>
                             </SidebarMenuButton>
@@ -114,23 +145,26 @@ export function EditorSidebar(props: React.ComponentProps<typeof Sidebar>) {
                                                 id.length === 2 &&
                                                 id[1] === item.id
                                             }
+                                            tooltip={item.title}
+                                            className="h-10 rounded-xl px-3 text-sm font-medium data-[active=true]:bg-black/5 data-[active=true]:text-black"
                                         >
                                             <Link
                                                 href={`/editor/docs/${docId}/${item.id}`}
-                                                className="font-medium"
+                                                className="flex items-center gap-3"
                                             >
+                                                <Folder className="h-4 w-4 text-black/70" />
                                                 {item.title}
                                             </Link>
                                         </SidebarMenuButton>
                                     )}
 
-                                    <div className="flex items-center ml-2 gap-3 group-hover/btnvisible:visible invisible">
+                                    <div className="flex items-center ml-2 gap-2 group-hover/btnvisible:visible invisible">
                                         {/* Add sub-item button */}
                                         <Button
                                             onClick={() => addPage(item.id)}
                                             variant="link"
                                             size="icon"
-                                            className="w-fit h-fit"
+                                            className="w-fit h-fit text-black/60 hover:text-black"
                                         >
                                             <Plus className="w-4 h-4" />
                                         </Button>
@@ -159,10 +193,11 @@ export function EditorSidebar(props: React.ComponentProps<typeof Sidebar>) {
                                 </div>
 
                                 {item.children?.length ? (
-                                    <SidebarMenuSub className="!pr-0 mr-0">
+                                    <SidebarMenuSub className="!pr-0 mr-0 ml-4 border-l border-black/30 pl-4">
                                         {item.children.map((sub) => (
                                             <SidebarMenuSubItem key={sub.id}>
-                                                <div className="flex items-center justify-between w-full group/btnvisible">
+                                                <div className="flex items-center justify-between w-full group/btnvisible relative">
+                                                    <span className="pointer-events-none absolute left-[-18px] top-1/2 h-4 w-4 -translate-y-1/2 border-b-2 border-l-2 border-black/40 rounded-bl-md" />
                                                     {editingId === sub.id ? (
                                                         <Input
                                                             autoFocus
@@ -214,17 +249,20 @@ export function EditorSidebar(props: React.ComponentProps<typeof Sidebar>) {
                                                                     item.id &&
                                                                 id[2] === sub.id
                                                             }
-                                                            className="w-full"
+                                                            className="w-full rounded-xl px-3 py-2 text-sm data-[active=true]:bg-black/5 data-[active=true]:text-black"
                                                         >
                                                             <Link
                                                                 href={`/editor/docs/${docId}/${item.id}/${sub.id}`}
+                                                                className="flex items-center gap-3"
                                                             >
+                                                                <FileText className="h-3.5 w-3.5 text-black/60" />
                                                                 {sub.title}
+                                                                <ChevronRight className="ml-auto h-3.5 w-3.5 text-black/30 group-data-[collapsible=icon]:hidden" />
                                                             </Link>
                                                         </SidebarMenuSubButton>
                                                     )}
 
-                                                    <div className="flex items-center ml-2 gap-3 group-hover/btnvisible:visible invisible">
+                                                    <div className="flex items-center ml-2 gap-2 group-hover/btnvisible:visible invisible">
                                                         {/* Edit sub-item */}
                                                         <Button
                                                             onClick={(e) => {
@@ -264,8 +302,11 @@ export function EditorSidebar(props: React.ComponentProps<typeof Sidebar>) {
                 </SidebarGroup>
             </SidebarContent>
 
-            <SidebarFooter>
-                <Button onClick={() => addPage(null)} className="w-full">
+            <SidebarFooter className="mt-auto bg-white">
+                <Button
+                    onClick={() => addPage(null)}
+                    className="w-full rounded-xl bg-black/5 text-black hover:bg-black/10"
+                >
                     <Plus className="w-4 h-4" /> Add Section
                 </Button>
             </SidebarFooter>
