@@ -41,10 +41,9 @@ export default function DocsRenderPage() {
 	const docId = id[0];
 
 	useEffect(() => {
-		if (status === "authenticated") {
-			dispatch(DocsRTK(docId));
-		}
-	}, [status, docId, dispatch]);
+		if (!docId) return;
+		dispatch(DocsRTK(docId));
+	}, [docId, dispatch]);
 
 	const [accordionValue, setAccordionValue] = useState<string | undefined>(
 		undefined,

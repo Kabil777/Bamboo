@@ -12,13 +12,24 @@ import {
 export function useHocuspocusProvider(
     documentId: string,
     roomType: CollabRoomType,
+    parentId?: string,
+    options?: { enabled?: boolean },
 ) {
     const router = useRouter();
     const providerRef = useRef<HocuspocusProvider | null>(null);
     const [provider, setProvider] = useState<HocuspocusProvider | null>(null);
 
     useEffect(() => {
-        const roomName = buildCollabRoomName(roomType, documentId);
+        const enabled = options?.enabled ?? true;
+        if (!enabled) {
+            if (providerRef.current) {
+                providerRef.current.destroy();
+                providerRef.current = null;
+            }
+            setProvider(null);
+            return;
+        }
+        const roomName = buildCollabRoomName(roomType, documentId, parentId);
 
         if (
             !providerRef.current ||
@@ -78,7 +89,7 @@ export function useHocuspocusProvider(
                 providerRef.current = null;
             }
         };
-    }, [documentId, roomType, router]);
+    }, [documentId, roomType, parentId, router, options?.enabled]);
 
     return provider;
 }

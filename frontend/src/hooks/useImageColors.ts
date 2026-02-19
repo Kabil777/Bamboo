@@ -66,6 +66,29 @@ export function useImageColors(
 			return;
 		}
 
+		const getCacheKey = (url: string) =>
+			`bamboo_image_colors:${encodeURIComponent(url)}`;
+
+		try {
+			const cached = localStorage.getItem(getCacheKey(imageUrl));
+			if (cached) {
+				const parsed = JSON.parse(cached) as {
+					dominant: string;
+					palette: string[];
+				};
+				if (parsed?.dominant) {
+					setColors({
+						dominant: parsed.dominant,
+						palette: parsed.palette || [],
+						isLoading: false,
+					});
+					return;
+				}
+			}
+		} catch {
+			// Ignore cache errors
+		}
+
 		const extractColors = async () => {
 			try {
 				console.log("Extracting colors from:", imageUrl);
@@ -109,6 +132,20 @@ export function useImageColors(
 							),
 							isLoading: false,
 						});
+						try {
+							localStorage.setItem(
+								getCacheKey(imageUrl),
+								JSON.stringify({
+									dominant: dominantRGB,
+									palette: palette.map(
+										(color: number[]) =>
+											`rgb(${color[0]}, ${color[1]}, ${color[2]})`,
+									),
+								}),
+							);
+						} catch {
+							// Ignore cache errors
+						}
 					} catch (error) {
 						console.error("Error extracting colors from loaded image:", error);
 						setColors({

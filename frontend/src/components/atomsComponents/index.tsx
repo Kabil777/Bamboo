@@ -3,6 +3,8 @@ export { ArticleRender } from "./articleRender";
 export { ArticleTableContent } from "./articleTableContent";
 export { BlogCard } from "./blogCard";
 export { DocsCard } from "./docsCard";
+export { DocsProfileCard } from "./docsProfileCard";
+export { ProfileTabProvider, useProfileTab } from "./profileTabContext";
 export { DropDownProfileMenu } from "./dropDownProfileMenu";
 export { EditorSidebar } from "./EditorSidebar";
 export { EditorModel } from "./editorModel";

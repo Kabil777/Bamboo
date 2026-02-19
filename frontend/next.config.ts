@@ -1,6 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+    reactStrictMode: false,
     webpack: (config, { isServer }) => {
         config.resolve.alias = {
             ...config.resolve.alias,

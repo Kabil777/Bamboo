@@ -22,11 +22,16 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 
 export function ArticleSidebar({
+    navData,
+    activeId,
     ...props
-}: React.ComponentProps<typeof Sidebar>) {
+}: React.ComponentProps<typeof Sidebar> & {
+    navData?: any[];
+    activeId?: string;
+}) {
     const { id } = useParams() as { id: string | string[] };
     // console.log("Params ID:", id);
-    const NavData = useAppState((s) => s.docsReducer?.Pages || []);
+    const NavData = navData ?? useAppState((s) => s.docsReducer?.Pages || []);
     return (
         <Sidebar {...props}>
             <SidebarContent className="custom-scroll scroll-smooth !bg-background px-3">
@@ -36,7 +41,7 @@ export function ArticleSidebar({
                     <SidebarMenu className="gap-2">
                         <SidebarMenuButton
                             asChild
-                            isActive={id[1]== null}
+                            isActive={activeId ? activeId === "overview" : id[1] == null}
                         >
                             <Link
                                 href={
@@ -61,7 +66,7 @@ export function ArticleSidebar({
                                     <CollapsibleTrigger className="flex items-center justify-between w-full px-2 py-1 rounded-md hover:bg-accent transition-colors">
                                         <SidebarMenuButton
                                             asChild
-                                            isActive={id[1] === item.id}
+                                            isActive={activeId ? activeId === item.id : id[1] === item.id}
                                         >
                                             <Link
                                                 href={
@@ -75,15 +80,15 @@ export function ArticleSidebar({
                                                 {item.title}
                                             </Link>
                                         </SidebarMenuButton>
-                                        {item.subPages &&
-                                            item.subPages.length > 0 && (
+                                        {(item.subPages || item.subTree) &&
+                                            (item.subPages?.length || item.subTree?.length) > 0 && (
                                                 <ChevronDown className="size-4 transition-transform group-data-[state=open]/collapsible:rotate-180 text-muted-foreground" />
                                             )}
                                     </CollapsibleTrigger>
-                                    {item.subPages?.length ? (
+                                    {(item.subPages || item.subTree)?.length ? (
                                         <CollapsibleContent>
                                             <SidebarMenuSub className="ml-2 border-l border-border ">
-                                                {item.subPages.map(
+                                                {(item.subPages || item.subTree).map(
                                                     (subitem) => (
                                                         <SidebarMenuSubItem
                                                             key={subitem.id}
@@ -92,8 +97,9 @@ export function ArticleSidebar({
                                                             <SidebarMenuSubButton
                                                                 asChild
                                                                 isActive={
-                                                                    id[2] ===
-                                                                    subitem.id
+                                                                    activeId
+                                                                        ? activeId === subitem.id
+                                                                        : id[2] === subitem.id
                                                                 }
                                                                 className="text-sm py-1"
                                                             >
