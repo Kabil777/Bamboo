@@ -13,7 +13,6 @@ export const DocsRTK = createAsyncThunk<Docs, UUID, { state: RootState }>(
         const URL = `${process.env.NEXT_PUBLIC_API_SERVER_URL}${process.env.NEXT_PUBLIC_API_VERSION}/docs/${id}`;
         try {
             const res = await api.get(URL);
-            console.log("doc: ", res.data);
             return res.data;
         } catch (e) {
             return rejectWithValue("Unable to fetch docs");

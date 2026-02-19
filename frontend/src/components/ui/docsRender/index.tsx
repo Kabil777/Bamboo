@@ -141,7 +141,7 @@ export default function DocsRenderPage() {
 					<ArticleSidebar
 						className="border-none !sticky !top-18 max-h-[calc(100vh-7rem)] gap-4"
 						navData={tree}
-						activeId={id[id.length - 1] ?? "overview"}
+						activeId={id.length === 1 ? tree?.[0]?.id : id[id.length - 1]}
 					/>
 					{/* Main Content */}
 					<article className="flex-1 min-w-0 w-full max-w-4xl">

@@ -182,6 +182,7 @@ export const ArticleRender = ({ content }: { content: string }) => {
         }, 2000);
     };
     const processedContent = React.useMemo(() => {
+        if (!content) return "";
         let md = content;
         md = md.replace(/(?<!=)==(?!=)([^=]+)==(?!=)/g, "<mark>$1</mark>");
         // ++inserted text++ → <u>inserted text</u>
