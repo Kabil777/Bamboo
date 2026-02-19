@@ -23,23 +23,37 @@ import { ToolBarBottom } from "@/components/atomsComponents/toolBarBottom";
 import { Toolbar } from "@/components/tiptap-ui-primitive/toolbar";
 import { useCollaborativeAwareness } from "@/hooks/useCollabrationAwareness";
 import { useCollabUser } from "@/hooks/useCollabUser";
+import type { CollabRoomType } from "@/lib/collabRoomName";
 import extensions from "@/lib/extensions";
 import { useHocuspocusProvider } from "@/lib/hocuspocus";
 
 export default function Editor({
     idContent,
     save,
+    resourceType,
+    resourceId,
 }: {
     idContent: string;
     save: (content: string) => void;
+    resourceType: "blog" | "docs";
+    resourceId: string;
 }) {
-    type InvitedUser = { email: string; role: string };
+    type InvitedUser = {
+        userId?: string;
+        email?: string | null;
+        name?: string | null;
+        handle?: string | null;
+        coverUrl?: string | null;
+        role: "owner" | "can edit" | "can view";
+    };
 
-    const provider = useHocuspocusProvider(idContent, "blog");
+    const roomType: CollabRoomType =
+        resourceType === "blog" ? "blog" : "docs-page";
+    const provider = useHocuspocusProvider(idContent, roomType);
 
     const collabUser = useCollabUser();
 
-    const { onlineUsers, totalUsers, editorUsers } = useCollaborativeAwareness(
+    const { onlineUsers, totalUsers } = useCollaborativeAwareness(
         provider,
         {
             userId: collabUser.id,
@@ -73,29 +87,6 @@ export default function Editor({
         };
     }, [provider]);
 
-    // Track previous online users to detect new joins
-    const prevOnlineUsersRef = useRef<string[]>([]);
-
-    useEffect(() => {
-        // Only run if onlineUsers is available
-        if (!onlineUsers) return;
-        const prevOnlineUsers = prevOnlineUsersRef.current;
-        // Find new users who joined
-        const newUsers = onlineUsers.filter(
-            (user: any) => !prevOnlineUsers.includes(user.id),
-        );
-        if (newUsers.length > 0) {
-            newUsers.forEach((user: any) => {
-                if (user.name && user.id !== collabUser.id) {
-                    toast.info(`${user.name} joined the editor`);
-                }
-            });
-        }
-        // Update ref for next comparison
-        prevOnlineUsersRef.current = onlineUsers.map((user: any) => user.id);
-    }, [onlineUsers, collabUser.id]);
-
-    console.log(onlineUsers, " ", totalUsers);
     const toolbarRef = useRef<HTMLDivElement>(null);
 
     const editor = useEditor(
@@ -157,6 +148,7 @@ export default function Editor({
         );
         if (!provider) {
             toast.warning("Service unavailable");
+            return;
         }
         const yDoc = provider.document;
         const meta = yDoc.getMap("meta");
@@ -197,6 +189,9 @@ export default function Editor({
                                 collabUser={collabUser}
                                 invitedUsers={invitedUsers}
                                 setInvitedUsers={setInvitedUsers}
+                                resourceType={resourceType}
+                                resourceId={resourceId}
+                                onlineUsers={onlineUsers}
                             />
                         </div>
                     </div>

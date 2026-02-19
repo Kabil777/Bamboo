@@ -6,8 +6,16 @@ function isTokenExpiredSignal(code?: number, reason?: string) {
     return code === 4401 || reason === "TOKEN_EXPIRED";
 }
 
+function isForbiddenSignal(code?: number, reason?: string) {
+    return code === 4403 || reason === "FORBIDDEN";
+}
+
 export function shouldRefreshWsAuth(code?: number, reason?: string) {
     return isTokenExpiredSignal(code, reason);
+}
+
+export function isWsForbidden(code?: number, reason?: string) {
+    return isForbiddenSignal(code, reason);
 }
 
 export function refreshSessionForCollab() {
