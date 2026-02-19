@@ -1,14 +1,19 @@
 import { HocuspocusProvider } from "@hocuspocus/provider";
 import { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { buildCollabRoomName, type CollabRoomType } from "./collabRoomName";
-
-const DEFAULT_COLLAB_URL = "ws://localhost:1234/collab";
-const COLLAB_URL = process.env.NEXT_PUBLIC_COLLAB_WS_URL || DEFAULT_COLLAB_URL;
+import { COLLAB_URL } from "./collabConfig";
+import {
+    isWsForbidden,
+    refreshSessionForCollab,
+    shouldRefreshWsAuth,
+} from "./collabAuth";
 
 export function useHocuspocusProvider(
     documentId: string,
     roomType: CollabRoomType,
 ) {
+    const router = useRouter();
     const providerRef = useRef<HocuspocusProvider | null>(null);
     const [provider, setProvider] = useState<HocuspocusProvider | null>(null);
 
@@ -26,6 +31,40 @@ export function useHocuspocusProvider(
             const newProvider = new HocuspocusProvider({
                 url: COLLAB_URL,
                 name: roomName,
+                onAuthenticationFailed: async ({ reason }) => {
+                    if (isWsForbidden(undefined, reason)) {
+                        providerRef.current?.destroy();
+                        router.push("/forbidden");
+                        return;
+                    }
+
+                    if (!shouldRefreshWsAuth(undefined, reason)) return;
+
+                    try {
+                        await refreshSessionForCollab();
+                        await providerRef.current?.connect();
+                    } catch {
+                        // Keep default provider behavior when refresh fails.
+                    }
+                },
+                onClose: async ({ event }) => {
+                    if (isWsForbidden(event?.code, event?.reason)) {
+                        providerRef.current?.destroy();
+                        router.push("/forbidden");
+                        return;
+                    }
+
+                    if (!shouldRefreshWsAuth(event?.code, event?.reason)) {
+                        return;
+                    }
+
+                    try {
+                        await refreshSessionForCollab();
+                        await providerRef.current?.connect();
+                    } catch {
+                        // Keep default provider behavior when refresh fails.
+                    }
+                },
             });
 
             providerRef.current = newProvider;
@@ -39,7 +78,7 @@ export function useHocuspocusProvider(
                 providerRef.current = null;
             }
         };
-    }, [documentId, roomType]);
+    }, [documentId, roomType, router]);
 
     return provider;
 }

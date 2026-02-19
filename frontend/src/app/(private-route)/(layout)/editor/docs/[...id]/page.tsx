@@ -29,7 +29,12 @@ export default function DocsEditor() {
 
     return (
         <div className="w-full">
-            <Editor idContent={currentPageId} save={save} />
+            <Editor
+                idContent={currentPageId}
+                save={save}
+                resourceType="docs"
+                resourceId={docsId}
+            />
         </div>
     );
 }

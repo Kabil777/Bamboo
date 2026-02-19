@@ -23,31 +23,45 @@ import { ToolBarBottom } from "@/components/atomsComponents/toolBarBottom";
 import { Toolbar } from "@/components/tiptap-ui-primitive/toolbar";
 import { useCollaborativeAwareness } from "@/hooks/useCollabrationAwareness";
 import { useCollabUser } from "@/hooks/useCollabUser";
+import type { CollabRoomType } from "@/lib/collabRoomName";
 import extensions from "@/lib/extensions";
 import { useHocuspocusProvider } from "@/lib/hocuspocus";
 
 export default function Editor({
-	idContent,
-	save,
+    idContent,
+    save,
+    resourceType,
+    resourceId,
 }: {
-	idContent: string;
-	save: () => void;
+    idContent: string;
+    save: () => void;
+    resourceType: "blog" | "docs";
+    resourceId: string;
 }) {
-	type InvitedUser = { email: string; role: string };
+    type InvitedUser = {
+        userId?: string;
+        email?: string | null;
+        name?: string | null;
+        handle?: string | null;
+        coverUrl?: string | null;
+        role: "owner" | "can edit" | "can view";
+    };
 
-	const provider = useHocuspocusProvider(idContent, "blog");
+    const roomType: CollabRoomType =
+        resourceType === "blog" ? "blog" : "docs-page";
+    const provider = useHocuspocusProvider(idContent, roomType);
 
 	const collabUser = useCollabUser();
 
-	const { onlineUsers, totalUsers, editorUsers } = useCollaborativeAwareness(
-		provider,
-		{
-			userId: collabUser.id,
-			name: collabUser.name,
-			color: collabUser.color,
-		},
-		"editor",
-	);
+    const { onlineUsers, totalUsers } = useCollaborativeAwareness(
+        provider,
+        {
+            userId: collabUser.id,
+            name: collabUser.name,
+            color: collabUser.color,
+        },
+        "editor",
+    );
 
 	const [invitedUsers, setInvitedUsers] = useState<InvitedUser[]>([]);
 	const [word, setWord] = useState(0);
@@ -73,30 +87,7 @@ export default function Editor({
 		};
 	}, [provider]);
 
-	// Track previous online users to detect new joins
-	const prevOnlineUsersRef = useRef<string[]>([]);
-
-	useEffect(() => {
-		// Only run if onlineUsers is available
-		if (!onlineUsers) return;
-		const prevOnlineUsers = prevOnlineUsersRef.current;
-		// Find new users who joined
-		const newUsers = onlineUsers.filter(
-			(user: any) => !prevOnlineUsers.includes(user.id),
-		);
-		if (newUsers.length > 0) {
-			newUsers.forEach((user: any) => {
-				if (user.name && user.id !== collabUser.id) {
-					toast.info(`${user.name} joined the editor`);
-				}
-			});
-		}
-		// Update ref for next comparison
-		prevOnlineUsersRef.current = onlineUsers.map((user: any) => user.id);
-	}, [onlineUsers, collabUser.id]);
-
-	console.log(onlineUsers, " ", totalUsers);
-	const toolbarRef = useRef<HTMLDivElement>(null);
+    const toolbarRef = useRef<HTMLDivElement>(null);
 
 	const editor = useEditor(
 		{
@@ -186,22 +177,25 @@ export default function Editor({
 					>
 						{editor && synced && <EditorContiner editor={editor} />}
 
-						<div className="fixed bottom-16 right-16 flex flex-col gap-2 z-10">
-							<ToolBarBottom
-								editor={editor}
-								onSave={onSave}
-								collabUser={collabUser}
-								invitedUsers={invitedUsers}
-								setInvitedUsers={setInvitedUsers}
-							/>
-						</div>
-					</div>
-					<div className="fixed bottom-5 right-6 text-xs bg-border p-2 rounded-lg ">
-						{" "}
-						{word ?? 0} characters
-					</div>
-				</div>
-			)}
-		</EditorContext.Provider>
-	);
+                        <div className="fixed bottom-16 right-16 flex flex-col gap-2 z-10">
+                            <ToolBarBottom
+                                editor={editor}
+                                onSave={onSave}
+                                collabUser={collabUser}
+                                invitedUsers={invitedUsers}
+                                setInvitedUsers={setInvitedUsers}
+                                resourceType={resourceType}
+                                resourceId={resourceId}
+                                onlineUsers={onlineUsers}
+                            />
+                        </div>
+                    </div>
+                    <div className="fixed bottom-5 right-6 text-xs bg-border p-2 rounded-lg ">
+                        {" "}
+                        {word ?? 0} characters
+                    </div>
+                </div>
+            )}
+        </EditorContext.Provider>
+    );
 }
