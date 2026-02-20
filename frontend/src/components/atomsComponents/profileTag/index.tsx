@@ -96,6 +96,7 @@ export const ProfileTag = ({
     const showUnpublished = isOwner && status && status !== "PUBLISHED";
     const showVisibilityBadge =
         isOwner && (visibility || status || showPrivate || showUnpublished);
+    const canManage = showMenu && isOwner;
     const statusLabel = status ? status.toLowerCase() : undefined;
     const visibilityLabel = visibility ? visibility.toLowerCase() : undefined;
 
@@ -143,7 +144,7 @@ export const ProfileTag = ({
                         {statusLabel}
                     </span>
                 )}
-                {showMenu && (
+                {canManage && (
                     <DropdownMenu
                         open={dropdownOpen}
                         onOpenChange={setDropdownOpen}
@@ -197,7 +198,7 @@ export const ProfileTag = ({
                     </DropdownMenu>
                 )}
             </div>
-            {showMenu && (
+            {canManage && (
                 <>
                     <SharePopover
                         text={`https://bamboo.dev/${

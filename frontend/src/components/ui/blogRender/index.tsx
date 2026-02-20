@@ -20,7 +20,6 @@ import {
 	ArrowLeft,
 	Search,
 } from "lucide-react";
-import NextImage from "next/image";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
@@ -247,13 +246,12 @@ export default function BlogRenderPage() {
 							variants={fadeIn}
 						>
 							<div className="relative overflow-hidden bg-muted rounded-2xl shadow-sm">
-								<NextImage
-									width={960}
-									height={540}
+								<img
 									src={blog.coverUrl}
 									alt={title || "Blog cover"}
-									className="w-full h-auto object-cover"
-									priority
+									className="h-auto w-auto max-w-full"
+									loading="eager"
+									decoding="async"
 								/>
 							</div>
 						</motion.figure>

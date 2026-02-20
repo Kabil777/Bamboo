@@ -11,7 +11,12 @@ import {
 import { Button } from "@/components/shadcnUI/button";
 import { Separator } from "@/components/shadcnUI/separator";
 import { useAppDispatch, useAppState } from "@/hooks/ReduxHooks";
-import { getAllProfileBlogByHandle, getAllProfileDocsByHandle } from "@/store/reducers/Profile/profile.read";
+import {
+    getAllProfileBlog,
+    getAllProfileBlogByHandle,
+    getAllProfileDocs,
+    getAllProfileDocsByHandle,
+} from "@/store/reducers/Profile/profile.read";
 import { BlogCardSkeleton } from "@/components/atomsComponents/skleton/blogCardSkleton";
 
 const cardData = [
@@ -64,15 +69,41 @@ export default function UserProfile() {
                 item.visibility === "PUBLIC" && item.status === "PUBLISHED",
         );
     }, [blogs, isOwnProfile]);
+
+    const visibleDocs = useMemo(() => {
+        if (!docs?.docs) return [];
+        if (isOwnProfile) return docs.docs;
+        return docs.docs.filter(
+            (item) =>
+                item.visibility === "PUBLIC" && item.status === "PUBLISHED",
+        );
+    }, [docs, isOwnProfile]);
     
     useEffect(() => {
         if ((selectedTab === "posts" || selectedTab === "all") && !blogLoading && !blogs) {
-            dispatch(getAllProfileBlogByHandle(handle));
+            if (isOwnProfile) {
+                dispatch(getAllProfileBlog());
+            } else {
+                dispatch(getAllProfileBlogByHandle(handle));
+            }
         }
         if ((selectedTab === "docs" || selectedTab === "all") && !docsLoading && !docs) {
-            dispatch(getAllProfileDocsByHandle(handle));
+            if (isOwnProfile) {
+                dispatch(getAllProfileDocs());
+            } else {
+                dispatch(getAllProfileDocsByHandle(handle));
+            }
         }
-    }, [blogs, dispatch, blogLoading, docsLoading, docs, handle, selectedTab]);
+    }, [
+        blogs,
+        dispatch,
+        blogLoading,
+        docsLoading,
+        docs,
+        handle,
+        selectedTab,
+        isOwnProfile,
+    ]);
 
     return (
         <div className="container grid grid-cols-4 transition-all duration-200 ease-linear gap-4 md:gap-6 relative">
@@ -103,8 +134,8 @@ export default function UserProfile() {
                 {(selectedTab === "docs" || selectedTab === "all") && (
                     <>
                         {docsLoading && <BlogCardSkeleton />}
-                        {!docsLoading && docs?.docs?.length
-                            ? docs.docs.map((doc) => (
+                        {!docsLoading && visibleDocs.length
+                            ? visibleDocs.map((doc) => (
                                   <DocsProfileCard
                                       key={doc.id}
                                       id={doc.id}
