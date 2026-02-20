@@ -290,7 +290,7 @@ export const EditorModel = () => {
                     <FiEdit3 className="pointer-events-none" />
                 </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px] pointer-events-auto">
+            <DialogContent className="custom-scroll -mx-4 max-h-[90vh] overflow-y-auto px-4 pointer-events-auto">
                 <DialogHeader>
                     <DialogTitle>New Blog/Docs</DialogTitle>
                     <DialogDescription>
