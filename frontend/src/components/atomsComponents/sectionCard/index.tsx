@@ -7,6 +7,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import {
+	FaDiscord,
 	FaFacebook,
 	FaGithub,
 	FaGlobe,
@@ -40,23 +41,36 @@ import { SharePopover } from "../sharePopover";
 import { SectionCardsSkeleton } from "../skleton/Profile/profileCardSkleton";
 
 const platformIcons = {
-	github: FaGithub,
-	linkedin: FaLinkedin,
-	twitter: FaTwitter,
-	website: FaGlobe,
-	youtube: FaYoutube,
-	facebook: FaFacebook,
-	instagram: FaInstagram,
+	GITHUB: FaGithub,
+	LINKEDIN: FaLinkedin,
+	TWITTER: FaTwitter,
+	WEBSITE: FaGlobe,
+	YOUTUBE: FaYoutube,
+	FACEBOOK: FaFacebook,
+	INSTAGRAM: FaInstagram,
+	DISCORD: FaDiscord,
 };
 
 const platformNames = {
-	github: "GitHub",
-	linkedin: "LinkedIn",
-	twitter: "Twitter",
-	website: "Website",
-	youtube: "YouTube",
-	facebook: "Facebook",
-	instagram: "Instagram",
+	GITHUB: "GitHub",
+	LINKEDIN: "LinkedIn",
+	TWITTER: "Twitter",
+	WEBSITE: "Website",
+	YOUTUBE: "YouTube",
+	FACEBOOK: "Facebook",
+	INSTAGRAM: "Instagram",
+	DISCORD: "Discord",
+};
+
+const platformHoverColors: Record<string, { bg: string; text: string; border: string }> = {
+	GITHUB: { bg: "rgba(110, 118, 129, 0.15)", text: "#8b949e", border: "rgba(110, 118, 129, 0.4)" },
+	LINKEDIN: { bg: "rgba(10, 102, 194, 0.12)", text: "#0a66c2", border: "rgba(10, 102, 194, 0.35)" },
+	TWITTER: { bg: "rgba(29, 155, 240, 0.12)", text: "#1d9bf0", border: "rgba(29, 155, 240, 0.35)" },
+	WEBSITE: { bg: "rgba(99, 102, 241, 0.12)", text: "#6366f1", border: "rgba(99, 102, 241, 0.35)" },
+	YOUTUBE: { bg: "rgba(255, 0, 0, 0.1)", text: "#ff0000", border: "rgba(255, 0, 0, 0.3)" },
+	FACEBOOK: { bg: "rgba(24, 119, 242, 0.12)", text: "#1877f2", border: "rgba(24, 119, 242, 0.35)" },
+	INSTAGRAM: { bg: "rgba(225, 48, 108, 0.12)", text: "#e1306c", border: "rgba(225, 48, 108, 0.35)" },
+	DISCORD: { bg: "rgba(88, 101, 242, 0.12)", text: "#5865f2", border: "rgba(88, 101, 242, 0.35)" },
 };
 
 export function SectionCards({ viewingHandle }: { viewingHandle?: string }) {
@@ -398,12 +412,34 @@ export function SectionCards({ viewingHandle }: { viewingHandle?: string }) {
 										platformIcons[platform as keyof typeof platformIcons];
 									const name =
 										platformNames[platform as keyof typeof platformNames];
+									const hoverColor = platformHoverColors[platform];
 									return (
 										<Link
 											key={platform}
 											href={url || ""}
 											target="_blank"
-											className="inline-flex items-center gap-2 text-xs sm:text-sm font-medium text-muted-foreground border border-border rounded-full px-4 py-2 hover:bg-muted hover:text-foreground transition-colors"
+											className="inline-flex items-center gap-2 text-xs sm:text-sm font-medium text-muted-foreground border border-border rounded-full px-4 py-2 transition-all duration-200"
+											style={
+												hoverColor
+													? ({
+														"--hover-bg": hoverColor.bg,
+														"--hover-text": hoverColor.text,
+														"--hover-border": hoverColor.border,
+													} as React.CSSProperties)
+													: undefined
+											}
+											onMouseEnter={(e) => {
+												if (hoverColor) {
+													e.currentTarget.style.backgroundColor = hoverColor.bg;
+													e.currentTarget.style.color = hoverColor.text;
+													e.currentTarget.style.borderColor = hoverColor.border;
+												}
+											}}
+											onMouseLeave={(e) => {
+												e.currentTarget.style.backgroundColor = "";
+												e.currentTarget.style.color = "";
+												e.currentTarget.style.borderColor = "";
+											}}
 										>
 											{Icon && <Icon className="w-3.5 h-3.5" />}
 											{name}

@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import {
     Bookmark,
     BookOpen,
+    Calendar,
     Ellipsis,
     ExternalLink,
     Eye,
@@ -103,8 +104,8 @@ export const ProfileTag = ({
         <>
             <div className="flex flex-wrap gap-2 mt-2 items-center justify-start gap-x-3">
                 <ProfileHoverTag profileId={profileId} />
-                <p className="text-sm text-muted-foreground italic">
-                    {relativeTime}
+                <p className="text-sm text-muted-foreground italic flex items-center gap-1 font-medium">
+                    ~ {relativeTime}
                 </p>
 
                 <p className="text-sm text-muted-foreground italic flex items-center gap-1 font-medium ">

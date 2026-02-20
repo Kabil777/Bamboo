@@ -20,7 +20,7 @@ export function ProfileHoverTag({ profileId }: { profileId?: string }) {
 	return (
 		<HoverCard key={profileId} openDelay={50} closeDelay={50}>
 			<HoverCardTrigger asChild>
-				<p className="text-sm text-muted-foreground cursor-pointer italic w-fit">
+				<p className="text-sm text-muted-foreground italic flex items-center gap-1 font-medium cursor-pointer">
 					@Kowsik
 				</p>
 			</HoverCardTrigger>

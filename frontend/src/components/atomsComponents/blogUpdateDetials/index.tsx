@@ -526,7 +526,7 @@ export const BlogUpdateDetails = ({
 							Cancel
 						</Button>
 						<Button
-							onClick={handleSubmit}
+							onClick={onSummit}
 							variant="default"
 							type="submit"
 							disabled={loading}
