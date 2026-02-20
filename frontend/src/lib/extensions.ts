@@ -1,4 +1,5 @@
 // --- Tiptap Core Extensions ---
+import { markInputRule, markPasteRule } from "@tiptap/core";
 import { StarterKit } from "@tiptap/starter-kit";
 import { Image } from "@tiptap/extension-image";
 import { TaskItem } from "@tiptap/extension-task-item";
@@ -8,7 +9,58 @@ import { Typography } from "@tiptap/extension-typography";
 import { Highlight } from "@tiptap/extension-highlight";
 import { Subscript } from "@tiptap/extension-subscript";
 import { Superscript } from "@tiptap/extension-superscript";
+import { Underline } from "@tiptap/extension-underline";
 import { CharacterCount } from "@tiptap/extensions";
+
+// --- Paste/Input rule patterns for markdown-it-ins (++...++) and markdown-it-mark (==...==) ---
+const highlightInputRegex = /(?:^|\s)==([^=]+)==$/;
+const highlightPasteRegex = /(?:^|\s)==([^=]+)==/g;
+const insertedInputRegex = /(?:^|\s)\+\+([^+]+)\+\+$/;
+const insertedPasteRegex = /(?:^|\s)\+\+([^+]+)\+\+/g;
+
+/**
+ * Highlight extension with paste/input rules for ==marked text==
+ */
+const HighlightWithMarkdown = Highlight.extend({
+  addInputRules() {
+    return [
+      markInputRule({
+        find: highlightInputRegex,
+        type: this.type,
+      }),
+    ];
+  },
+  addPasteRules() {
+    return [
+      markPasteRule({
+        find: highlightPasteRegex,
+        type: this.type,
+      }),
+    ];
+  },
+});
+
+/**
+ * Underline extension with paste/input rules for ++inserted text++
+ */
+const UnderlineWithMarkdown = Underline.extend({
+  addInputRules() {
+    return [
+      markInputRule({
+        find: insertedInputRegex,
+        type: this.type,
+      }),
+    ];
+  },
+  addPasteRules() {
+    return [
+      markPasteRule({
+        find: insertedPasteRegex,
+        type: this.type,
+      }),
+    ];
+  },
+});
 import CodeBlockLowlight from "@tiptap/extension-code-block-lowlight";
 import {
   Table,
@@ -58,7 +110,8 @@ const extensions = [
   TextAlign.configure({ types: ["heading", "paragraph"] }),
   TaskList,
   TaskItem.configure({ nested: true }),
-  Highlight.configure({ multicolor: true }),
+  HighlightWithMarkdown.configure({ multicolor: true }),
+  UnderlineWithMarkdown,
   Image,
   Typography,
   Superscript,

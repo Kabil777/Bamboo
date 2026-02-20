@@ -24,7 +24,171 @@ import Image from "next/image";
 import { Input } from "@/components/shadcnUI/input";
 import { FileText, UploadCloud } from "lucide-react";
 import { toast } from "sonner";
-import { marked } from "marked";
+import { marked, type TokenizerAndRendererExtension } from "marked";
+import { emojiMap, emoticonMap } from "@/lib/emoji-map";
+import {
+    footnoteExtension,
+    definitionListExtension,
+    abbreviationExtension,
+    containerExtension,
+} from "@/lib/marked-extensions";
+
+// --- Custom marked extensions for markdown-it-ins (++...++) and markdown-it-mark (==...==) ---
+const insExtension: TokenizerAndRendererExtension = {
+    name: "ins",
+    level: "inline",
+    start(src: string) {
+        return src.indexOf("++");
+    },
+    tokenizer(src: string) {
+        const match = src.match(/^\+\+([^+]+)\+\+/);
+        if (match) {
+            return {
+                type: "ins",
+                raw: match[0],
+                text: match[1],
+                tokens: [],
+            };
+        }
+        return undefined;
+    },
+    renderer(token) {
+        return `<u>${(token as unknown as { text: string }).text}</u>`;
+    },
+};
+
+const markExtension: TokenizerAndRendererExtension = {
+    name: "mark",
+    level: "inline",
+    start(src: string) {
+        return src.indexOf("==");
+    },
+    tokenizer(src: string) {
+        const match = src.match(/^==([^=]+)==/);
+        if (match) {
+            return {
+                type: "mark",
+                raw: match[0],
+                text: match[1],
+                tokens: [],
+            };
+        }
+        return undefined;
+    },
+    renderer(token) {
+        return `<mark>${(token as unknown as { text: string }).text}</mark>`;
+    },
+};
+
+const supExtension: TokenizerAndRendererExtension = {
+    name: "sup",
+    level: "inline",
+    start(src: string) {
+        return src.indexOf("^");
+    },
+    tokenizer(src: string) {
+        const match = src.match(/^\^([^^]+)\^/);
+        if (match) {
+            return {
+                type: "sup",
+                raw: match[0],
+                text: match[1],
+                tokens: [],
+            };
+        }
+        return undefined;
+    },
+    renderer(token) {
+        return `<sup>${(token as unknown as { text: string }).text}</sup>`;
+    },
+};
+
+const subExtension: TokenizerAndRendererExtension = {
+    name: "sub",
+    level: "inline",
+    start(src: string) {
+        return src.indexOf("~");
+    },
+    tokenizer(src: string) {
+        // single ~ for subscript, avoid ~~ (strikethrough)
+        const match = src.match(/^~([^~]+)~/);
+        if (match) {
+            return {
+                type: "sub",
+                raw: match[0],
+                text: match[1],
+                tokens: [],
+            };
+        }
+        return undefined;
+    },
+    renderer(token) {
+        return `<sub>${(token as unknown as { text: string }).text}</sub>`;
+    },
+};
+
+
+const emojiExtension: TokenizerAndRendererExtension = {
+    name: "emoji",
+    level: "inline",
+    start(src: string) {
+        return src.indexOf(":");
+    },
+    tokenizer(src: string) {
+        const match = src.match(/^:([a-zA-Z0-9_+-]+):/);
+        if (match && emojiMap[match[1]]) {
+            return {
+                type: "emoji",
+                raw: match[0],
+                text: emojiMap[match[1]],
+                tokens: [],
+            };
+        }
+        return undefined;
+    },
+    renderer(token) {
+        return (token as unknown as { text: string }).text;
+    },
+};
+
+// Build a regex that matches any emoticon shortcut
+const escapedEmoticons = Object.keys(emoticonMap)
+    .sort((a, b) => b.length - a.length) // longest first
+    .map((e) => e.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"));
+const emoticonRegex = new RegExp(`^(${escapedEmoticons.join("|")})(?=\\s|$)`);
+
+const emoticonExtension: TokenizerAndRendererExtension = {
+    name: "emoticon",
+    level: "inline",
+    start(src: string) {
+        // check for any of the starting chars of emoticons
+        const idx = src.search(/[:;8<>OBXx]/);
+        return idx >= 0 ? idx : -1;
+    },
+    tokenizer(src: string) {
+        const match = src.match(emoticonRegex);
+        if (match && emoticonMap[match[1]]) {
+            return {
+                type: "emoticon",
+                raw: match[0],
+                text: emoticonMap[match[1]],
+                tokens: [],
+            };
+        }
+        return undefined;
+    },
+    renderer(token) {
+        return (token as unknown as { text: string }).text;
+    },
+};
+
+marked.use(
+    { extensions: [insExtension, markExtension, supExtension, subExtension, emojiExtension, emoticonExtension] },
+    containerExtension(),
+    footnoteExtension(),
+    definitionListExtension(),
+    abbreviationExtension(),
+);
 
 type Setter<T> = React.Dispatch<React.SetStateAction<T>>;
 interface props {
@@ -169,11 +333,10 @@ function Popup({ setOpen, editor }: props) {
                             onDragLeave={handleDrag}
                             onDrop={handleDrop}
                             onClick={handleClick}
-                            className={`relative m-3 border-2 h-70 max-w-80 w-full border-dashed rounded-xl p-6 flex flex-col items-center justify-center cursor-pointer transition ${
-                                dragActive
-                                    ? "border-blue-500 bg-blue-50"
-                                    : "border-gray-400"
-                            }`}
+                            className={`relative m-3 border-2 h-70 max-w-80 w-full border-dashed rounded-xl p-6 flex flex-col items-center justify-center cursor-pointer transition ${dragActive
+                                ? "border-blue-500 bg-blue-50"
+                                : "border-gray-400"
+                                }`}
                         >
                             {dragActive ? (
                                 <div className="absolute inset-0 bg-blue-500/20 flex flex-col items-center justify-center rounded-xl pointer-events-none">
