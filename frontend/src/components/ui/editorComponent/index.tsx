@@ -35,7 +35,7 @@ export default function Editor({
     resourceId,
 }: {
     idContent: string;
-    save: () => void;
+    save: (visibility: "PUBLIC" | "PRIVATE") => void;
     resourceType: "blog" | "docs";
     resourceId: string;
 }) {
@@ -156,9 +156,9 @@ export default function Editor({
 		};
 	}, [provider]);
 
-	const onSave = () => {
+	const onSave = (visibility: "PUBLIC" | "PRIVATE") => {
 		if (!editor) return;
-		save();
+		save(visibility);
 		if (!provider) {
 			toast.warning("Service unavailable");
 			return;
@@ -166,6 +166,8 @@ export default function Editor({
 		const yDoc = provider.document;
 		const meta = yDoc.getMap("meta");
 		meta.set("saveRequestedAt", Date.now());
+		meta.set("publishVisibility", visibility);
+		meta.set("publishStatus", "PUBLISHED");
 	};
 
 	return (

@@ -527,7 +527,7 @@ export const BlogUpdateDetails = ({
 							Cancel
 						</Button>
 						<Button
-							onClick={onSummit}
+							onClick={handleSubmit}
 							variant="default"
 							type="submit"
 							disabled={loading}
@@ -551,9 +551,17 @@ export const BlogUpdateDetails = ({
 export const VisibilityPopover = ({
 	open,
 	setOpen,
+	contentType = "blog",
+	resourceId,
+	initialStatus,
+	initialVisibility,
 }: {
 	open?: boolean;
 	setOpen?: (open: boolean) => void;
+	contentType?: "blog" | "docs";
+	resourceId?: string;
+	initialStatus?: "PUBLISHED" | "ARCHIVED" | "DRAFT";
+	initialVisibility?: "PUBLIC" | "PRIVATE";
 }) => {
 	// State declarations
 	const [status, setStatus] = useState<"draft" | "publish" | "archived">(
@@ -573,15 +581,39 @@ export const VisibilityPopover = ({
 		e.preventDefault();
 		setLoading(true);
 
-		// TODO: Add your API call here
-		// try {
-		//   await updateBlogVisibility({ status, visibility });
-		//   handleClose();
-		// } catch (error) {
-		//   console.error(error);
-		// } finally {
-		//   setLoading(false);
-		// }
+		if (!resourceId) {
+			setLoading(false);
+			return;
+		}
+
+		const mappedStatus =
+			status === "publish"
+				? "PUBLISHED"
+				: status === "archived"
+					? "ARCHIVED"
+					: "DRAFT";
+		const mappedVisibility = visibility === "public" ? "PUBLIC" : "PRIVATE";
+
+		try {
+			const base =
+				process.env.NEXT_PUBLIC_API_SERVER_URL || "";
+			const version = process.env.NEXT_PUBLIC_API_VERSION || "";
+			const url = `${base}${version}/${contentType}/${resourceId}/visibility`;
+			await fetch(url, {
+				method: "POST",
+				credentials: "include",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({
+					status: mappedStatus,
+					visibility: mappedVisibility,
+				}),
+			});
+			handleClose();
+		} catch (error) {
+			console.error(error);
+		} finally {
+			setLoading(false);
+		}
 	};
 
 	const handleStatusChange = (value: "draft" | "publish" | "archived") => {
@@ -603,6 +635,22 @@ export const VisibilityPopover = ({
 			return () => clearTimeout(timer);
 		}
 	}, [open]);
+
+	useEffect(() => {
+		if (!open) return;
+		if (initialStatus) {
+			setStatus(
+				initialStatus === "PUBLISHED"
+					? "publish"
+					: initialStatus === "ARCHIVED"
+						? "archived"
+						: "draft",
+			);
+		}
+		if (initialVisibility) {
+			setVisibility(initialVisibility === "PUBLIC" ? "public" : "private");
+		}
+	}, [open, initialStatus, initialVisibility]);
 
 	useEffect(() => {
 		if (status !== "publish") {

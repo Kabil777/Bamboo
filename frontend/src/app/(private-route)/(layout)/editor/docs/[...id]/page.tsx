@@ -33,13 +33,20 @@ export default function DocsEditor() {
         return withoutPath;
     }
 
-    const save = async (_content: string) => {
+    const save = async (_visibility: "PUBLIC" | "PRIVATE") => {
         if (!docsId) return;
         try {
             const baseUrl = getCollabHttpBaseUrl();
             const response = await fetch(`${baseUrl}/api/docs/save/${docsId}`, {
                 method: "POST",
                 credentials: "include",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    visibility: _visibility,
+                    status: "PUBLISHED",
+                }),
             });
 
             if (!response.ok) {

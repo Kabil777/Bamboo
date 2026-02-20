@@ -29,12 +29,20 @@ export const ProfileTag = ({
     contentType = "blog",
     createdAt,
     authorName,
+    visibility,
+    status,
+    isOwner = false,
+    resourceId,
 }: {
     profileId?: string;
     idBlog?: string;
     contentType?: "blog" | "docs";
     createdAt?: string | number | Date;
     authorName?: string | null;
+    visibility?: "PUBLIC" | "PRIVATE";
+    status?: "PUBLISHED" | "ARCHIVED" | "DRAFT";
+    isOwner?: boolean;
+    resourceId?: string;
 }) => {
     const [bookmark, setBookmark] = useState(false);
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -72,8 +80,7 @@ export const ProfileTag = ({
         const diffHr = Math.floor(diffMin / 60);
         if (diffHr < 24) return `${diffHr} hr${diffHr > 1 ? "s" : ""} ago`;
         const diffDay = Math.floor(diffHr / 24);
-        if (diffDay < 30)
-            return `${diffDay} day${diffDay > 1 ? "s" : ""} ago`;
+        if (diffDay < 30) return `${diffDay} day${diffDay > 1 ? "s" : ""} ago`;
         const diffMonth = Math.floor(diffDay / 30);
         if (diffMonth < 12)
             return `${diffMonth} month${diffMonth > 1 ? "s" : ""} ago`;
@@ -81,6 +88,12 @@ export const ProfileTag = ({
         return `${diffYear} year${diffYear > 1 ? "s" : ""} ago`;
     };
     const relativeTime = getRelativeTime(createdAt);
+    const showPrivate = isOwner && visibility === "PRIVATE";
+    const showUnpublished = isOwner && status && status !== "PUBLISHED";
+    const showVisibilityBadge =
+        isOwner && (visibility || status || showPrivate || showUnpublished);
+    const statusLabel = status ? status.toLowerCase() : undefined;
+    const visibilityLabel = visibility ? visibility.toLowerCase() : undefined;
 
     return (
         <>
@@ -119,6 +132,13 @@ export const ProfileTag = ({
                     165k
                 </p>
 
+                {showVisibilityBadge && (
+                    <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-muted text-muted-foreground flex items-center gap-1 capitalize">
+                        {visibilityLabel}
+                        {visibilityLabel && statusLabel && " • "}
+                        {statusLabel}
+                    </span>
+                )}
                 <DropdownMenu
                     open={dropdownOpen}
                     onOpenChange={setDropdownOpen}
@@ -181,6 +201,10 @@ export const ProfileTag = ({
             <VisibilityPopover
                 open={visibilityPopoverOpen}
                 setOpen={setVisibilityPopoverOpen}
+                contentType={contentType}
+                resourceId={resourceId || idBlog}
+                initialStatus={status}
+                initialVisibility={visibility}
             />
             <BlogUpdateDetails
                 open={isEditDialogOpen}

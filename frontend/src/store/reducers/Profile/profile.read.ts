@@ -83,6 +83,20 @@ export const getAllProfileBlog = createAsyncThunk<AllProfileBlog, void>(
 	},
 );
 
+export const getAllProfileBlogByHandle = createAsyncThunk<
+	AllProfileBlog,
+	string
+>("/api/getallprofileblogbyhandle", async (handle, { rejectWithValue }) => {
+	const URL = `${process.env.NEXT_PUBLIC_API_SERVER_URL}${process.env.NEXT_PUBLIC_API_VERSION}/user/profile/${handle}/blogs`;
+	try {
+		const response = await api.get<AllProfileBlog>(URL);
+		return response.data;
+	} catch (e: any) {
+		toast.error(e.message.status || "Failed to fetch user profile details");
+		return rejectWithValue("Failed to fetch user profile details");
+	}
+});
+
 export const getAllProfileDocs = createAsyncThunk<AllProfileDocs, void>(
 	"/api/getallprofiledocs",
 	async (_, { rejectWithValue }) => {
@@ -96,6 +110,20 @@ export const getAllProfileDocs = createAsyncThunk<AllProfileDocs, void>(
 		}
 	},
 );
+
+export const getAllProfileDocsByHandle = createAsyncThunk<
+	AllProfileDocs,
+	string
+>("/api/getallprofiledocsbyhandle", async (handle, { rejectWithValue }) => {
+	const URL = `${process.env.NEXT_PUBLIC_API_SERVER_URL}${process.env.NEXT_PUBLIC_API_VERSION}/user/profile/${handle}/docs`;
+	try {
+		const response = await api.get<AllProfileDocs>(URL);
+		return response.data;
+	} catch (e: any) {
+		toast.error(e.message.status || "Failed to fetch user docs");
+		return rejectWithValue("Failed to fetch user docs");
+	}
+});
 
 const getProfile = createSlice({
 	name: "getProfileReducers",
@@ -150,6 +178,22 @@ const getProfile = createSlice({
 			.addCase(getAllProfileBlog.rejected, (state, action) => {
 				state.blogLoading = false;
 				state.error = action.payload as string;
+				state.blogs = { blogPagesDto: [], hasNext: false, cursor: null };
+			});
+
+		builder
+			.addCase(getAllProfileBlogByHandle.pending, (state) => {
+				state.blogLoading = true;
+				state.error = null;
+			})
+			.addCase(getAllProfileBlogByHandle.fulfilled, (state, action) => {
+				state.blogLoading = false;
+				state.blogs = action.payload;
+			})
+			.addCase(getAllProfileBlogByHandle.rejected, (state, action) => {
+				state.blogLoading = false;
+				state.error = action.payload as string;
+				state.blogs = { blogPagesDto: [], hasNext: false, cursor: null };
 			});
 
 		// ======================
@@ -165,6 +209,21 @@ const getProfile = createSlice({
 				state.docs = action.payload;
 			})
 			.addCase(getAllProfileDocs.rejected, (state, action) => {
+				state.docsLoading = false;
+				state.error = action.payload as string;
+				state.docs = { docs: [], hasNext: false, cursor: null };
+			});
+
+		builder
+			.addCase(getAllProfileDocsByHandle.pending, (state) => {
+				state.docsLoading = true;
+				state.error = null;
+			})
+			.addCase(getAllProfileDocsByHandle.fulfilled, (state, action) => {
+				state.docsLoading = false;
+				state.docs = action.payload;
+			})
+			.addCase(getAllProfileDocsByHandle.rejected, (state, action) => {
 				state.docsLoading = false;
 				state.error = action.payload as string;
 				state.docs = { docs: [], hasNext: false, cursor: null };

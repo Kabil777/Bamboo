@@ -74,6 +74,7 @@ export function SectionCards({ viewingHandle }: { viewingHandle?: string }) {
 	const isOwnProfile = !viewingHandle || viewingHandle === user?.handle;
 
 	const [follow, setFollow] = useState(false);
+	const [avatarLoaded, setAvatarLoaded] = useState(false);
 	const [gradientColors, setGradientColors] = useState({
 		start: "transparent",
 		middle: "transparent",
@@ -252,7 +253,8 @@ export function SectionCards({ viewingHandle }: { viewingHandle?: string }) {
 									alt="Profile"
 									width={144}
 									height={144}
-									className="w-full h-full object-cover"
+									className={`w-full h-full object-cover transition-opacity duration-300 ${avatarLoaded ? "opacity-100" : "opacity-0"}`}
+									onLoadingComplete={() => setAvatarLoaded(true)}
 								/>
 							) : (
 								<div className="w-full h-full bg-muted flex items-center justify-center">

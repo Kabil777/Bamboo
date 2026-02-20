@@ -21,7 +21,7 @@ function getCollabHttpBaseUrl() {
 export default function BlogEditor() {
     const { id } = useParams<{ id: string }>();
 
-    const save = async (_content: string) => {
+    const save = async (_visibility: "PUBLIC" | "PRIVATE") => {
         if (!id) return;
 
         try {
@@ -29,6 +29,13 @@ export default function BlogEditor() {
             const response = await fetch(`${baseUrl}/api/blog/save/${id}`, {
                 method: "POST",
                 credentials: "include",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    visibility: _visibility,
+                    status: "PUBLISHED",
+                }),
             });
 
             if (!response.ok) {

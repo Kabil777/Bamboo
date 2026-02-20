@@ -12,6 +12,8 @@ interface BlogHomeCard extends BlogBase {
     createdAt: string;
     tags: string[];
     authorName: string | null;
+    visibility?: "PUBLIC" | "PRIVATE";
+    status?: "PUBLISHED" | "ARCHIVED" | "DRAFT";
     
 }
 

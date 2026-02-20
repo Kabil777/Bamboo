@@ -3,10 +3,11 @@ import { UserX } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useMemo } from "react";
-import { ProfileRoutes } from "@/components/atomsComponents";
+import { ProfileRoutes, ProfileTabProvider } from "@/components/atomsComponents";
 import { SectionCards } from "@/components/atomsComponents/sectionCard";
 import { Button } from "@/components/shadcnUI/button";
 import { useAppState } from "@/hooks/ReduxHooks";
+import React from "react";
 
 export default function Layout({
 	children,
@@ -17,6 +18,7 @@ export default function Layout({
 	const username = params.username as string;
 	const { user } = useAppState((s) => s.userReducer);
 	const { error, profileLoading } = useAppState((s) => s.getProfileReducers);
+	const [selectedTab, setSelectedTab] = React.useState("all");
 
 	// Remove @ symbol if present
 	const handle = username?.startsWith("@") ? username.slice(1) : username;
@@ -40,7 +42,7 @@ export default function Layout({
 	}, [isOwnProfile]);
 
 	const handleTabChange = (selecttab: string) => {
-		console.log("Selected Tab:", selecttab);
+		setSelectedTab(selecttab);
 	};
 
 	// Show error UI if profile not found
@@ -73,7 +75,11 @@ export default function Layout({
 						<ProfileRoutes tabs={tabs} onTabChange={handleTabChange} />
 					</div>
 				</div>
-				<div>{children}</div>
+				<ProfileTabProvider
+					value={{ selectedTab, setSelectedTab: handleTabChange }}
+				>
+					<div>{children}</div>
+				</ProfileTabProvider>
 			</div>
 		</div>
 	);

@@ -58,14 +58,15 @@ export default function Profile() {
     const { user } = useAppState((s) => s.userReducer);
     const [activeDocId, setActiveDocId] = useState<string>("");
     const { selectedTab } = useProfileTab();
+    const isOwner = true;
     useEffect(() => {
-        if (!blogLoading && !blogs) {
+        if (selectedTab === "posts" && !blogLoading && !blogs) {
             dispatch(getAllProfileBlog());
         }
-        if (!docsLoading && !docs) {
+        if (selectedTab === "docs" && !docsLoading && !docs) {
             dispatch(getAllProfileDocs());
         }
-    }, [blogs, dispatch, blogLoading, docsLoading, docs]);
+    }, [selectedTab, blogs, dispatch, blogLoading, docsLoading, docs]);
     return (
         <div className="container grid grid-cols-4 transition-all duration-200 ease-linear gap-4 md:gap-6 relative">
             <div className="col-span-full xl:col-span-3 mx-2 md:mx-0 xl:border-r-1 p-0 sm:p-2 relative">
@@ -84,6 +85,9 @@ export default function Profile() {
                                     id={item.id}
                                     tags={item.tags}
                                     createdAt={item.createdAt}
+                                    visibility={item.visibility}
+                                    status={item.status}
+                                    isOwner={isOwner}
                                 />
                             ))}
                     </>
@@ -101,6 +105,9 @@ export default function Profile() {
                                       description={doc.description}
                                       coverUrl={doc.coverUrl}
                                       createdAt={doc.createdAt}
+                                      visibility={doc.visibility}
+                                      status={doc.status}
+                                      isOwner={isOwner}
                                       authorName={
                                           user?.handle ||
                                           user?.name ||

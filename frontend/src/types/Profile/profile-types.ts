@@ -31,6 +31,8 @@ type ProfileBlog = {
     coverUrl: string;
     createdAt: string;
     authorId: string;
+    visibility?: "PUBLIC" | "PRIVATE";
+    status?: "PUBLISHED" | "ARCHIVED" | "DRAFT";
 };
 
 type AllProfileBlog = {
@@ -46,6 +48,8 @@ type ProfileDoc = {
     coverUrl: string;
     createdAt: string;
     authorName?: string;
+    visibility?: "PUBLIC" | "PRIVATE";
+    status?: "PUBLISHED" | "ARCHIVED" | "DRAFT";
 };
 
 type AllProfileDocs = {

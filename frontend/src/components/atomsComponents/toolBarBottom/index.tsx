@@ -93,7 +93,7 @@ export const ToolBarBottom = ({
     onlineUsers,
 }: {
     editor: Editor | null;
-    onSave: () => void;
+    onSave: (visibility: "PUBLIC" | "PRIVATE") => void;
     collabUser: CollabUser;
     invitedUsers: InvitedUser[];
     setInvitedUsers: React.Dispatch<React.SetStateAction<InvitedUser[]>>;
@@ -108,6 +108,9 @@ export const ToolBarBottom = ({
     const [inviteRole, setInviteRole] = useState<InviteRole>("can edit");
     const [isOwner, setIsOwner] = useState(false);
     const [isLoadingMembers, setIsLoadingMembers] = useState(false);
+    const [publishVisibility, setPublishVisibility] = useState<
+        "PUBLIC" | "PRIVATE"
+    >("PRIVATE");
     const isBlogInviteSupported = resourceType === "blog";
     const isDocsInviteSupported = resourceType === "docs";
 
@@ -317,9 +320,38 @@ export const ToolBarBottom = ({
                             Upload the current content as a blog post.
                         </AlertDialogDescription>
                     </AlertDialogHeader>
+                    <div className="grid gap-3">
+                        <div className="grid gap-2">
+                            <span className="text-sm font-medium">
+                                Visibility
+                            </span>
+                            <Select
+                                value={publishVisibility}
+                                onValueChange={(value) =>
+                                    setPublishVisibility(
+                                        value as "PUBLIC" | "PRIVATE",
+                                    )
+                                }
+                            >
+                                <SelectTrigger className="w-[160px]">
+                                    <SelectValue placeholder="Select visibility" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="PRIVATE">
+                                        Private
+                                    </SelectItem>
+                                    <SelectItem value="PUBLIC">
+                                        Public
+                                    </SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                    </div>
                     <AlertDialogFooter>
                         <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction onClick={onSave}>
+                        <AlertDialogAction
+                            onClick={() => onSave(publishVisibility)}
+                        >
                             Upload
                         </AlertDialogAction>
                     </AlertDialogFooter>

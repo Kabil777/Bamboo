@@ -14,8 +14,9 @@ import { Skeleton } from "@/components/shadcnUI/skeleton";
 import { useRouter } from "next/navigation";
 import { useDispatch } from "react-redux";
 import Link from "next/link";
+import { toast } from "sonner";
 
-export const BlogCard: React.FC<BlogHomeCard> = ({
+export const BlogCard: React.FC<BlogHomeCard & { isOwner?: boolean }> = ({
     id,
     title,
     description,
@@ -24,36 +25,70 @@ export const BlogCard: React.FC<BlogHomeCard> = ({
     createdAt,
     tags,
     authorName,
+    visibility,
+    status,
+    isOwner = false,
 }) => {
     const [isLoaded, setIsLoaded] = useState(false);
     const [imageError, setImageError] = useState(false);
     const router = useRouter();
     const dispatch = useDispatch();
+    const isDraft = status && status !== "PUBLISHED";
+    const handleBlockedOpen = (e: React.MouseEvent) => {
+        if (isOwner && isDraft) {
+            e.preventDefault();
+            toast.error("This blog is a draft. Publish it to view.");
+        }
+    };
 
     return (
         <div key={id}>
             <Card className="shadow-none rounded-none overflow-hidden items-center p-2 sm:p-4 gap-2 border-none transition duration-200 ease-in-out my-3">
                 <CardContent className="p-0 w-full grid grid-cols-5 items-center gap-2 md:gap-5 justify-between">
                     <div className="p-0 col-span-full sm:row-start-1 sm:col-span-3 flex flex-col gap-0 md:gap-2">
-                        <Link href={`/blog/${id}`} className="cursor-pointer">
-                            <CardTitle className="text-base md:text-2xl font-semibold line-clamp-2">
-                                {title}
-                            </CardTitle>
-                            <CardDescription className="text-gray-500 dark:text-gray-400 mt-2 line-clamp-2 text-xs md:text-sm">
-                                {description}
-                            </CardDescription>
-                        </Link>
+                        {isOwner && isDraft ? (
+                            <div
+                                role="button"
+                                tabIndex={0}
+                                className="cursor-pointer"
+                                onClick={handleBlockedOpen}
+                                onKeyDown={(e) => {
+                                    if (e.key === "Enter" || e.key === " ") {
+                                        handleBlockedOpen(e as unknown as React.MouseEvent);
+                                    }
+                                }}
+                            >
+                                <CardTitle className="text-base md:text-2xl font-semibold line-clamp-2">
+                                    {title}
+                                </CardTitle>
+                                <CardDescription className="text-gray-500 dark:text-gray-400 mt-2 line-clamp-2 text-xs md:text-sm">
+                                    {description}
+                                </CardDescription>
+                            </div>
+                        ) : (
+                            <Link href={`/blog/${id}`} className="cursor-pointer">
+                                <CardTitle className="text-base md:text-2xl font-semibold line-clamp-2">
+                                    {title}
+                                </CardTitle>
+                                <CardDescription className="text-gray-500 dark:text-gray-400 mt-2 line-clamp-2 text-xs md:text-sm">
+                                    {description}
+                                </CardDescription>
+                            </Link>
+                        )}
                         <ProfileTag
                             idBlog={id}
                             profileId={authorName ? authorName : "user101"}
                             createdAt={createdAt}
                             authorName={authorName}
+                            visibility={visibility}
+                            status={status}
+                            isOwner={isOwner}
                         />
                         <div className="flex flex-wrap gap-2 mt-3">
                             {tags.map((tag) => (
                                 <Badge
                                     key={tag}
-                                    className="capitalize bg-gray-200 text-gray-700 dark:bg-gray-800 dark:text-gray-200"
+                                    className={`capitalize border ${getTagClass(tag)}`}
                                 >
                                     {tag}
                                 </Badge>
@@ -68,9 +103,9 @@ export const BlogCard: React.FC<BlogHomeCard> = ({
                                     loading="eager"
                                     alt="Blog Cover Image"
                                     fill
-                                    className="object-cover rounded-lg border"
+                                    className={`object-cover rounded-lg border transition-opacity duration-300 ${isLoaded ? "opacity-100" : "opacity-0"}`}
                                     sizes="(max-width: 640px) 100vw, 300px"
-                                    onLoad={() => setIsLoaded(true)}
+                                    onLoadingComplete={() => setIsLoaded(true)}
                                     onError={() => {
                                         setImageError(true);
                                     }}
@@ -86,3 +121,17 @@ export const BlogCard: React.FC<BlogHomeCard> = ({
         </div>
     );
 };
+    const tagColors = [
+        "bg-emerald-100 text-emerald-800 border-emerald-200",
+        "bg-sky-100 text-sky-800 border-sky-200",
+        "bg-amber-100 text-amber-800 border-amber-200",
+        "bg-rose-100 text-rose-800 border-rose-200",
+        "bg-indigo-100 text-indigo-800 border-indigo-200",
+    ];
+    const getTagClass = (tag: string) => {
+        let hash = 0;
+        for (let i = 0; i < tag.length; i += 1) {
+            hash = (hash * 31 + tag.charCodeAt(i)) % 1000;
+        }
+        return tagColors[hash % tagColors.length];
+    };
