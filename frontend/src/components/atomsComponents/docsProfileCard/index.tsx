@@ -12,6 +12,8 @@ import { Skeleton } from "@/components/shadcnUI/skeleton";
 import { useState } from "react";
 import type { ProfileDoc } from "@/types/Profile/profile-types";
 import { toast } from "sonner";
+import { useAppDispatch } from "@/hooks/ReduxHooks";
+import { getAllProfileDocs } from "@/store/reducers/Profile/profile.read";
 
 export const DocsProfileCard: React.FC<ProfileDoc & { isOwner?: boolean }> = ({
     id,
@@ -26,6 +28,7 @@ export const DocsProfileCard: React.FC<ProfileDoc & { isOwner?: boolean }> = ({
 }) => {
     const [imageError, setImageError] = useState(false);
     const [isLoaded, setIsLoaded] = useState(false);
+    const dispatch = useAppDispatch();
 
     const isDraft = status && status !== "PUBLISHED";
     const handleBlockedOpen = (e: React.MouseEvent) => {
@@ -77,6 +80,12 @@ export const DocsProfileCard: React.FC<ProfileDoc & { isOwner?: boolean }> = ({
                             visibility={visibility}
                             status={status}
                             isOwner={isOwner}
+                            showMenu={isOwner}
+                            onVisibilityUpdated={() => {
+                                if (isOwner) {
+                                    dispatch(getAllProfileDocs());
+                                }
+                            }}
                         />
                     </div>
                     {coverUrl && !imageError ? (

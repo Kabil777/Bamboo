@@ -5,7 +5,8 @@ import { useParams } from "next/navigation";
 import { toast } from "sonner";
 
 function getCollabHttpBaseUrl() {
-    const wsUrl = process.env.NEXT_PUBLIC_COLLAB_WS_URL || "ws://localhost:1234/collab";
+    const wsUrl =
+        process.env.NEXT_PUBLIC_COLLAB_WS_URL || "ws://localhost:1234/collab";
     const normalized = wsUrl.replace(/\/+$/, "");
     const withoutPath = normalized.replace(/\/collab$/, "");
 
@@ -41,7 +42,8 @@ export default function BlogEditor() {
             if (!response.ok) {
                 const data = await response.json().catch(() => null);
                 const message =
-                    (data as { message?: string } | null)?.message || "Failed to save blog";
+                    (data as { message?: string } | null)?.message ||
+                    "Failed to save blog";
                 throw new Error(message);
             }
 

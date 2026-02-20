@@ -33,6 +33,8 @@ export const ProfileTag = ({
     status,
     isOwner = false,
     resourceId,
+    showMenu = true,
+    onVisibilityUpdated,
 }: {
     profileId?: string;
     idBlog?: string;
@@ -43,6 +45,8 @@ export const ProfileTag = ({
     status?: "PUBLISHED" | "ARCHIVED" | "DRAFT";
     isOwner?: boolean;
     resourceId?: string;
+    showMenu?: boolean;
+    onVisibilityUpdated?: () => void;
 }) => {
     const [bookmark, setBookmark] = useState(false);
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -139,77 +143,86 @@ export const ProfileTag = ({
                         {statusLabel}
                     </span>
                 )}
-                <DropdownMenu
-                    open={dropdownOpen}
-                    onOpenChange={setDropdownOpen}
-                >
-                    <DropdownMenuTrigger
-                        className="text-sm text-muted-foreground italic flex items-center gap-1 font-medium cursor-pointer"
-                        asChild
+                {showMenu && (
+                    <DropdownMenu
+                        open={dropdownOpen}
+                        onOpenChange={setDropdownOpen}
                     >
-                        <p>
-                            <Ellipsis size={14} />
-                        </p>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="start" className="w-40">
-                        <DropdownMenuItem onClick={handleEditClick}>
-                            <Pencil className="h-4 w-4" />
-                            <span>Edit</span>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem asChild>
-                            <Link
-                                href={
-                                    contentType === "docs"
-                                        ? `/editor/docs/${idBlog}`
-                                        : `/editor/blog/${idBlog}`
-                                }
+                        <DropdownMenuTrigger
+                            className="text-sm text-muted-foreground italic flex items-center gap-1 font-medium cursor-pointer"
+                            asChild
+                        >
+                            <p>
+                                <Ellipsis size={14} />
+                            </p>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="start" className="w-40">
+                            <DropdownMenuItem onClick={handleEditClick}>
+                                <Pencil className="h-4 w-4" />
+                                <span>Edit</span>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem asChild>
+                                <Link
+                                    href={
+                                        contentType === "docs"
+                                            ? `/editor/docs/${idBlog}`
+                                            : `/editor/blog/${idBlog}`
+                                    }
+                                >
+                                    <ExternalLink className="h-4 w-4" />
+                                    <span>Open in Editor</span>
+                                </Link>
+                            </DropdownMenuItem>
+
+                            <DropdownMenuSeparator />
+
+                            <DropdownMenuItem
+                                onClick={handleVisibilityPopoverOpen}
                             >
-                                <ExternalLink className="h-4 w-4" />
-                                <span>Open in Editor</span>
-                            </Link>
-                        </DropdownMenuItem>
+                                <Eye className="h-4 w-4" />
+                                <span>Visibility</span>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={handleCopyPopoverOpen}>
+                                <Share2 className="h-4 w-4" />
+                                <span>Share</span>
+                            </DropdownMenuItem>
 
-                        <DropdownMenuSeparator />
+                            <DropdownMenuSeparator />
 
-                        <DropdownMenuItem onClick={handleVisibilityPopoverOpen}>
-                            <Eye className="h-4 w-4" />
-                            <span>Visibility</span>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={handleCopyPopoverOpen}>
-                            <Share2 className="h-4 w-4" />
-                            <span>Share</span>
-                        </DropdownMenuItem>
-
-                        <DropdownMenuSeparator />
-
-                        <DropdownMenuItem variant="destructive">
-                            <Trash2 className="h-4 w-4" />
-                            <span>Delete</span>
-                        </DropdownMenuItem>
-                    </DropdownMenuContent>
-                </DropdownMenu>
+                            <DropdownMenuItem variant="destructive">
+                                <Trash2 className="h-4 w-4" />
+                                <span>Delete</span>
+                            </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                )}
             </div>
-            <SharePopover
-                text={`https://bamboo.dev/${
-                    contentType === "docs" ? "docs" : "blog"
-                }/${profileId ? `?ref=${profileId}` : ""}`}
-                open={copyPopoverOpen}
-                setOpen={setCopyPopoverOpen}
-            >
-                {""}
-            </SharePopover>
-            <VisibilityPopover
-                open={visibilityPopoverOpen}
-                setOpen={setVisibilityPopoverOpen}
-                contentType={contentType}
-                resourceId={resourceId || idBlog}
-                initialStatus={status}
-                initialVisibility={visibility}
-            />
-            <BlogUpdateDetails
-                open={isEditDialogOpen}
-                setOpen={setIsEditDialogOpen}
-            />
+            {showMenu && (
+                <>
+                    <SharePopover
+                        text={`https://bamboo.dev/${
+                            contentType === "docs" ? "docs" : "blog"
+                        }/${profileId ? `?ref=${profileId}` : ""}`}
+                        open={copyPopoverOpen}
+                        setOpen={setCopyPopoverOpen}
+                    >
+                        {""}
+                    </SharePopover>
+                    <VisibilityPopover
+                        open={visibilityPopoverOpen}
+                        setOpen={setVisibilityPopoverOpen}
+                        contentType={contentType}
+                        resourceId={resourceId || idBlog}
+                        initialStatus={status}
+                        initialVisibility={visibility}
+                        onUpdated={onVisibilityUpdated}
+                    />
+                    <BlogUpdateDetails
+                        open={isEditDialogOpen}
+                        setOpen={setIsEditDialogOpen}
+                    />
+                </>
+            )}
         </>
     );
 };

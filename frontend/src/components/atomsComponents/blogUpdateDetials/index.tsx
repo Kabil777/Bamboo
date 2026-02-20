@@ -93,8 +93,7 @@ export const BlogUpdateDetails = ({
 	const [status, setStatus] = useState<"draft" | "publish" | "archived">(
 		"draft",
 	);
-	const defaultCoverUrl =
-		"https://images.prismic.io/techloset/Z1_3cpbqstJ98iN__a-complete-guide-to-next-js-a-react-js-framework.webp";
+	const defaultCoverUrl = "";
 	const [coverUrl, setCoverUrl] = useState<string>(defaultCoverUrl);
 	const [coverUrlInput, setCoverUrlInput] = useState<string>("");
 	const [loading, setLoading] = useState<boolean>(false);
@@ -555,6 +554,7 @@ export const VisibilityPopover = ({
 	resourceId,
 	initialStatus,
 	initialVisibility,
+	onUpdated,
 }: {
 	open?: boolean;
 	setOpen?: (open: boolean) => void;
@@ -562,6 +562,7 @@ export const VisibilityPopover = ({
 	resourceId?: string;
 	initialStatus?: "PUBLISHED" | "ARCHIVED" | "DRAFT";
 	initialVisibility?: "PUBLIC" | "PRIVATE";
+	onUpdated?: () => void;
 }) => {
 	// State declarations
 	const [status, setStatus] = useState<"draft" | "publish" | "archived">(
@@ -569,6 +570,20 @@ export const VisibilityPopover = ({
 	);
 	const [visibility, setVisibility] = useState<"public" | "private">("public");
 	const [loading, setLoading] = useState<boolean>(false);
+	const getCollabHttpBaseUrl = () => {
+		const wsUrl =
+			process.env.NEXT_PUBLIC_COLLAB_WS_URL || "ws://localhost:1234/collab";
+		const normalized = wsUrl.replace(/\/+$/, "");
+		const withoutPath = normalized.replace(/\/collab$/, "");
+
+		if (withoutPath.startsWith("wss://")) {
+			return withoutPath.replace("wss://", "https://");
+		}
+		if (withoutPath.startsWith("ws://")) {
+			return withoutPath.replace("ws://", "http://");
+		}
+		return withoutPath;
+	};
 
 	// Handler functions
 	const handleClose = () => {
@@ -595,10 +610,12 @@ export const VisibilityPopover = ({
 		const mappedVisibility = visibility === "public" ? "PUBLIC" : "PRIVATE";
 
 		try {
-			const base =
-				process.env.NEXT_PUBLIC_API_SERVER_URL || "";
-			const version = process.env.NEXT_PUBLIC_API_VERSION || "";
-			const url = `${base}${version}/${contentType}/${resourceId}/visibility`;
+			const baseUrl = getCollabHttpBaseUrl();
+			const endpoint =
+				contentType === "docs"
+					? `/api/docs/save/${resourceId}`
+					: `/api/blog/save/${resourceId}`;
+			const url = `${baseUrl}${endpoint}`;
 			await fetch(url, {
 				method: "POST",
 				credentials: "include",
@@ -608,6 +625,7 @@ export const VisibilityPopover = ({
 					visibility: mappedVisibility,
 				}),
 			});
+			onUpdated?.();
 			handleClose();
 		} catch (error) {
 			console.error(error);

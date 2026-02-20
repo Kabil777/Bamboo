@@ -94,7 +94,7 @@ export default function Home() {
                                 </div>
                             ) : (
                                 (data ?? []).map((d) => (
-                                    <BlogCard key={d.id} {...d} />
+                                    <BlogCard key={d.id} {...d} isOwner={false} />
                                 ))
                             )}
                         </div>

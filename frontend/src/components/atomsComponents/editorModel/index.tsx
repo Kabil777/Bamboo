@@ -90,8 +90,7 @@ export const EditorModel = () => {
         "Manager",
         "Freelancer",
     ];
-    const defaultCoverUrl =
-        "https://images.prismic.io/techloset/Z1_3cpbqstJ98iN__a-complete-guide-to-next-js-a-react-js-framework.webp";
+    const defaultCoverUrl = "";
     const [coverUrl, setCoverUrl] = useState<string>(defaultCoverUrl);
     const [coverUrlInput, setCoverUrlInput] = useState<string>("");
     const [coverFile, setCoverFile] = useState<File | null>(null);

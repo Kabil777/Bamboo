@@ -1,5 +1,6 @@
 import type { Attrs, Node } from "@tiptap/pm/model"
 import type { Editor } from "@tiptap/react"
+import api from "@/api/axios"
 
 export const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5MB
 
@@ -150,19 +151,54 @@ export const handleImageUpload = async (
     )
   }
 
-  // For demo/testing: Simulate upload progress
-  for (let progress = 0; progress <= 100; progress += 10) {
-    if (abortSignal?.aborted) {
-      throw new Error("Upload cancelled")
-    }
-    await new Promise((resolve) => setTimeout(resolve, 500))
-    onProgress?.({ progress })
+  const uploadUrl = `${process.env.NEXT_PUBLIC_API_VERSION}/upload/image`
+  const formData = new FormData()
+  formData.append("file", file)
+
+  const response = await api.post(uploadUrl, formData, {
+    headers: { "Content-Type": "multipart/form-data" },
+    onUploadProgress: (event) => {
+      if (!event.total) return
+      const progress = Math.round((event.loaded / event.total) * 100)
+      onProgress?.({ progress })
+    },
+    signal: abortSignal,
+  })
+
+  const payload = response.data?.data ?? response.data ?? {}
+  const url =
+    payload.url || payload.location || payload.imageUrl || payload.uploadUrl
+
+  if (!url) {
+    throw new Error("Upload failed: missing URL")
   }
 
-  return "/images/placeholder-image.png"
+  return url
+}
 
-  // Uncomment for production use:
-  // return convertFileToBase64(file, abortSignal);
+export const uploadImageFromUrl = async (
+  sourceUrl: string,
+  abortSignal?: AbortSignal
+): Promise<string> => {
+  const uploadUrl = `${process.env.NEXT_PUBLIC_API_VERSION}/upload/image/url`
+  const response = await api.post(
+    uploadUrl,
+    null,
+    {
+      params: { url: sourceUrl },
+      signal: abortSignal,
+    }
+  )
+
+  const payload = response.data?.data ?? response.data ?? {}
+  const url =
+    payload.url || payload.location || payload.imageUrl || payload.uploadUrl
+
+  if (!url) {
+    throw new Error("Upload failed: missing URL")
+  }
+
+  return url
 }
 
 /**

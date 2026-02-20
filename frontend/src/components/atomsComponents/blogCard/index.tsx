@@ -11,10 +11,10 @@ import { ProfileTag } from "@/components/atomsComponents";
 import type { BlogHomeCard } from "@/types/blog/blog-base";
 import { useState } from "react";
 import { Skeleton } from "@/components/shadcnUI/skeleton";
-import { useRouter } from "next/navigation";
-import { useDispatch } from "react-redux";
+import { useAppDispatch } from "@/hooks/ReduxHooks";
 import Link from "next/link";
 import { toast } from "sonner";
+import { getAllProfileBlog } from "@/store/reducers/Profile/profile.read";
 
 export const BlogCard: React.FC<BlogHomeCard & { isOwner?: boolean }> = ({
     id,
@@ -31,8 +31,7 @@ export const BlogCard: React.FC<BlogHomeCard & { isOwner?: boolean }> = ({
 }) => {
     const [isLoaded, setIsLoaded] = useState(false);
     const [imageError, setImageError] = useState(false);
-    const router = useRouter();
-    const dispatch = useDispatch();
+    const dispatch = useAppDispatch();
     const isDraft = status && status !== "PUBLISHED";
     const handleBlockedOpen = (e: React.MouseEvent) => {
         if (isOwner && isDraft) {
@@ -83,6 +82,12 @@ export const BlogCard: React.FC<BlogHomeCard & { isOwner?: boolean }> = ({
                             visibility={visibility}
                             status={status}
                             isOwner={isOwner}
+                            showMenu={isOwner}
+                            onVisibilityUpdated={() => {
+                                if (isOwner) {
+                                    dispatch(getAllProfileBlog());
+                                }
+                            }}
                         />
                         <div className="flex flex-wrap gap-2 mt-3">
                             {tags.map((tag) => (

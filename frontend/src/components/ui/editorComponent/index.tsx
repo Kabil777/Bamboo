@@ -26,6 +26,7 @@ import { useCollabUser } from "@/hooks/useCollabUser";
 import { useDocsMetaProvider } from "@/hooks/useDocsMetaProvider";
 import type { CollabRoomType } from "@/lib/collabRoomName";
 import extensions from "@/lib/extensions";
+import { handleImageUpload, uploadImageFromUrl } from "@/lib/tiptap-utils";
 import { useHocuspocusProvider } from "@/lib/hocuspocus";
 
 export default function Editor({
@@ -113,6 +114,53 @@ export default function Editor({
 					autocorrect: "on",
 					autocapitalize: "on",
 					"aria-label": "Start typing...",
+				},
+				handlePaste: (view, event) => {
+					const items = Array.from(event.clipboardData?.items || []);
+					const imageItem = items.find((item) =>
+						item.type.startsWith("image/"),
+					);
+					const insertImage = (url: string) => {
+						const { schema } = view.state;
+						const imageNode = schema.nodes.image?.create({ src: url });
+						if (!imageNode) return false;
+						const transaction = view.state.tr
+							.replaceSelectionWith(imageNode)
+							.scrollIntoView();
+						view.dispatch(transaction);
+						return true;
+					};
+
+					if (imageItem) {
+						const file = imageItem.getAsFile();
+						if (!file) return false;
+						event.preventDefault();
+						(async () => {
+							try {
+								const url = await handleImageUpload(file);
+								insertImage(url);
+							} catch {
+								toast.error("Image upload failed");
+							}
+						})();
+						return true;
+					}
+
+					const text = event.clipboardData?.getData("text")?.trim();
+					if (text && /^https?:\/\//i.test(text) && /\.(png|jpe?g|webp|gif|svg)(\?.*)?$/i.test(text)) {
+						event.preventDefault();
+						(async () => {
+							try {
+								const url = await uploadImageFromUrl(text);
+								insertImage(url);
+							} catch {
+								toast.error("Image upload failed");
+							}
+						})();
+						return true;
+					}
+
+					return false;
 				},
 			},
 

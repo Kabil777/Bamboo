@@ -1,6 +1,7 @@
 import { HocuspocusProvider } from "@hocuspocus/provider";
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { buildCollabRoomName, type CollabRoomType } from "./collabRoomName";
 import { COLLAB_URL } from "./collabConfig";
 import {
@@ -18,6 +19,8 @@ export function useHocuspocusProvider(
     const router = useRouter();
     const providerRef = useRef<HocuspocusProvider | null>(null);
     const [provider, setProvider] = useState<HocuspocusProvider | null>(null);
+    const forbiddenNotifiedRef = useRef(false);
+    const expiredNotifiedRef = useRef(false);
 
     useEffect(() => {
         const enabled = options?.enabled ?? true;
@@ -38,12 +41,18 @@ export function useHocuspocusProvider(
             if (providerRef.current) {
                 providerRef.current.destroy();
             }
+            forbiddenNotifiedRef.current = false;
+            expiredNotifiedRef.current = false;
 
             const newProvider = new HocuspocusProvider({
                 url: COLLAB_URL,
                 name: roomName,
                 onAuthenticationFailed: async ({ reason }) => {
                     if (isWsForbidden(undefined, reason)) {
+                        if (!forbiddenNotifiedRef.current) {
+                            forbiddenNotifiedRef.current = true;
+                            toast.error("You do not have access to this document.");
+                        }
                         providerRef.current?.destroy();
                         router.push("/forbidden");
                         return;
@@ -55,11 +64,20 @@ export function useHocuspocusProvider(
                         await refreshSessionForCollab();
                         await providerRef.current?.connect();
                     } catch {
-                        // Keep default provider behavior when refresh fails.
+                        if (!expiredNotifiedRef.current) {
+                            expiredNotifiedRef.current = true;
+                            toast.warning(
+                                "Session expired. Refresh the page to continue.",
+                            );
+                        }
                     }
                 },
                 onClose: async ({ event }) => {
                     if (isWsForbidden(event?.code, event?.reason)) {
+                        if (!forbiddenNotifiedRef.current) {
+                            forbiddenNotifiedRef.current = true;
+                            toast.error("You do not have access to this document.");
+                        }
                         providerRef.current?.destroy();
                         router.push("/forbidden");
                         return;
@@ -73,7 +91,12 @@ export function useHocuspocusProvider(
                         await refreshSessionForCollab();
                         await providerRef.current?.connect();
                     } catch {
-                        // Keep default provider behavior when refresh fails.
+                        if (!expiredNotifiedRef.current) {
+                            expiredNotifiedRef.current = true;
+                            toast.warning(
+                                "Session expired. Refresh the page to continue.",
+                            );
+                        }
                     }
                 },
             });
