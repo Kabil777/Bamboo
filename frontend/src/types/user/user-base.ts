@@ -18,7 +18,7 @@ interface socialLink {
 }
 
 interface userProfile extends userBase {
-	desciption?: string; // Note: Backend has typo "desciption"
+	description?: string;
 	coverUrl?: string;
 	designation?: string;
 	profile?: {
@@ -27,4 +27,16 @@ interface userProfile extends userBase {
 	};
 }
 
-export type { userBase, userProfile, socialLink };
+interface userUpdatePayload {
+	name?: string;
+	handle?: string;
+	description?: string;
+	coverUrl?: string;
+	designation?: string;
+	userProfile?: {
+		tags?: string[];
+		social?: Record<string, string>;
+	};
+}
+
+export type { userBase, userProfile, socialLink, userUpdatePayload };

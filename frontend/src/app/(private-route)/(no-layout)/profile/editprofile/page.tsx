@@ -50,7 +50,7 @@ export default function EditProfile() {
 				lastName: data.name.split(" ").slice(1).join(" ") || "",
 				designation: data.designation || "",
 				handle: data.handle || "",
-				description: data.desciption || "",
+				description: data.description || "",
 				tags: data.profile?.tags || [],
 				socialLinks,
 				profileImage: data.coverUrl || "https://github.com/shadcn.png",
@@ -88,10 +88,10 @@ export default function EditProfile() {
 			const updateData: Partial<userProfile> = {
 				name: `${data.firstName} ${data.lastName}`.trim(),
 				handle: data.handle,
-				desciption: data.description,
+				description: data.description,
 				designation: data.designation,
 				coverUrl: data.profileImage,
-				profile: {
+				userProfile: {
 					tags: data.tags,
 					social: socialObject,
 				},

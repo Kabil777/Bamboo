@@ -1,4 +1,4 @@
-import type { userProfile } from "@/types/user/user-base";
+import type { userProfile, userUpdatePayload } from "@/types/user/user-base";
 import api from "./axios";
 
 const API_VERSION = process.env.NEXT_PUBLIC_API_VERSION;
@@ -15,7 +15,7 @@ export const getUserProfile = async (): Promise<userProfile> => {
  * Update user profile
  */
 export const updateUserProfile = async (
-	data: Partial<userProfile>,
+	data: userUpdatePayload,
 ): Promise<userProfile> => {
 	const response = await api.put(`${API_VERSION}/user`, data);
 	return response.data;

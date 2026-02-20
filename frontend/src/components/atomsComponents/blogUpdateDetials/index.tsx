@@ -11,7 +11,7 @@ import {
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import type React from "react";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/shadcnUI/button";
 import {
@@ -93,10 +93,72 @@ export const BlogUpdateDetails = ({
 	const [status, setStatus] = useState<"draft" | "publish" | "archived">(
 		"draft",
 	);
-	const coverUrl =
+	const defaultCoverUrl =
 		"https://images.prismic.io/techloset/Z1_3cpbqstJ98iN__a-complete-guide-to-next-js-a-react-js-framework.webp";
+	const [coverUrl, setCoverUrl] = useState<string>(defaultCoverUrl);
+	const [coverUrlInput, setCoverUrlInput] = useState<string>("");
 	const [loading, setLoading] = useState<boolean>(false);
 	const [formErrors, setFormErrors] = useState<Record<string, string>>({});
+	const [coverError, setCoverError] = useState<string>("");
+
+	const isLikelyImageUrl = useMemo(
+		() => (value: string) => {
+			const trimmed = value.trim();
+			if (!trimmed) return false;
+			if (trimmed.startsWith("data:image/")) return true;
+			if (!/^https?:\/\//i.test(trimmed)) return false;
+			return /\.(png|jpe?g|webp|gif|svg)(\?.*)?$/i.test(trimmed);
+		},
+		[],
+	);
+
+	const setCoverFromFile = (file: File) => {
+		if (!file.type.startsWith("image/")) {
+			setCoverError("Please select a valid image file.");
+			return;
+		}
+		setCoverError("");
+		const reader = new FileReader();
+		reader.onloadend = () => {
+			setCoverUrl(reader.result as string);
+		};
+		reader.readAsDataURL(file);
+	};
+
+	const handleCoverUrlApply = () => {
+		const trimmed = coverUrlInput.trim();
+		if (!trimmed) {
+			setCoverError("Please paste an image URL.");
+			return;
+		}
+		if (!isLikelyImageUrl(trimmed)) {
+			setCoverError("Please paste a valid image URL.");
+			return;
+		}
+		setCoverError("");
+		setCoverUrl(trimmed);
+	};
+
+	const handleCoverPaste = (
+		e: React.ClipboardEvent<HTMLDivElement | HTMLInputElement>,
+	) => {
+		const items = Array.from(e.clipboardData.items || []);
+		const imageItem = items.find((item) => item.type.startsWith("image/"));
+		if (imageItem) {
+			const file = imageItem.getAsFile();
+			if (file) {
+				e.preventDefault();
+				setCoverFromFile(file);
+			}
+			return;
+		}
+		const text = e.clipboardData.getData("text");
+		if (text && isLikelyImageUrl(text)) {
+			setCoverUrlInput(text.trim());
+			setCoverUrl(text.trim());
+			setCoverError("");
+		}
+	};
 
 	// Reset form when dialog closes
 	useEffect(() => {
@@ -108,6 +170,9 @@ export const BlogUpdateDetails = ({
 				setVisibility("public");
 				setStatus("draft");
 				setFormErrors({});
+				setCoverError("");
+				setCoverUrl(defaultCoverUrl);
+				setCoverUrlInput("");
 				setLoading(false);
 			}, 150);
 			return () => clearTimeout(timer);
@@ -250,9 +315,10 @@ export const BlogUpdateDetails = ({
 						<Label htmlFor="thumbnail">
 							Thumbnail<span className="text-red-500">*</span>
 						</Label>
-						<button
-							type="button"
-							className="flex flex-col items-center justify-center border-2 border-dashed border-border rounded-lg p-4 cursor-pointer hover:border-foreground transition-colors hover:bg-foreground/10 bg-border/10 relative"
+						<div
+							role="button"
+							tabIndex={0}
+							className="flex flex-col items-center justify-center border-2 border-dashed border-border rounded-lg p-4 cursor-pointer hover:border-foreground transition-colors hover:bg-foreground/10 bg-border/10 relative focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
 							onDragOver={(e) => {
 								e.preventDefault();
 								e.stopPropagation();
@@ -262,15 +328,9 @@ export const BlogUpdateDetails = ({
 								e.stopPropagation();
 								const file = e.dataTransfer.files?.[0];
 								if (!file) return;
-								const formData = new FormData();
-								formData.append("file", file);
-								const res = await fetch("/api/upload", {
-									method: "POST",
-									body: formData,
-								});
-								const data = await res.json();
-								if (data.url) return;
+								setCoverFromFile(file);
 							}}
+							onPaste={handleCoverPaste}
 							onClick={() =>
 								document.getElementById("thumbnail-input")?.click()
 							}
@@ -289,14 +349,7 @@ export const BlogUpdateDetails = ({
 								onChange={async (e) => {
 									const file = e.target.files?.[0];
 									if (!file) return;
-									const formData = new FormData();
-									formData.append("file", file);
-									const res = await fetch("/api/upload", {
-										method: "POST",
-										body: formData,
-									});
-									const data = await res.json();
-									if (data.url) return;
+									setCoverFromFile(file);
 								}}
 							/>
 							{coverUrl ? (
@@ -309,10 +362,52 @@ export const BlogUpdateDetails = ({
 								/>
 							) : (
 								<span className="text-gray-400">
-									Drag & drop or click to upload
+									Drag & drop, click to upload, or paste an image
 								</span>
 							)}
-						</button>
+						</div>
+						<div className="grid gap-2">
+							<Label htmlFor="thumbnail-url">Paste Image URL</Label>
+							<div className="flex flex-col gap-2 sm:flex-row">
+								<Input
+									id="thumbnail-url"
+									name="thumbnail-url"
+									placeholder="https://example.com/cover.png"
+									value={coverUrlInput}
+									onPaste={handleCoverPaste}
+									onChange={(e) => {
+										setCoverUrlInput(e.target.value);
+										if (coverError) setCoverError("");
+									}}
+									disabled={loading}
+								/>
+								<Button
+									type="button"
+									variant="secondary"
+									onClick={handleCoverUrlApply}
+									disabled={loading}
+									className="shrink-0"
+								>
+									Use URL
+								</Button>
+								<Button
+									type="button"
+									variant="ghost"
+									onClick={() => {
+										setCoverUrl(defaultCoverUrl);
+										setCoverUrlInput("");
+										setCoverError("");
+									}}
+									disabled={loading}
+									className="shrink-0"
+								>
+									Reset
+								</Button>
+							</div>
+							{coverError && (
+								<p className="text-sm text-red-500">{coverError}</p>
+							)}
+						</div>
 					</div>
 
 					<div className="grid flex-1 gap-3">
