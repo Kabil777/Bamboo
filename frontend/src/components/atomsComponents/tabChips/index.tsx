@@ -85,7 +85,7 @@ export function TabChips({ tabs, onTabChange }: TabsProps) {
     return (
         <div className="w-full">
             <Carousel
-                className="relative w-full p-2 gap-2 mx-2"
+                className="relative w-full p-2 gap-2"
                 opts={{
                     align: "start",
                     loop: false,

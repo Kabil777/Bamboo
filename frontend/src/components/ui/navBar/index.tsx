@@ -94,7 +94,7 @@ const NavBar = ({
     },
 }: NavbarProps) => {
     return (
-        <header className="py-2 z-50 border border-accent sticky top-0 bg-background shadow-none w-full ">
+        <header className="py-2 z-50 border border-accent fixed top-0 bg-background shadow-none w-full ">
             <div className="justify-between md:px-12 px-2 sm:px-6 flex">
                 <div className="flex items-center ">
                     <div className="flex items-center gap-1">

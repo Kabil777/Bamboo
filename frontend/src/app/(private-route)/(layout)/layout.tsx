@@ -23,7 +23,9 @@ export default function RootLayout({
     return (
         <>
             <NavBar />
-            {children}
+            <div className="pt-[3.6rem]">
+                {children}
+            </div>
         </>
     );
 }

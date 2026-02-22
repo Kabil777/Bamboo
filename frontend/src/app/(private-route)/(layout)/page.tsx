@@ -1,5 +1,10 @@
 "use client";
-import { BlogCard, MoreAbout, TabChips } from "@/components/atomsComponents";
+import {
+    BlogCard,
+    DocsCard,
+    MoreAbout,
+    TabChips,
+} from "@/components/atomsComponents";
 import { BlogCardSkeleton } from "@/components/atomsComponents/skleton/blogCardSkleton";
 import { Skeleton } from "@/components/shadcnUI/skeleton";
 import { DocsHome } from "@/components/ui";
@@ -7,10 +12,12 @@ import type { RootState } from "@/store/store";
 import { Separator } from "@/components/shadcnUI/separator";
 import { useSelector } from "react-redux";
 import { SidebarSkeleton } from "@/components/atomsComponents/skleton/sidebarSkleton";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useAppDispatch, useAppState } from "@/hooks/ReduxHooks";
 import { getCoverBlog } from "@/store/reducers/BlogCoverReducer";
 import { DocsCoverRtk } from "@/store/reducers/DocsCoverReducer";
+import Link from "next/link";
+import { ArrowRight } from "lucide-react";
 
 export default function Home() {
     const tabs = [
@@ -77,7 +84,7 @@ export default function Home() {
                 </div>
 
                 {/* Main content */}
-                <div className="col-span-full xl:col-span-3 relative">
+                <div className="col-span-full xl:col-span-3 relative sm:border-r sm:p-3">
                     {blogLoading ? (
                         <div className="absolute inset-0 z-10">
                             {Array.from({ length: 6 }).map((_, i) => (
@@ -93,9 +100,95 @@ export default function Home() {
                                     </p>
                                 </div>
                             ) : (
-                                (data ?? []).map((d) => (
-                                    <BlogCard key={d.id} {...d} isOwner={false} />
-                                ))
+                                <>
+                                    {(() => {
+                                        const MIN_BLOGS = 3;
+                                        const MAX_BLOGS = 8;
+                                        const DOCS_PER_ROW = 4;
+                                        const blogList = data ?? [];
+                                        const docList = docs ?? [];
+                                        const chunks: React.ReactNode[] = [];
+
+                                        // Shuffle helper (Fisher-Yates)
+                                        const shuffle = <T,>(arr: T[]): T[] => {
+                                            const a = [...arr];
+                                            for (let j = a.length - 1; j > 0; j--) {
+                                                const k = Math.floor(Math.random() * (j + 1));
+                                                [a[j], a[k]] = [a[k], a[j]];
+                                            }
+                                            return a;
+                                        };
+
+                                        let i = 0;
+                                        while (i < blogList.length) {
+                                            const chunkSize = Math.floor(Math.random() * (MAX_BLOGS - MIN_BLOGS + 1)) + MIN_BLOGS;
+                                            const blogChunk = blogList.slice(i, i + chunkSize);
+
+                                            // Blog cards chunk
+                                            chunks.push(
+                                                ...blogChunk.map((d) => (
+                                                    <BlogCard key={d.id} {...d} isOwner={false} />
+                                                ))
+                                            );
+
+                                            // Insert docs row with random docs after each chunk
+                                            if (docList.length > 0) {
+                                                const finalDocs = shuffle(docList).slice(0, DOCS_PER_ROW);
+
+                                                chunks.push(
+                                                    <div
+                                                        key={`docs-row-${i}`}
+                                                        className="my-6"
+                                                    >
+                                                        <div className="flex items-center justify-between mb-4 px-2">
+                                                            <div>
+                                                                <h2 className="text-lg font-semibold text-foreground">
+                                                                    Docs for you
+                                                                </h2>
+                                                                <p className="text-xs text-muted-foreground mt-0.5">
+                                                                    Explore documentation
+                                                                </p>
+                                                            </div>
+                                                            <Link
+                                                                href="/docs"
+                                                                className="flex items-center gap-1 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+                                                            >
+                                                                View all
+                                                                <ArrowRight size={14} />
+                                                            </Link>
+                                                        </div>
+                                                        <div
+                                                            className="flex gap-4 overflow-x-auto pb-3 snap-x snap-mandatory"
+                                                            style={{
+                                                                scrollbarWidth: "none",
+                                                                msOverflowStyle: "none",
+                                                                WebkitOverflowScrolling: "touch",
+                                                            }}
+                                                        >
+                                                            {finalDocs.map((doc, idx) => (
+                                                                <div
+                                                                    key={`${doc.id}-${i}-${idx}`}
+                                                                    className="snap-start flex-shrink-0 w-[280px] sm:w-[300px] md:w-[320px]"
+                                                                >
+                                                                    <DocsCard
+                                                                        doc={doc}
+                                                                        hoverOpen={false}
+                                                                        active=""
+                                                                        setActiveCard={() => { }}
+                                                                    />
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                );
+
+
+                                            }
+                                            i += chunkSize;
+                                        }
+                                        return chunks;
+                                    })()}
+                                </>
                             )}
                         </div>
                     )}
@@ -107,8 +200,8 @@ export default function Home() {
                         <SidebarSkeleton />
                     ) : (
                         <>
-                            <DocsHome docs={docs} />
-                            <Separator orientation="horizontal" />
+                            {/* <DocsHome docs={docs} /> */}
+                            {/* <Separator orientation="horizontal" /> */}
                             <MoreAbout />
                         </>
                     )}

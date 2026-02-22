@@ -402,9 +402,9 @@ export const ArticleRender = ({ content }: { content: string }) => {
                     code: (props) => {
                         const { className, children, ...rest } = props;
                         const rawLang = className?.split("language-")[1];
-                        const language = rawLang
-                            ? rawLang.charAt(0).toUpperCase() + rawLang.slice(1)
-                            : null;
+                        const language = rawLang == "null" ? "Plain" :
+                            (rawLang ? rawLang.charAt(0).toUpperCase() + rawLang.slice(1) : "");
+
                         const codeText = extractText(children);
                         const copyKey = `${language ?? "plain"}-${codeText.slice(0, 50)}`;
 
@@ -418,7 +418,7 @@ export const ArticleRender = ({ content }: { content: string }) => {
                                 >
                                     <div className="flex items-center gap-2">
                                         {/* Terminal dots */}
-                                        <div className="hidden sm:flex items-center gap-1.5 mr-2">
+                                        <div className="hidden sm:flex items-center gap-1.5 mr-1">
                                             <span className="w-2.5 h-2.5 rounded-full bg-[#ff5f57]/80" />
                                             <span className="w-2.5 h-2.5 rounded-full bg-[#febc2e]/80" />
                                             <span className="w-2.5 h-2.5 rounded-full bg-[#28c840]/80" />

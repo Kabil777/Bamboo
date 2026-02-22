@@ -54,6 +54,7 @@ import { extractToc } from "@/lib/utils";
 import { BlogPageRtk } from "@/store/reducers/BlogPageReducer";
 import type { BlogPage } from "@/types/blog/blog-base";
 import { toast } from "sonner";
+import Image from "next/image";
 
 // ─── Helpers ─────────────────────────────────────────
 
@@ -233,7 +234,7 @@ export default function BlogRenderPage() {
 			{/* ─── Main Layout ─── */}
 			<div className="flex justify-center relative w-full gap-10">
 				{/* ─── Article ─── */}
-				<article className="flex-1 min-w-0 w-full max-w-4xl lg:translate-x-15 p-2">
+				<article className="flex-1 min-w-0 w-full max-w-3xl lg:translate-x-15 p-2">
 					<motion.div
 						className="flex w-full min-w-0 flex-1 flex-col py-6 lg:py-8 text-neutral-800 dark:text-neutral-300"
 						initial="hidden"
@@ -243,13 +244,15 @@ export default function BlogRenderPage() {
 						{/* ── Hero Cover ── */}
 						<motion.figure
 							className="w-full mb-8 lg:mb-10"
-							variants={fadeIn}
+							variants={fadeUp}
 						>
 							<div className="relative overflow-hidden bg-muted rounded-2xl shadow-sm">
-								<img
+								<Image
+									width={1200}
+									height={600}
 									src={blog.coverUrl}
 									alt={title || "Blog cover"}
-									className="h-auto w-auto max-w-full"
+									className="max-h-[600px]] max-w-[1200px] h-auto w-auto w-full object-cover"
 									loading="eager"
 									decoding="async"
 								/>
