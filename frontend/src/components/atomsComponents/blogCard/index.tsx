@@ -151,11 +151,6 @@ export const BlogCard: React.FC<BlogHomeCard & { isOwner?: boolean }> = ({
         </div>
     );
 };
-<<<<<<< HEAD
-
-// Kept for any external usages — not used inside this card anymore
-=======
->>>>>>> fa014a5 (UI Fix: Fix UI in editor , article render)
 const tagColors = [
     "bg-emerald-100 text-emerald-800 border-emerald-200",
     "bg-sky-100 text-sky-800 border-sky-200",
@@ -165,13 +160,8 @@ const tagColors = [
 ];
 const getTagClass = (tag: string) => {
     let hash = 0;
-<<<<<<< HEAD
-    for (let i = 0; i < tag.length; i += 1)
-        hash = (hash * 31 + tag.charCodeAt(i)) % 1000;
-=======
     for (let i = 0; i < tag.length; i += 1) {
         hash = (hash * 31 + tag.charCodeAt(i)) % 1000;
     }
->>>>>>> fa014a5 (UI Fix: Fix UI in editor , article render)
     return tagColors[hash % tagColors.length];
 };
