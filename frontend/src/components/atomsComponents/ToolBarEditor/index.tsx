@@ -41,7 +41,7 @@ import { Button } from "@/components/tiptap-ui-primitive/button";
 interface MainToolbarContentProp {
 	usersOnline?: userAwareness[];
 	totalUsers?: number;
-	onSave: (visibility?: "PUBLIC" | "PRIVATE") => void;
+	onSave: (visibility: "PUBLIC" | "PRIVATE") => void;
 	editor: ReturnType<typeof useEditor> | null;
 }
 

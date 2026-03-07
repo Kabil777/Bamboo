@@ -28,55 +28,55 @@ import type { CollabRoomType } from "@/lib/collabRoomName";
 import extensions from "@/lib/extensions";
 import { handleImageUpload, uploadImageFromUrl } from "@/lib/tiptap-utils";
 import { useHocuspocusProvider } from "@/lib/hocuspocus";
-
+import { motion } from "framer-motion";
 export default function Editor({
-    idContent,
-    save,
-    resourceType,
-    resourceId,
+	idContent,
+	save,
+	resourceType,
+	resourceId,
 }: {
-    idContent: string;
-    save: (visibility: "PUBLIC" | "PRIVATE") => void;
-    resourceType: "blog" | "docs";
-    resourceId: string;
+	idContent: string;
+	save: (visibility: "PUBLIC" | "PRIVATE") => void;
+	resourceType: "blog" | "docs";
+	resourceId: string;
 }) {
-    type InvitedUser = {
-        userId?: string;
-        email?: string | null;
-        name?: string | null;
-        handle?: string | null;
-        coverUrl?: string | null;
-        role: "owner" | "can edit" | "can view";
-    };
+	type InvitedUser = {
+		userId?: string;
+		email?: string | null;
+		name?: string | null;
+		handle?: string | null;
+		coverUrl?: string | null;
+		role: "owner" | "can edit" | "can view";
+	};
 
-    const roomType: CollabRoomType =
-        resourceType === "blog" ? "blog" : "docs-page";
-    const collabUser = useCollabUser();
-    const isCollabReady =
-        typeof collabUser.name === "string" &&
-        collabUser.name.trim().length > 0;
-    const provider = useHocuspocusProvider(
-        idContent,
-        roomType,
-        resourceType === "docs" ? resourceId : undefined,
-    );
-    const sidebarProvider =
-        resourceType === "docs" ? useDocsMetaProvider(resourceId) : null;
+	const roomType: CollabRoomType =
+		resourceType === "blog" ? "blog" : "docs-page";
+	const collabUser = useCollabUser();
+	const isCollabReady =
+		typeof collabUser.name === "string" &&
+		collabUser.name.trim().length > 0;
+	const provider = useHocuspocusProvider(
+		idContent,
+		roomType,
+		resourceType === "docs" ? resourceId : undefined,
+	);
+	const sidebarProvider =
+		resourceType === "docs" ? useDocsMetaProvider(resourceId) : null;
 
-    const awarenessProvider =
-        resourceType === "docs" ? sidebarProvider : provider;
-    const awarenessLocation = resourceType === "docs" ? "sidebar" : "editor";
+	const awarenessProvider =
+		resourceType === "docs" ? sidebarProvider : provider;
+	const awarenessLocation = resourceType === "docs" ? "sidebar" : "editor";
 
-    const { onlineUsers, totalUsers } = useCollaborativeAwareness(
-        awarenessProvider,
-        {
-            userId: collabUser.id,
-            name: collabUser.name,
-            color: collabUser.color,
-        },
-        awarenessLocation,
-        { suppressNotifications: true },
-    );
+	const { onlineUsers, totalUsers } = useCollaborativeAwareness(
+		awarenessProvider,
+		{
+			userId: collabUser.id,
+			name: collabUser.name,
+			color: collabUser.color,
+		},
+		awarenessLocation,
+		{ suppressNotifications: true },
+	);
 
 	const [invitedUsers, setInvitedUsers] = useState<InvitedUser[]>([]);
 	const [word, setWord] = useState(0);
@@ -102,7 +102,7 @@ export default function Editor({
 		};
 	}, [provider]);
 
-    const toolbarRef = useRef<HTMLDivElement>(null);
+	const toolbarRef = useRef<HTMLDivElement>(null);
 
 	const editor = useEditor(
 		{
@@ -166,23 +166,23 @@ export default function Editor({
 
 			extensions: provider
 				? [
-						...extensions,
-						Collaboration.configure({
-							provider,
-							document: provider.document as Doc,
-						}),
-						...(isCollabReady
-							? [
-									CollaborationCaret.configure({
-										provider,
-										user: {
-											name: collabUser.name,
-											color: collabUser.color,
-										},
-									}),
-								]
-							: []),
-					]
+					...extensions,
+					Collaboration.configure({
+						provider,
+						document: provider.document as Doc,
+					}),
+					...(isCollabReady
+						? [
+							CollaborationCaret.configure({
+								provider,
+								user: {
+									name: collabUser.name,
+									color: collabUser.color,
+								},
+							}),
+						]
+						: []),
+				]
 				: extensions, // Only add collaboration extensions when provider is ready
 			onCreate({ editor }) {
 				setWord(editor.storage.characterCount.characters());
@@ -245,31 +245,31 @@ export default function Editor({
 					>
 						{editor && synced && <EditorContiner editor={editor} />}
 
-                        <div className="fixed bottom-16 right-16 flex flex-col gap-2 z-10">
-                            <ToolBarBottom
-                                editor={editor}
-                                onSave={onSave}
-                                collabUser={collabUser}
-                                invitedUsers={invitedUsers}
-                                setInvitedUsers={setInvitedUsers}
-                                resourceType={resourceType}
-                                resourceId={resourceId}
-                                onlineUsers={onlineUsers}
-                            />
-                        </div>
-                    </div>
-                    <div className="fixed bottom-5 left-6 text-xs bg-white text-black border border-black/10 px-3 py-1.5 rounded-full shadow-sm">
-                        <span className="inline-flex items-center gap-2">
-                            <span className="h-2 w-2 rounded-full bg-green-500" />
-                            Live · {totalUsers} online
-                        </span>
-                    </div>
-                    <div className="fixed bottom-5 right-6 text-xs bg-border p-2 rounded-lg ">
-                        {" "}
-                        {word ?? 0} characters
-                    </div>
-                </div>
-            )}
-        </EditorContext.Provider>
-    );
+						<ToolBarBottom
+							editor={editor}
+							onSave={onSave}
+							collabUser={collabUser}
+							invitedUsers={invitedUsers}
+							setInvitedUsers={setInvitedUsers}
+							resourceType={resourceType}
+							resourceId={resourceId}
+							onlineUsers={onlineUsers}
+							word={word}
+						/>
+					</div>
+					<motion.div
+						initial={{ opacity: 0, y: 20, scale: 0.95 }}
+						animate={{ opacity: 1, y: 0, scale: 1 }}
+						transition={{ delay: 0.8, duration: 0.35, ease: "easeOut" }}
+						className="fixed bottom-10 left-6 z-50 flex flex-col items-center rounded-2xl border border-border bg-background/70 backdrop-blur-2xl shadow-xl shadow-black/5 dark:shadow-black/20 text-xs px-3 py-1.5 text-foreground"
+					>
+						<span className="inline-flex items-center gap-2 ">
+							<span className="h-2 w-2 rounded-full bg-green-500 " />
+							Live · {totalUsers} online
+						</span>
+					</motion.div>
+				</div>
+			)}
+		</EditorContext.Provider>
+	);
 }

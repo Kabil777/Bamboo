@@ -14,7 +14,7 @@ interface BlogHomeCard extends BlogBase {
     authorName: string | null;
     visibility?: "PUBLIC" | "PRIVATE";
     status?: "PUBLISHED" | "ARCHIVED" | "DRAFT";
-    
+    collaborators?: { id: string; name: string; avatarUrl?: string }[];
 }
 
 interface BlogPage extends BlogHomeCard {

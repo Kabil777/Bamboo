@@ -302,7 +302,7 @@ export default function Home() {
                     {blogLoading ? (
                         <Skeleton className="mt-3 h-9 w-full rounded-full" />
                     ) : (
-                        <TabChips tabs={tabs} onTabChange={() => {}} />
+                        <TabChips tabs={tabs} onTabChange={() => { }} />
                     )}
                     <hr className="border-foreground/[0.06]" />
                 </div>

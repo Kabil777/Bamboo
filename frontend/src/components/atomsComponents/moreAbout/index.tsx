@@ -35,8 +35,8 @@ const MoreAboutData = [
 ]
 export const MoreAbout = () => {
   return <div className="flex flex-col gap-4 p-4 bg-muted/50 rounded-xl border border-border">
-    {/* <p className="font-medium">More About ...</p> */}
-    <div className="flex flex-wrap gap-2 mt-4">
+    <p className="font-medium">Recommended Topics</p>
+    <div className="flex flex-wrap gap-2">
       {MoreAboutData.map((item) => (
         <Button key={item.id} variant={"outline"} className="flex items-center gap-2 px-3 py-2 rounded-lg w-fit">
           <span className="text-sm font-semibold">{item.title}</span>

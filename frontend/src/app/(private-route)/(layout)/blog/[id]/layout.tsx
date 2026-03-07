@@ -1,4 +1,4 @@
-import {  SidebarProvider } from "@/components/shadcnUI/sidebar";
+import { SidebarProvider } from "@/components/shadcnUI/sidebar";
 
 
 export default function Layout({ children }: { children: React.ReactNode }) {

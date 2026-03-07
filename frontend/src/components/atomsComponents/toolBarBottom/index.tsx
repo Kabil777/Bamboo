@@ -1,4 +1,4 @@
-import { Check, Link2, Upload, Users, X } from "lucide-react";
+import { Check, FileText, Link2, Upload, Users, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import type { Editor } from "@tiptap/react";
 import { Button } from "@/components/shadcnUI/button";
@@ -18,6 +18,8 @@ import {
     SelectValue,
 } from "@/components/shadcnUI/select";
 import Popup from "@/components/ui/editorComponent/Popup";
+import { motion } from "framer-motion";
+
 import {
     Avatar,
     AvatarFallback,
@@ -38,6 +40,7 @@ import api from "@/api/axios";
 import { toast } from "sonner";
 import type { AxiosError } from "axios";
 import type { userAwareness } from "@/hooks/useCollabrationAwareness";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/shadcnUI/tooltip";
 
 type InvitedUser = {
     userId?: string;
@@ -91,6 +94,7 @@ export const ToolBarBottom = ({
     resourceType,
     resourceId,
     onlineUsers,
+    word,
 }: {
     editor: Editor | null;
     onSave: (visibility: "PUBLIC" | "PRIVATE") => void;
@@ -100,10 +104,12 @@ export const ToolBarBottom = ({
     resourceType: "blog" | "docs";
     resourceId: string;
     onlineUsers: userAwareness[];
+    word: number;
 }) => {
     const [openMd, setOpenMd] = useState(false);
     const [openColab, setOpenColab] = useState(false);
     const [linkCopied, setLinkCopied] = useState(false);
+    const [openUpload, setOpenUpload] = useState(false);
     const [isSubmittingInvite, setIsSubmittingInvite] = useState(false);
     const [inviteRole, setInviteRole] = useState<InviteRole>("can edit");
     const [isOwner, setIsOwner] = useState(false);
@@ -120,8 +126,8 @@ export const ToolBarBottom = ({
         role === "OWNER"
             ? "owner"
             : role === "EDITOR"
-              ? "can edit"
-              : "can view";
+                ? "can edit"
+                : "can view";
     const getErrorMessage = (error: unknown, fallback: string) =>
         (error as AxiosError<{ message?: string }>)?.response?.data?.message ||
         fallback;
@@ -298,337 +304,381 @@ export const ToolBarBottom = ({
     return (
         <>
             {editor && (
-                <Popup
-                    open={openMd}
-                    setOpen={setOpenMd}
-                    onClick={() => {
-                        setOpenMd(true);
-                    }}
-                    editor={editor}
-                />
-            )}
-            <AlertDialog>
-                <AlertDialogTrigger asChild>
-                    <Button size="icon" className="rounded-full">
-                        <Upload size={24} />
-                    </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                    <AlertDialogHeader>
-                        <AlertDialogTitle>Upload the blog</AlertDialogTitle>
-                        <AlertDialogDescription>
-                            Upload the current content as a blog post.
-                        </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <div className="grid gap-3">
-                        <div className="grid gap-2">
-                            <span className="text-sm font-medium">
-                                Visibility
-                            </span>
-                            <Select
-                                value={publishVisibility}
-                                onValueChange={(value) =>
-                                    setPublishVisibility(
-                                        value as "PUBLIC" | "PRIVATE",
-                                    )
-                                }
-                            >
-                                <SelectTrigger className="w-[160px]">
-                                    <SelectValue placeholder="Select visibility" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="PRIVATE">
-                                        Private
-                                    </SelectItem>
-                                    <SelectItem value="PUBLIC">
-                                        Public
-                                    </SelectItem>
-                                </SelectContent>
-                            </Select>
+                <>
+                    <motion.div
+                        initial={{ opacity: 0, y: 20, scale: 0.95 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        transition={{ delay: 0.8, duration: 0.35, ease: "easeOut" }}
+                        className="fixed bottom-10 right-6 z-50 flex gap-2 flex-col"
+                    >
+                        <div className="flex flex-col items-center rounded-2xl border border-border bg-background/70 backdrop-blur-2xl shadow-xl shadow-black/5 dark:shadow-black/20  p-1.5 w-full text-center text-xs text-foreground/50">
+                            {word ?? 0} characters
                         </div>
-                    </div>
-                    <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction
-                            onClick={() => onSave(publishVisibility)}
-                        >
-                            Upload
-                        </AlertDialogAction>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialog>
+                        <div className="flex items-center gap-1 rounded-2xl border border-border bg-background/70 backdrop-blur-2xl shadow-xl shadow-black/5 dark:shadow-black/20  p-1.5">
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <Popup
+                                        open={openMd}
+                                        setOpen={setOpenMd}
+                                        onClick={() => {
+                                            setOpenMd(true);
+                                        }}
+                                        editor={editor}
+                                    />
+                                </TooltipTrigger>
+                                <TooltipContent side="top">Copy as Markdown</TooltipContent>
+                            </Tooltip>
 
-            <Dialog open={openColab} onOpenChange={setOpenColab}>
-                <DialogTrigger asChild>
-                    <Button size="icon" className="rounded-full">
-                        <Users size={24} />
-                    </Button>
-                </DialogTrigger>
-                <DialogContent className="sm:max-w-[480px] pt-0 overflow-hidden">
-                    {/* Header with title and copy link */}
-                    <DialogHeader>
-                        <div className="flex items-center justify-between border-b py-3 mr-3">
-                            <DialogTitle className="text-base font-semibold">
-                                Share this file
-                            </DialogTitle>
-                            <Button
-                                variant="ghost"
-                                size="sm"
-                                className="h-7 text-xs text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-950 px-2"
-                                onClick={handleCopyLink}
-                            >
-                                {linkCopied ? (
-                                    <>
-                                        <Check className="w-3.5 h-3.5" />
-                                        Copied!
-                                    </>
-                                ) : (
-                                    <>
-                                        <Link2 className="w-3.5 h-3.5" />
-                                        Copy link
-                                    </>
+                            <div className="w-px h-5 bg-border mx-0.5" />
+
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="h-9 w-9 rounded-xl hover:bg-primary/10 transition-all duration-200"
+                                        onClick={() => setOpenColab(true)}
+
+                                    >
+                                        <Users className="w-4 h-4" />
+                                    </Button>
+                                </TooltipTrigger>
+                                <TooltipContent side="top">Share this file</TooltipContent>
+                            </Tooltip>
+                            <div className="w-px h-5 bg-border mx-0.5" />
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="h-9 w-9 rounded-xl hover:bg-primary/10 transition-all duration-200"
+                                        onClick={() => setOpenUpload(true)}
+
+                                    >
+                                        <Upload className="w-4 h-4" />
+                                    </Button>
+                                </TooltipTrigger>
+                                <TooltipContent side="top">Upload this file</TooltipContent>
+                            </Tooltip>
+                        </div>
+
+                    </motion.div>
+
+
+                    <AlertDialog open={openUpload} onOpenChange={setOpenUpload} >
+                        <AlertDialogContent>
+                            <AlertDialogHeader>
+                                <AlertDialogTitle>Upload the blog</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                    Upload the current content as a blog post.
+                                </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <div className="grid gap-3">
+                                <div className="grid gap-2">
+                                    <span className="text-sm font-medium">
+                                        Visibility
+                                    </span>
+                                    <Select
+                                        value={publishVisibility}
+                                        onValueChange={(value) =>
+                                            setPublishVisibility(
+                                                value as "PUBLIC" | "PRIVATE",
+                                            )
+                                        }
+                                    >
+                                        <SelectTrigger className="w-[160px]">
+                                            <SelectValue placeholder="Select visibility" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="PRIVATE">
+                                                Private
+                                            </SelectItem>
+                                            <SelectItem value="PUBLIC">
+                                                Public
+                                            </SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                            </div>
+                            <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction
+                                    onClick={() => onSave(publishVisibility)}
+                                >
+                                    Upload
+                                </AlertDialogAction>
+                            </AlertDialogFooter>
+                        </AlertDialogContent>
+                    </AlertDialog>
+
+                    <Dialog open={openColab} onOpenChange={setOpenColab}>
+                        <DialogContent className="sm:max-w-[480px] pt-0 overflow-hidden">
+                            {/* Header with title and copy link */}
+                            <DialogHeader>
+                                <div className="flex items-center justify-between border-b py-3 mr-3">
+                                    <DialogTitle className="text-base font-semibold">
+                                        Share this file
+                                    </DialogTitle>
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        className="h-7 text-xs text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-950 px-2"
+                                        onClick={handleCopyLink}
+                                    >
+                                        {linkCopied ? (
+                                            <>
+                                                <Check className="w-3.5 h-3.5" />
+                                                Copied!
+                                            </>
+                                        ) : (
+                                            <>
+                                                <Link2 className="w-3.5 h-3.5" />
+                                                Copy link
+                                            </>
+                                        )}
+                                    </Button>
+                                </div>
+                            </DialogHeader>
+
+                            <div className="space-y-3">
+                                {/* Invite Input */}
+                                <form
+                                    className="flex gap-2"
+                                    onSubmit={async (e) => {
+                                        e.preventDefault();
+                                        const form = e.currentTarget as HTMLFormElement;
+                                        const emailInput =
+                                            (
+                                                form.elements.namedItem(
+                                                    "email",
+                                                ) as HTMLInputElement | null
+                                            )?.value || "";
+                                        await inviteUsers(emailInput, inviteRole);
+                                        e.currentTarget.reset();
+                                    }}
+                                >
+                                    <Input
+                                        name="email"
+                                        type="email"
+                                        placeholder="Add comma separated emails to invite"
+                                        className="h-9 flex-1 text-sm bg-muted/50"
+                                    />
+                                    <Select
+                                        value={inviteRole}
+                                        onValueChange={(value) =>
+                                            setInviteRole(value as InviteRole)
+                                        }
+                                    >
+                                        <SelectTrigger className="h-9 w-28 text-xs">
+                                            <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem
+                                                value="can edit"
+                                                className="text-xs"
+                                            >
+                                                can edit
+                                            </SelectItem>
+                                            <SelectItem
+                                                value="can view"
+                                                className="text-xs"
+                                            >
+                                                can view
+                                            </SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                    <Button
+                                        type="submit"
+                                        variant="outline"
+                                        className="h-9 px-4 text-sm"
+                                        disabled={isSubmittingInvite || !isOwner}
+                                    >
+                                        {isSubmittingInvite ? "Inviting..." : "Invite"}
+                                    </Button>
+                                </form>
+                                {!isOwner && (
+                                    <p className="text-xs text-muted-foreground">
+                                        Only owner can share and manage access.
+                                    </p>
                                 )}
-                            </Button>
-                        </div>
-                    </DialogHeader>
 
-                    <div className="space-y-3">
-                        {/* Invite Input */}
-                        <form
-                            className="flex gap-2"
-                            onSubmit={async (e) => {
-                                e.preventDefault();
-                                const form = e.currentTarget as HTMLFormElement;
-                                const emailInput =
-                                    (
-                                        form.elements.namedItem(
-                                            "email",
-                                        ) as HTMLInputElement | null
-                                    )?.value || "";
-                                await inviteUsers(emailInput, inviteRole);
-                                e.currentTarget.reset();
-                            }}
-                        >
-                            <Input
-                                name="email"
-                                type="email"
-                                placeholder="Add comma separated emails to invite"
-                                className="h-9 flex-1 text-sm bg-muted/50"
-                            />
-                            <Select
-                                value={inviteRole}
-                                onValueChange={(value) =>
-                                    setInviteRole(value as InviteRole)
-                                }
-                            >
-                                <SelectTrigger className="h-9 w-28 text-xs">
-                                    <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem
-                                        value="can edit"
-                                        className="text-xs"
-                                    >
-                                        can edit
-                                    </SelectItem>
-                                    <SelectItem
-                                        value="can view"
-                                        className="text-xs"
-                                    >
-                                        can view
-                                    </SelectItem>
-                                </SelectContent>
-                            </Select>
-                            <Button
-                                type="submit"
-                                variant="outline"
-                                className="h-9 px-4 text-sm"
-                                disabled={isSubmittingInvite || !isOwner}
-                            >
-                                {isSubmittingInvite ? "Inviting..." : "Invite"}
-                            </Button>
-                        </form>
-                        {!isOwner && (
-                            <p className="text-xs text-muted-foreground">
-                                Only owner can share and manage access.
-                            </p>
-                        )}
+                                <div className="space-y-2 pt-3">
+                                    <h3 className="text-xs font-medium mb-2 text-foreground/80">
+                                        Online
+                                    </h3>
+                                    {onlineUsers.length === 0 ? (
+                                        <p className="text-xs text-muted-foreground">
+                                            No one is online
+                                        </p>
+                                    ) : (
+                                        onlineUsers.map((onlineUser) => {
+                                            const memberMeta = invitedUserById.get(
+                                                onlineUser.userId,
+                                            );
+                                            const displayName =
+                                                memberMeta?.name ||
+                                                memberMeta?.handle ||
+                                                onlineUser.name ||
+                                                "Unknown user";
+                                            const email =
+                                                memberMeta?.email ||
+                                                "email unavailable";
+                                            const coverUrl = memberMeta?.coverUrl;
 
-                        <div className="space-y-2 pt-3">
-                            <h3 className="text-xs font-medium mb-2 text-foreground/80">
-                                Online
-                            </h3>
-                            {onlineUsers.length === 0 ? (
-                                <p className="text-xs text-muted-foreground">
-                                    No one is online
-                                </p>
-                            ) : (
-                                onlineUsers.map((onlineUser) => {
-                                    const memberMeta = invitedUserById.get(
-                                        onlineUser.userId,
-                                    );
-                                    const displayName =
-                                        memberMeta?.name ||
-                                        memberMeta?.handle ||
-                                        onlineUser.name ||
-                                        "Unknown user";
-                                    const email =
-                                        memberMeta?.email ||
-                                        "email unavailable";
-                                    const coverUrl = memberMeta?.coverUrl;
+                                            return (
+                                                <div
+                                                    key={`online-${onlineUser.userId}`}
+                                                    className="flex items-center gap-2 py-1 -mx-1 px-1 hover:bg-accent/50 rounded"
+                                                >
+                                                    <div className="relative">
+                                                        <Avatar className="w-7 h-7">
+                                                            <AvatarImage
+                                                                src={
+                                                                    coverUrl ||
+                                                                    undefined
+                                                                }
+                                                                alt={displayName}
+                                                            />
+                                                            <AvatarFallback>
+                                                                {(displayName ||
+                                                                    "U")[0]?.toUpperCase()}
+                                                            </AvatarFallback>
+                                                        </Avatar>
+                                                        <span className="absolute -right-0.5 -bottom-0.5 block h-2.5 w-2.5 rounded-full bg-green-500 ring-2 ring-background" />
+                                                    </div>
+                                                    <div className="flex-1 min-w-0">
+                                                        <div className="text-[13px] leading-tight truncate">
+                                                            {displayName}
+                                                            <span className="text-[11px] text-muted-foreground">
+                                                                {" "}
+                                                                ({email})
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            );
+                                        })
+                                    )}
+                                </div>
 
-                                    return (
-                                        <div
-                                            key={`online-${onlineUser.userId}`}
-                                            className="flex items-center gap-2 py-1 -mx-1 px-1 hover:bg-accent/50 rounded"
-                                        >
-                                            <div className="relative">
+                                {/* Who has access */}
+                                <div className="space-y-2 pt-3">
+                                    <h3 className="text-xs font-medium mb-2 text-foreground/80">
+                                        Who has access
+                                    </h3>
+
+                                    {/* Members */}
+                                    {isLoadingMembers && (
+                                        <p className="text-xs text-muted-foreground">
+                                            Loading members…
+                                        </p>
+                                    )}
+                                    {invitedUsers.map(
+                                        ({
+                                            userId,
+                                            email,
+                                            role,
+                                            name,
+                                            handle,
+                                            coverUrl,
+                                        }) => (
+                                            <div
+                                                key={
+                                                    userId ||
+                                                    email ||
+                                                    handle ||
+                                                    name ||
+                                                    "member"
+                                                }
+                                                className="flex items-center gap-1 py-1 -mx-1 px-1 hover:bg-accent/50 rounded group"
+                                            >
                                                 <Avatar className="w-7 h-7">
                                                     <AvatarImage
-                                                        src={
-                                                            coverUrl ||
-                                                            undefined
-                                                        }
-                                                        alt={displayName}
+                                                        src={coverUrl || undefined}
+                                                        alt={name || "user"}
                                                     />
                                                     <AvatarFallback>
-                                                        {(displayName ||
+                                                        {(name ||
+                                                            email ||
                                                             "U")[0]?.toUpperCase()}
                                                     </AvatarFallback>
                                                 </Avatar>
-                                                <span className="absolute -right-0.5 -bottom-0.5 block h-2.5 w-2.5 rounded-full bg-green-500 ring-2 ring-background" />
-                                            </div>
-                                            <div className="flex-1 min-w-0">
-                                                <div className="text-[13px] leading-tight truncate">
-                                                    {displayName}
-                                                    <span className="text-[11px] text-muted-foreground">
-                                                        {" "}
-                                                        ({email})
-                                                    </span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    );
-                                })
-                            )}
-                        </div>
-
-                        {/* Who has access */}
-                        <div className="space-y-2 pt-3">
-                            <h3 className="text-xs font-medium mb-2 text-foreground/80">
-                                Who has access
-                            </h3>
-
-                            {/* Members */}
-                            {isLoadingMembers && (
-                                <p className="text-xs text-muted-foreground">
-                                    Loading members…
-                                </p>
-                            )}
-                            {invitedUsers.map(
-                                ({
-                                    userId,
-                                    email,
-                                    role,
-                                    name,
-                                    handle,
-                                    coverUrl,
-                                }) => (
-                                    <div
-                                        key={
-                                            userId ||
-                                            email ||
-                                            handle ||
-                                            name ||
-                                            "member"
-                                        }
-                                        className="flex items-center gap-1 py-1 -mx-1 px-1 hover:bg-accent/50 rounded group"
-                                    >
-                                        <Avatar className="w-7 h-7">
-                                            <AvatarImage
-                                                src={coverUrl || undefined}
-                                                alt={name || "user"}
-                                            />
-                                            <AvatarFallback>
-                                                {(name ||
-                                                    email ||
-                                                    "U")[0]?.toUpperCase()}
-                                            </AvatarFallback>
-                                        </Avatar>
-                                        <div className="flex-1 min-w-0">
-                                            <div className="text-[13px] leading-tight truncate">
-                                                {name ||
-                                                    handle ||
-                                                    "Unknown user"}
-                                                <span className="text-[11px] text-muted-foreground">
-                                                    {" "}
-                                                    (
-                                                    {email ||
-                                                        "email unavailable"}
-                                                    )
-                                                </span>
-                                            </div>
-                                        </div>
-                                        {role === "owner" ? (
-                                            <span className="text-[11px] text-muted-foreground px-2">
-                                                owner
-                                            </span>
-                                        ) : (
-                                            <>
-                                                {isOwner && email && (
-                                                    <Button
-                                                        size="sm"
-                                                        variant="link"
-                                                        className="h-7 w-fit p-0"
-                                                        onClick={() =>
-                                                            removeUserRole(
-                                                                email,
+                                                <div className="flex-1 min-w-0">
+                                                    <div className="text-[13px] leading-tight truncate">
+                                                        {name ||
+                                                            handle ||
+                                                            "Unknown user"}
+                                                        <span className="text-[11px] text-muted-foreground">
+                                                            {" "}
+                                                            (
+                                                            {email ||
+                                                                "email unavailable"}
                                                             )
-                                                        }
-                                                    >
-                                                        <X className="w-3.5 h-3.5" />
-                                                    </Button>
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                                {role === "owner" ? (
+                                                    <span className="text-[11px] text-muted-foreground px-2">
+                                                        owner
+                                                    </span>
+                                                ) : (
+                                                    <>
+                                                        {isOwner && email && (
+                                                            <Button
+                                                                size="sm"
+                                                                variant="link"
+                                                                className="h-7 w-fit p-0"
+                                                                onClick={() =>
+                                                                    removeUserRole(
+                                                                        email,
+                                                                    )
+                                                                }
+                                                            >
+                                                                <X className="w-3.5 h-3.5" />
+                                                            </Button>
+                                                        )}
+                                                        <Select
+                                                            value={role}
+                                                            disabled={!isOwner}
+                                                            onValueChange={(
+                                                                newRole,
+                                                            ) => {
+                                                                if (!email) return;
+                                                                void updateUserRole(
+                                                                    email,
+                                                                    newRole as InviteRole,
+                                                                );
+                                                            }}
+                                                        >
+                                                            <SelectTrigger className="text-xs gap-1 p-0 !h-fit border-0 text-muted-foreground !bg-transparent hover:bg-transparent focus:ring-0 shadow-none">
+                                                                <SelectValue />
+                                                            </SelectTrigger>
+                                                            <SelectContent>
+                                                                <SelectItem
+                                                                    value="can edit"
+                                                                    className="text-xs"
+                                                                >
+                                                                    can edit
+                                                                </SelectItem>
+                                                                <SelectItem
+                                                                    value="can view"
+                                                                    className="text-xs"
+                                                                >
+                                                                    can view
+                                                                </SelectItem>
+                                                            </SelectContent>
+                                                        </Select>
+                                                    </>
                                                 )}
-                                                <Select
-                                                    value={role}
-                                                    disabled={!isOwner}
-                                                    onValueChange={(
-                                                        newRole,
-                                                    ) => {
-                                                        if (!email) return;
-                                                        void updateUserRole(
-                                                            email,
-                                                            newRole as InviteRole,
-                                                        );
-                                                    }}
-                                                >
-                                                    <SelectTrigger className="text-xs gap-1 p-0 !h-fit border-0 text-muted-foreground !bg-transparent hover:bg-transparent focus:ring-0 shadow-none">
-                                                        <SelectValue />
-                                                    </SelectTrigger>
-                                                    <SelectContent>
-                                                        <SelectItem
-                                                            value="can edit"
-                                                            className="text-xs"
-                                                        >
-                                                            can edit
-                                                        </SelectItem>
-                                                        <SelectItem
-                                                            value="can view"
-                                                            className="text-xs"
-                                                        >
-                                                            can view
-                                                        </SelectItem>
-                                                    </SelectContent>
-                                                </Select>
-                                            </>
-                                        )}
-                                    </div>
-                                ),
-                            )}
-                        </div>
-                    </div>
-                </DialogContent>
-            </Dialog>
+                                            </div>
+                                        ),
+                                    )}
+                                </div>
+                            </div>
+                        </DialogContent>
+                    </Dialog>
+                </>
+            )}
         </>
     );
 };
