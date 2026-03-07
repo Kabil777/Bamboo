@@ -247,6 +247,9 @@ function DocsShelf({ docs }: { docs: DocsHomeCard[] }) {
                     Browse docs
                 </Link>
             </div>
+            <h2 className="mt-0.5 text-lg font-semibold tracking-tight text-foreground">
+                Continue learning
+            </h2>
             <div className="grid gap-3 md:grid-cols-1 xl:grid-cols-3">
                 {docs.map((doc) => (
                     <DocsCard
