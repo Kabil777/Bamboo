@@ -6,7 +6,16 @@ import { DocsHomeCard } from "@/types/docs/docs-base";
 import { UUID } from "@/types/blog/blog-base";
 import Image from "next/image";
 import { ProfileTag } from "@/components/atomsComponents";
+import type { Author } from "@/components/atomsComponents/profileTag";
 import { useState, useMemo } from "react";
+
+// Demo authors for multi-user display — replace with real data when available
+const DEMO_AUTHORS: Author[] = [
+    { id: "1", name: "Kowsik" },
+    { id: "2", name: "Thirisha" },
+    { id: "3", name: "Kabil" },
+    { id: "4", name: "Ravi" },
+];
 
 export const DocsCard = ({
     hoverOpen = true,
@@ -132,6 +141,8 @@ export const DocsCard = ({
                     contentType="docs"
                     createdAt={doc?.createdAt}
                     showMenu={false}
+                    variant="compact"
+                    authors={DEMO_AUTHORS}
                 />
 
                 {/*

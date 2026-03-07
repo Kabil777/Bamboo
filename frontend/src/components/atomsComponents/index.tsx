@@ -14,6 +14,7 @@ export { MoreAbout } from "./moreAbout";
 export { NavigationMenuBar } from "./navigationMenuBar";
 export { ProfileRoutes } from "./profileRoutes";
 export { ProfileTag } from "./profileTag";
+export type { Author } from "./profileTag";
 export { SideNavBarMenu } from "./SideNavBarMenu";
 export { SearchBox } from "./searchBox";
 export { SharePopover } from "./sharePopover";
