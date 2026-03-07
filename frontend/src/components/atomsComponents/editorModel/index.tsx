@@ -189,9 +189,9 @@ export const EditorModel = () => {
         if (!(description.length >= 10))
             errors.description =
                 "Description must be at least 10 characters long.";
-        if (!(description.length <= 300))
+        if (!(description.length <= 500))
             errors.description =
-                "Description must be less than 300 characters long.";
+                "Description must be less than 500 characters long.";
         if (tags.length === 0) {
             errors.tags = "At least one tag is required.";
         }

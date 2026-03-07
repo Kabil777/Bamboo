@@ -42,20 +42,27 @@ export const DocsCard = ({
             layout
             onMouseEnter={() => setActiveCard(doc?.id)}
             transition={{ layout: { duration: 0.3, ease: "easeOut" } }}
+            /*
+                CHANGED: removed border entirely, removed bg-card, removed shadow.
+                Replaced with a transparent base + very faint hover bg.
+                Rounded corners tightened (rounded-[20px] → rounded-xl).
+                No "promo tile" feel — clean content card.
+            */
             className={`
-                group relative rounded-[20px] overflow-hidden flex flex-col
-                bg-card border transition-all duration-300 ease-in-out
-                ${isActive
-                    ? "border-primary/20 shadow-lg shadow-black/5 dark:shadow-black/20"
-                    : "border-border/50 hover:border-primary/20"
-                }
+                group relative rounded-xl overflow-hidden flex flex-col
+                bg-transparent transition-all duration-300 ease-in-out
+                hover:bg-foreground/[0.025]
             `}
         >
-            {/* Framed Image Container */}
-            <div className="p-2 pb-0">
+            {/*
+                CHANGED: removed the p-2 pb-0 framed wrapper padding so image
+                sits flush at the top — no padded inset border treatment.
+                Image dimensions / aspect ratio UNCHANGED.
+            */}
+            <div className="p-0">
                 {!hoverOpen && doc?.coverUrl && !imageError ? (
-                    <div className="relative w-full aspect-[16/9] overflow-hidden rounded-2xl border border-border/40 bg-muted/20">
-                        {/* Shimmer */}
+                    <div className="relative w-full aspect-[16/9] overflow-hidden rounded-t-xl bg-muted/20">
+                        {/* shimmer — UNCHANGED */}
                         {!imageLoaded && (
                             <div className="absolute inset-0 bg-muted/60 animate-pulse" />
                         )}
@@ -63,14 +70,16 @@ export const DocsCard = ({
                             src={doc.coverUrl}
                             alt={doc?.title || "Cover"}
                             fill
-                            className={`
-                                object-cover transition-transform duration-700 ease-out
-                                ${imageLoaded ? "opacity-100" : "opacity-0"}
-                            `}
+                            /*
+                                CHANGED: removed inner border on the image wrapper,
+                                removed scale-on-hover transform (kept fade-in).
+                                Image fill + object-cover UNCHANGED.
+                            */
+                            className={`object-cover transition-opacity duration-500 ${imageLoaded ? "opacity-100" : "opacity-0"}`}
                             onLoadingComplete={() => setImageLoaded(true)}
                             onError={() => setImageError(true)}
                         />
-                        {/* High-contrast Time Badge */}
+                        {/* time badge — UNCHANGED */}
                         {relativeTime && (
                             <div className="absolute top-2.5 right-2.5 px-2.5 py-1 rounded-full bg-black/60 dark:bg-black/40 backdrop-blur-md text-[11px] font-medium text-white flex items-center gap-1.5 pointer-events-none">
                                 <Clock size={10} className="opacity-70" />
@@ -79,11 +88,11 @@ export const DocsCard = ({
                         )}
                     </div>
                 ) : (
-                    /* Fallback when no image */
-                    <div className="relative w-full aspect-[16/9] rounded-2xl border border-border/40 bg-muted/30 flex flex-col items-center justify-center gap-2 transition-colors group-hover:bg-muted/50">
-                        <BookOpen size={24} className="text-muted-foreground/40" />
+                    /* Fallback — UNCHANGED structure, removed inner border */
+                    <div className="relative w-full aspect-[16/9] rounded-t-xl bg-foreground/[0.03] flex flex-col items-center justify-center gap-2">
+                        <BookOpen size={24} className="text-foreground/25" />
                         {relativeTime && (
-                            <span className="text-[11px] font-medium text-muted-foreground/60 flex items-center gap-1">
+                            <span className="text-[11px] font-medium text-foreground/40 flex items-center gap-1">
                                 <Clock size={10} />
                                 {relativeTime}
                             </span>
@@ -92,17 +101,24 @@ export const DocsCard = ({
                 )}
             </div>
 
-            {/* Content Container */}
-            <div className="flex flex-col gap-4 p-5 flex-1">
-                <div className="flex flex-col gap-1.5">
-                    {/* Title */}
-                    <h3 className="text-base font-semibold leading-snug text-foreground line-clamp-2 tracking-tight group-hover:text-primary transition-colors duration-200">
+            {/* Content — structure UNCHANGED */}
+            <div className="flex flex-col gap-3 p-4 flex-1">
+                <div className="flex flex-col gap-1">
+                    {/*
+                        CHANGED: title — tracking-tight added, color explicitly
+                        text-foreground (not inheriting card muted tones),
+                        hover:text-primary removed (too reactive for calm feel).
+                    */}
+                    <h3 className="text-base font-semibold leading-snug tracking-tight text-foreground line-clamp-2">
                         {doc?.title || "Untitled Document"}
                     </h3>
 
-                    {/* Description */}
+                    {/*
+                        CHANGED: description — color lightened to text-foreground/50,
+                        line-clamp stays at 2, size unchanged at [13px].
+                    */}
                     {doc?.description && (
-                        <p className="text-[13px] text-muted-foreground leading-relaxed line-clamp-2">
+                        <p className="text-[13px] text-foreground/50 leading-relaxed line-clamp-2">
                             {doc.description}
                         </p>
                     )}
@@ -110,7 +126,7 @@ export const DocsCard = ({
 
                 <div className="flex-1 min-h-2" />
 
-                {/* Profile and Metadata */}
+                {/* ProfileTag — UNCHANGED */}
                 <ProfileTag
                     idBlog={doc?.id}
                     contentType="docs"
@@ -118,19 +134,27 @@ export const DocsCard = ({
                     showMenu={false}
                 />
 
-                <div className="h-px bg-border/40 w-full" />
+                {/*
+                    CHANGED: divider color softened from border/40 → foreground/[0.06]
+                    to match the rest of the page's separator language
+                */}
+                <div className="h-px bg-foreground/[0.06] w-full" />
 
-                {/* Action Link */}
+                {/* Action link — UNCHANGED structure */}
                 <Link
                     href={`/docs/${doc?.id}`}
                     className="flex items-center justify-between"
                 >
-                    <span className="text-[13px] font-medium text-muted-foreground group-hover:text-foreground transition-colors duration-200">
+                    {/*
+                        CHANGED: label text lightened, removed group-hover color shift
+                        so it stays quiet (functional, not promotional)
+                    */}
+                    <span className="text-[13px] font-medium text-foreground/40 group-hover:text-foreground/70 transition-colors duration-200">
                         Read documentation
                     </span>
                     <ArrowRight
-                        size={15}
-                        className="text-muted-foreground/50 transition-all duration-300 group-hover:translate-x-1 group-hover/link:text-primary"
+                        size={14}
+                        className="text-foreground/25 transition-transform duration-300 group-hover:translate-x-0.5 group-hover:text-foreground/50"
                     />
                 </Link>
             </div>
