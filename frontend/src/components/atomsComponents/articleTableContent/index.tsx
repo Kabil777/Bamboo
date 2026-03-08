@@ -49,28 +49,26 @@ function renderSidebarItems(items: TocItem[]) {
         asChild
         open={open}
         onOpenChange={setOpen}
-        className="group/collapsible"
+        className="group/collapsible min-w-0 w-full"
       >
-        <div >
-          <SidebarMenuItem className="!w-full">
-            <div className="flex items-center w-full ">
-              <SidebarMenuButton asChild className="hover:bg-transparent focus:!bg-transparent data-[active=true]:bg-transparent active:bg-transparent">
-                <span className="group !p-1 !gap-1" >
+        <div>
+          <SidebarMenuItem className="!w-full min-w-0">
+            <div className="flex items-center w-full min-w-0">
+              <SidebarMenuButton asChild className="hover:bg-transparent focus:!bg-transparent data-[active=true]:bg-transparent active:bg-transparent min-w-0 w-full">
+                <span className="group !p-1 !gap-1 flex items-center min-w-0 w-full">
                   <a
                     href={`#${item.id}`}
-                    className="font-medium !text-xs h-fit text-left group-hover:text-muted-foreground transition-colors"
-
+                    className="font-medium !text-xs h-fit text-left group-hover:text-muted-foreground transition-colors truncate min-w-0 flex-1"
+                    title={item.value}
                   >
-
                     {item.value}
-
                   </a>
                   {/* Chevron (just toggles) */}
                   {hasChildren && (
                     <CollapsibleTrigger asChild>
                       <button
                         type="button"
-                        className="p-0 m-0"
+                        className="p-0 m-0 flex-shrink-0"
                         aria-label={open ? "Collapse" : "Expand"}
                       >
                         <ChevronRight
@@ -110,7 +108,7 @@ function renderSidebarItems(items: TocItem[]) {
                     willChange: "height"
                   }}
                 >
-                  <SidebarMenuSub className="mr-0 pr-0">
+                  <SidebarMenuSub className="mr-0 pr-0 min-w-0 overflow-hidden">
                     {renderSidebarItems(item.items!)}
                   </SidebarMenuSub>
                 </motion.div>
@@ -126,8 +124,8 @@ export const ArticleTableContent = ({ toc }: { toc: TocItem[] }) => {
   const tocTree = buildTocTree(toc)
 
   return (
-    <div className="space-y-1">
-      <SidebarMenu>{renderSidebarItems(tocTree)}</SidebarMenu>
+    <div className="space-y-1 min-w-0 overflow-hidden">
+      <SidebarMenu className="min-w-0">{renderSidebarItems(tocTree)}</SidebarMenu>
     </div>
   )
 }

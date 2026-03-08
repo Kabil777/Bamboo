@@ -121,20 +121,28 @@ export default function BlogRenderPage() {
 		(state) => state.blogPageReducer.entities[id],
 	);
 
-	const handleCopyMarkdown = useCallback(() => {
+	const handleCopyMarkdown = useCallback(async () => {
 		if (!blog?.content) return;
-		navigator.clipboard.writeText(blog.content);
-		setCopied(true);
-		toast.success("Markdown copied to clipboard!");
-		setTimeout(() => setCopied(false), 2000);
+		try {
+			await navigator.clipboard.writeText(blog.content);
+			setCopied(true);
+			toast.success("Markdown copied to clipboard!");
+			setTimeout(() => setCopied(false), 2000);
+		} catch {
+			toast.error("Failed to copy to clipboard");
+		}
 	}, [blog?.content]);
 
-	const handleDialogCopy = useCallback(() => {
+	const handleDialogCopy = useCallback(async () => {
 		if (!blog?.content) return;
-		navigator.clipboard.writeText(blog.content);
-		setDialogCopied(true);
-		toast.success("Markdown copied to clipboard!");
-		setTimeout(() => setDialogCopied(false), 2000);
+		try {
+			await navigator.clipboard.writeText(blog.content);
+			setDialogCopied(true);
+			toast.success("Markdown copied to clipboard!");
+			setTimeout(() => setDialogCopied(false), 2000);
+		} catch {
+			toast.error("Failed to copy to clipboard");
+		}
 	}, [blog?.content]);
 
 	// ─── Loading ─────────────────────────────────────
@@ -249,10 +257,10 @@ export default function BlogRenderPage() {
 							<div className="relative overflow-hidden bg-muted rounded-2xl shadow-sm">
 								<Image
 									width={1200}
-									height={600}
+									height={400}
 									src={blog.coverUrl}
 									alt={title || "Blog cover"}
-									className="max-h-[600px]] max-w-[1200px] h-auto w-auto w-full object-cover"
+									className="max-h-[400px] max-w-[1200px] h-auto w-full object-cover"
 									loading="eager"
 									decoding="async"
 								/>
