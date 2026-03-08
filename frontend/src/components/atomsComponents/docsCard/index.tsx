@@ -59,8 +59,8 @@ export const DocsCard = ({
             */
             className={`
                 group relative rounded-xl overflow-hidden flex flex-col
-                bg-transparent transition-all duration-300 ease-in-out
-                hover:bg-foreground/[0.025]
+                transition-all duration-300 ease-in-out
+                hover:bg-foreground/[0.025] bg-card/20
             `}
         >
             {/*
@@ -90,7 +90,7 @@ export const DocsCard = ({
                         />
                         {/* time badge — UNCHANGED */}
                         {relativeTime && (
-                            <div className="absolute top-2.5 right-2.5 px-2.5 py-1 rounded-full bg-black/60 dark:bg-black/40 backdrop-blur-md text-[11px] font-medium text-white flex items-center gap-1.5 pointer-events-none">
+                            <div className="absolute top-2.5 right-2.5 px-2.5 py-1 rounded-full bg-foreground/90 dark:bg-foreground/10 backdrop-blur supports-[backdrop-filter]:bg-foreground/75 text-[11px] font-medium text-white flex items-center gap-1.5 pointer-events-none inset-shadow-sm inset-shadow-background/20 dark:inset-shadow-foreground/10 shadow-sm">
                                 <Clock size={10} className="opacity-70" />
                                 {relativeTime}
                             </div>

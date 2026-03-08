@@ -129,17 +129,15 @@ export const SharePopover = ({
 					>
 						<span className="sr-only">Copy</span>
 						<span
-							className={`absolute transition-all duration-300 ease-in-out ${
-								copied ? "opacity-0 scale-90" : "opacity-100 scale-110"
-							}`}
+							className={`absolute transition-all duration-300 ease-in-out ${copied ? "opacity-0 scale-90" : "opacity-100 scale-110"
+								}`}
 						>
 							<Copy />
 						</span>
 
 						<span
-							className={`transition-all duration-300 ease-in-out ${
-								copied ? "opacity-100 scale-100" : "opacity-0 scale-90"
-							}`}
+							className={`transition-all duration-300 ease-in-out ${copied ? "opacity-100 scale-100" : "opacity-0 scale-90"
+								}`}
 						>
 							<Check className="text-green-500" />
 						</span>

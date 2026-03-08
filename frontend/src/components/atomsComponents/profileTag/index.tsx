@@ -309,7 +309,7 @@ export const ProfileTag = ({
                                     }}
                                 >
                                     <Bookmark
-                                        className={`text-muted-foreground transition-colors ${bookmark && "fill-foreground text-foreground"}`}
+                                        className={`transition-colors ${bookmark ? 'fill-foreground text-foreground' : 'text-muted-foreground'}`}
                                         size={18}
                                     />
                                 </motion.span>

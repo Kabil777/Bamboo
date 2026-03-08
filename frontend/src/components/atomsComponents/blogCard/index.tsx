@@ -61,29 +61,12 @@ export const BlogCard: React.FC<BlogHomeCard & { isOwner?: boolean }> = ({
 
     return (
         <div key={id}>
-            {/*
-                Root — no border, no shadow, no background, no rounding.
-                Separation between posts comes from parent <hr> separators.
-                Vertical padding provides breathing room.
-            */}
             <Card className="shadow-none rounded-none border-none bg-transparent p-0 my-0">
                 <CardContent className="p-0 w-full grid grid-cols-5 items-start gap-3 md:gap-6 py-5">
                     {/* ── Left: text column ── */}
                     <div className="col-span-full sm:col-span-3 sm:row-start-1 flex flex-col gap-2">
                         {/* ProfileTag sits above title — author + domain line like Image 1 */}
-                        <ProfileTag
-                            idBlog={id}
-                            profileId={authorName ?? "user101"}
-                            createdAt={createdAt}
-                            authorName={authorName}
-                            visibility={visibility}
-                            status={status}
-                            isOwner={isOwner}
-                            showMenu={isOwner}
-                            onVisibilityUpdated={() => {
-                                if (isOwner) dispatch(getAllProfileBlog());
-                            }}
-                        />
+                        
 
                         {/* Title + description — clickable block */}
                         {isOwner && isDraft ? (
@@ -120,6 +103,19 @@ export const BlogCard: React.FC<BlogHomeCard & { isOwner?: boolean }> = ({
                                 </span>
                             ))}
                         </div>
+                        <ProfileTag
+                            idBlog={id}
+                            profileId={authorName ?? "user101"}
+                            createdAt={createdAt}
+                            authorName={authorName}
+                            visibility={visibility}
+                            status={status}
+                            isOwner={isOwner}
+                            showMenu={isOwner}
+                            onVisibilityUpdated={() => {
+                                if (isOwner) dispatch(getAllProfileBlog());
+                            }}
+                        />
                     </div>
 
                     {/* ── Right: thumbnail ── */}
