@@ -17,7 +17,7 @@ export default function Layout({
 	const params = useParams();
 	const username = params.username as string;
 	const { user } = useAppState((s) => s.userReducer);
-	const { error, profileLoading } = useAppState((s) => s.getProfileReducers);
+	const { profileError, profileLoading } = useAppState((s) => s.getProfileReducers);
 	const [selectedTab, setSelectedTab] = React.useState("all");
 
 	// Remove @ symbol if present
@@ -46,7 +46,7 @@ export default function Layout({
 	};
 
 	// Show error UI if profile not found
-	if (!profileLoading && error) {
+	if (!profileLoading && profileError) {
 		return (
 			<div className="flex flex-col items-center justify-center min-h-[60vh] space-y-4">
 				<UserX className="w-24 h-24 text-muted-foreground" />

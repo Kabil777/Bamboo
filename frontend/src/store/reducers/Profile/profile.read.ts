@@ -15,7 +15,9 @@ interface ProfileReducersState {
 	profileLoading: boolean;
 	blogLoading: boolean;
 	docsLoading: boolean;
-	error: string | null;
+	profileError: string | null;
+	blogError: string | null;
+	docsError: string | null;
 }
 
 const profileInitialState: ProfileReducersState = {
@@ -25,7 +27,9 @@ const profileInitialState: ProfileReducersState = {
 	profileLoading: false,
 	blogLoading: false,
 	docsLoading: false,
-	error: null,
+	profileError: null,
+	blogError: null,
+	docsError: null,
 };
 
 export const getProfileDetials = createAsyncThunk<Profile, void>(
@@ -128,12 +132,21 @@ export const getAllProfileDocsByHandle = createAsyncThunk<
 const getProfile = createSlice({
 	name: "getProfileReducers",
 	initialState: profileInitialState,
-	reducers: {},
+	reducers: {
+		resetProfileCollections: (state) => {
+			state.blogs = null;
+			state.docs = null;
+			state.blogError = null;
+			state.docsError = null;
+			state.blogLoading = false;
+			state.docsLoading = false;
+		},
+	},
 	extraReducers: (builder) => {
 		builder
 			.addCase(getProfileDetials.pending, (state) => {
 				state.profileLoading = true;
-				state.error = null;
+				state.profileError = null;
 			})
 			.addCase(getProfileDetials.fulfilled, (state, action) => {
 				state.profileLoading = false;
@@ -141,7 +154,7 @@ const getProfile = createSlice({
 			})
 			.addCase(getProfileDetials.rejected, (state, action) => {
 				state.profileLoading = false;
-				state.error = action.payload as string;
+				state.profileError = action.payload as string;
 			});
 
 		// ======================
@@ -150,7 +163,7 @@ const getProfile = createSlice({
 		builder
 			.addCase(getUserProfileByHandle.pending, (state) => {
 				state.profileLoading = true;
-				state.error = null;
+				state.profileError = null;
 				state.profileData = null; // Clear old profile data
 			})
 			.addCase(getUserProfileByHandle.fulfilled, (state, action) => {
@@ -160,7 +173,7 @@ const getProfile = createSlice({
 			.addCase(getUserProfileByHandle.rejected, (state, action) => {
 				state.profileLoading = false;
 				state.profileData = null; // Clear profile data on error
-				state.error = action.payload as string;
+				state.profileError = action.payload as string;
 			});
 
 		// ======================
@@ -169,7 +182,7 @@ const getProfile = createSlice({
 		builder
 			.addCase(getAllProfileBlog.pending, (state) => {
 				state.blogLoading = true;
-				state.error = null;
+				state.blogError = null;
 			})
 			.addCase(getAllProfileBlog.fulfilled, (state, action) => {
 				state.blogLoading = false;
@@ -177,14 +190,14 @@ const getProfile = createSlice({
 			})
 			.addCase(getAllProfileBlog.rejected, (state, action) => {
 				state.blogLoading = false;
-				state.error = action.payload as string;
+				state.blogError = action.payload as string;
 				state.blogs = { blogPagesDto: [], hasNext: false, cursor: null };
 			});
 
 		builder
 			.addCase(getAllProfileBlogByHandle.pending, (state) => {
 				state.blogLoading = true;
-				state.error = null;
+				state.blogError = null;
 			})
 			.addCase(getAllProfileBlogByHandle.fulfilled, (state, action) => {
 				state.blogLoading = false;
@@ -192,7 +205,7 @@ const getProfile = createSlice({
 			})
 			.addCase(getAllProfileBlogByHandle.rejected, (state, action) => {
 				state.blogLoading = false;
-				state.error = action.payload as string;
+				state.blogError = action.payload as string;
 				state.blogs = { blogPagesDto: [], hasNext: false, cursor: null };
 			});
 
@@ -202,7 +215,7 @@ const getProfile = createSlice({
 		builder
 			.addCase(getAllProfileDocs.pending, (state) => {
 				state.docsLoading = true;
-				state.error = null;
+				state.docsError = null;
 			})
 			.addCase(getAllProfileDocs.fulfilled, (state, action) => {
 				state.docsLoading = false;
@@ -210,14 +223,14 @@ const getProfile = createSlice({
 			})
 			.addCase(getAllProfileDocs.rejected, (state, action) => {
 				state.docsLoading = false;
-				state.error = action.payload as string;
+				state.docsError = action.payload as string;
 				state.docs = { docs: [], hasNext: false, cursor: null };
 			});
 
 		builder
 			.addCase(getAllProfileDocsByHandle.pending, (state) => {
 				state.docsLoading = true;
-				state.error = null;
+				state.docsError = null;
 			})
 			.addCase(getAllProfileDocsByHandle.fulfilled, (state, action) => {
 				state.docsLoading = false;
@@ -225,10 +238,11 @@ const getProfile = createSlice({
 			})
 			.addCase(getAllProfileDocsByHandle.rejected, (state, action) => {
 				state.docsLoading = false;
-				state.error = action.payload as string;
+				state.docsError = action.payload as string;
 				state.docs = { docs: [], hasNext: false, cursor: null };
 			});
 	},
 });
 
+export const { resetProfileCollections } = getProfile.actions;
 export default getProfile.reducer;

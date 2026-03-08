@@ -9,6 +9,10 @@ interface DocsHomeCard extends DocsBase {
     coverUrl: string;
     description: string;
     createdAt: string;
+    authorName?: string;
+    authorHandle?: string;
+    visibility?: "PUBLIC" | "PRIVATE";
+    status?: "PUBLISHED" | "ARCHIVED" | "DRAFT";
 }
 
 interface DocsTreeNode {

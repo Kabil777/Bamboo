@@ -1,21 +1,11 @@
 "use client";
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { ArrowRight, BookOpen, Clock } from "lucide-react";
+import { ArrowRight, BookOpen, Clock, PenLine } from "lucide-react";
 import { DocsHomeCard } from "@/types/docs/docs-base";
 import { UUID } from "@/types/blog/blog-base";
 import Image from "next/image";
-import { ProfileTag } from "@/components/atomsComponents";
-import type { Author } from "@/components/atomsComponents/profileTag";
 import { useState, useMemo } from "react";
-
-// Demo authors for multi-user display — replace with real data when available
-const DEMO_AUTHORS: Author[] = [
-    { id: "1", name: "Kowsik" },
-    { id: "2", name: "Thirisha" },
-    { id: "3", name: "Kabil" },
-    { id: "4", name: "Ravi" },
-];
 
 export const DocsCard = ({
     hoverOpen = true,
@@ -135,15 +125,14 @@ export const DocsCard = ({
 
                 <div className="flex-1 min-h-2" />
 
-                {/* ProfileTag — UNCHANGED */}
-                <ProfileTag
-                    idBlog={doc?.id}
-                    contentType="docs"
-                    createdAt={doc?.createdAt}
-                    showMenu={false}
-                    variant="compact"
-                    authors={DEMO_AUTHORS}
-                />
+                <div className="flex items-center gap-2 text-xs text-muted-foreground font-medium">
+                    <span className="inline-flex items-center gap-1.5">
+                        <PenLine size={12} className="opacity-70" />
+                        {doc?.authorName || "Unknown writer"}
+                    </span>
+                    <span className="w-1 h-1 rounded-full bg-muted-foreground/40" />
+                    <span>~ {relativeTime || "just now"}</span>
+                </div>
 
                 {/*
                     CHANGED: divider color softened from border/40 → foreground/[0.06]

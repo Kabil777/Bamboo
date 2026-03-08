@@ -81,7 +81,8 @@ export default function Profile() {
                                     description={item.description}
                                     coverUrl={item.coverUrl}
                                     authorId={item.authorId}
-                                    authorName={item.authorId}
+                                    authorName={item.handle || user?.handle || item.authorId}
+                                    authorHandle={item.handle || user?.handle || item.authorId}
                                     id={item.id}
                                     tags={item.tags}
                                     createdAt={item.createdAt}

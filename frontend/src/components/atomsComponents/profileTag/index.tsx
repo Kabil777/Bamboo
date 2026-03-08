@@ -40,6 +40,7 @@ import { Button } from "@/components/shadcnUI/button";
 export type Author = {
     id: string;
     name: string;
+    handle?: string;
     avatarUrl?: string;
 };
 
@@ -121,6 +122,7 @@ export const ProfileTag = ({
     contentType = "blog",
     createdAt,
     authorName,
+    authorAvatarUrl,
     authors,
     variant = "default",
     visibility,
@@ -135,6 +137,7 @@ export const ProfileTag = ({
     contentType?: "blog" | "docs";
     createdAt?: string | number | Date;
     authorName?: string | null;
+    authorAvatarUrl?: string | null;
     authors?: Author[];
     variant?: "default" | "compact" | "view";
     visibility?: "PUBLIC" | "PRIVATE";
@@ -245,7 +248,8 @@ export const ProfileTag = ({
                         <Avatar className="w-11 h-11">
                             <AvatarImage
                                 src={
-                                    `https://api.dicebear.com/7.x/initials/svg?seed=K`
+                                    authorAvatarUrl ||
+                                    `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(authorName || profileId || "U")}`
                                 }
                             />
                             <AvatarFallback className="text-sm font-semibold bg-muted text-muted-foreground">

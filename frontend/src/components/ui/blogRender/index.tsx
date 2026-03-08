@@ -268,15 +268,16 @@ export default function BlogRenderPage() {
 							{title || "Untitled Article"}
 						</motion.h1>
 						{/* ── Meta Row: Tags · Reading Time · Date ── */}
-						<ProfileTag
-							idBlog={id}
-							profileId={blog?.authorName ? blog?.authorName : "user101"}
-							authorName={blog?.authorName}
-							createdAt={blog?.createdAt}
-							variant="view"
-							contentType="blog"
-							authors={blog?.collaborators}
-						/>
+							<ProfileTag
+								idBlog={id}
+								profileId={blog?.authorHandle || blog?.handle}
+								authorName={blog?.authorName}
+								authorAvatarUrl={blog?.authorAvatarUrl}
+								createdAt={blog?.createdAt}
+								variant="view"
+								contentType="blog"
+								authors={blog?.collaborators}
+							/>
 
 						<motion.div
 							className="flex flex-wrap items-center gap-x-3 gap-y-2 mb-5"

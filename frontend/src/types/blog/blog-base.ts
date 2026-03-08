@@ -12,9 +12,12 @@ interface BlogHomeCard extends BlogBase {
     createdAt: string;
     tags: string[];
     authorName: string | null;
+    authorHandle?: string | null;
+    authorAvatarUrl?: string | null;
+    handle?: string | null;
     visibility?: "PUBLIC" | "PRIVATE";
     status?: "PUBLISHED" | "ARCHIVED" | "DRAFT";
-    collaborators?: { id: string; name: string; avatarUrl?: string }[];
+    collaborators?: { id: string; name: string; handle?: string; avatarUrl?: string }[];
 }
 
 interface BlogPage extends BlogHomeCard {

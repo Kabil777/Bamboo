@@ -17,6 +17,7 @@ import { Skeleton } from "@/components/shadcnUI/skeleton";
 import { useAppDispatch, useAppState } from "@/hooks/ReduxHooks";
 import { getCoverBlog } from "@/store/reducers/BlogCoverReducer";
 import { DocsCoverRtk } from "@/store/reducers/DocsCoverReducer";
+import { getFeaturedBlogs } from "@/store/reducers/FeaturedBlogReducer";
 import type { RootState } from "@/store/store";
 import type { BlogHomeCard } from "@/types/blog/blog-base";
 import type { DocsHomeCard } from "@/types/docs/docs-base";
@@ -58,6 +59,7 @@ function formatDateLabel(createdAt: string) {
         day: "numeric",
     }).format(date);
 }
+
 function pickCuratedDocs(docs: DocsHomeCard[], size: number) {
     return docs.slice(0, Math.min(size, docs.length));
 }
@@ -159,7 +161,7 @@ function FeaturedCarousel({
                                         Written by
                                     </p>
                                     <p className="mt-0.5 text-sm font-semibold text-foreground">
-                                        {story.authorName || "Bamboo Editorial"}
+                                        {story.authorName?.trim() || "Bamboo Editorial"}
                                     </p>
                                 </div>
                                 <Link
@@ -268,6 +270,9 @@ function DocsShelf({ docs }: { docs: DocsHomeCard[] }) {
 // ─── Page ─────────────────────────────────────────────────────────────────────
 export default function Home() {
     const { blogLoading, data } = useSelector((s: RootState) => s.blogReducer);
+    const { loading: featuredLoading, data: featuredStories } = useAppState(
+        (s) => s.featuredBlogReducer,
+    );
     const { isDocsLoading, docs } = useAppState((s) => s.docsHomeReducer);
     const dispatch = useAppDispatch();
 
@@ -277,18 +282,25 @@ export default function Home() {
     }, [dispatch, data]);
 
     useEffect(() => {
+        if (!featuredStories || featuredStories.length === 0) {
+            dispatch(getFeaturedBlogs());
+        }
+    }, [dispatch, featuredStories]);
+
+    useEffect(() => {
         if (!docs || docs.length === 0) dispatch(DocsCoverRtk());
     }, [dispatch, docs]);
 
     const blogList = data ?? [];
     const docsList = docs ?? [];
 
-    // carousel: first 3 posts
-    const carouselStories = blogList.slice(0, 3);
-    // feed: posts 3–9
-    const recentStories = blogList.slice(3, 9);
+    const carouselStories = featuredStories ?? [];
+    const featuredIds = new Set(carouselStories.map((story) => story.id));
+    const nonFeaturedStories = blogList.filter((story) => !featuredIds.has(story.id));
+    // feed: next posts after featured selection
+    const recentStories = nonFeaturedStories.slice(0, 6);
     // What to read next: posts 9–13 — genuinely beyond what's already visible
-    const whatToReadNext = blogList.slice(0, 3);
+    const whatToReadNext = nonFeaturedStories.slice(6, 9);
     // docs shelf in main: first 4
     const curatedDocs = pickCuratedDocs(docsList, 4);
     // recently updated docs in sidebar: next 5 (skip the 4 already in shelf)
@@ -309,7 +321,7 @@ export default function Home() {
 
                 <div className="space-y-0 pt-6">
                     {/* ROW 1 — full-width carousel */}
-                    {blogLoading ? (
+                    {featuredLoading ? (
                         <Skeleton className="h-[380px] w-full rounded-[28px]" />
                     ) : carouselStories.length > 0 ? (
                         <FeaturedCarousel stories={carouselStories} />
@@ -361,6 +373,8 @@ export default function Home() {
                                                             )}
                                                             <BlogCard
                                                                 {...blog}
+                                                                authorName={blog.authorName ?? blog.handle ?? null}
+                                                                authorHandle={blog.authorHandle ?? blog.handle ?? null}
                                                                 isOwner={false}
                                                             />
                                                         </div>

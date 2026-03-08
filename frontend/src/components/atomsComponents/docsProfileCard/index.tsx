@@ -74,7 +74,7 @@ export const DocsProfileCard: React.FC<ProfileDoc & { isOwner?: boolean }> = ({
                         )}
                         <ProfileTag
                             idBlog={id}
-                            profileId={authorName ? authorName : "user101"}
+                            profileId={undefined}
                             contentType="docs"
                             createdAt={createdAt}
                             visibility={visibility}

@@ -24,8 +24,11 @@ export const BlogCard: React.FC<BlogHomeCard & { isOwner?: boolean }> = ({
     createdAt,
     tags,
     authorName,
+    authorHandle,
+    authorAvatarUrl,
     visibility,
     status,
+    collaborators,
     isOwner = false,
 }) => {
     const [isLoaded, setIsLoaded] = useState(false);
@@ -73,9 +76,11 @@ export const BlogCard: React.FC<BlogHomeCard & { isOwner?: boolean }> = ({
                         {/* ProfileTag sits above title — author + domain line like Image 1 */}
                         <ProfileTag
                             idBlog={id}
-                            profileId={authorName ?? "user101"}
+                            profileId={authorHandle ?? undefined}
                             createdAt={createdAt}
                             authorName={authorName}
+                            authorAvatarUrl={authorAvatarUrl}
+                            authors={collaborators}
                             visibility={visibility}
                             status={status}
                             isOwner={isOwner}

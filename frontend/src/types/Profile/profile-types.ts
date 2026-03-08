@@ -31,6 +31,7 @@ type ProfileBlog = {
     coverUrl: string;
     createdAt: string;
     authorId: string;
+    handle?: string;
     visibility?: "PUBLIC" | "PRIVATE";
     status?: "PUBLISHED" | "ARCHIVED" | "DRAFT";
 };

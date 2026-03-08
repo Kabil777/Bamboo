@@ -16,6 +16,7 @@ import {
     getAllProfileBlogByHandle,
     getAllProfileDocs,
     getAllProfileDocsByHandle,
+    resetProfileCollections,
 } from "@/store/reducers/Profile/profile.read";
 import { BlogCardSkeleton } from "@/components/atomsComponents/skleton/blogCardSkleton";
 
@@ -80,30 +81,30 @@ export default function UserProfile() {
     }, [docs, isOwnProfile]);
     
     useEffect(() => {
-        if ((selectedTab === "posts" || selectedTab === "all") && !blogLoading && !blogs) {
+        dispatch(resetProfileCollections());
+    }, [dispatch, handle, isOwnProfile]);
+
+    useEffect(() => {
+        if (!handle) {
+            return;
+        }
+
+        if (selectedTab === "posts" || selectedTab === "all") {
             if (isOwnProfile) {
                 dispatch(getAllProfileBlog());
             } else {
                 dispatch(getAllProfileBlogByHandle(handle));
             }
         }
-        if ((selectedTab === "docs" || selectedTab === "all") && !docsLoading && !docs) {
+
+        if (selectedTab === "docs" || selectedTab === "all") {
             if (isOwnProfile) {
                 dispatch(getAllProfileDocs());
             } else {
                 dispatch(getAllProfileDocsByHandle(handle));
             }
         }
-    }, [
-        blogs,
-        dispatch,
-        blogLoading,
-        docsLoading,
-        docs,
-        handle,
-        selectedTab,
-        isOwnProfile,
-    ]);
+    }, [dispatch, handle, selectedTab, isOwnProfile]);
 
     return (
         <div className="container grid grid-cols-4 transition-all duration-200 ease-linear gap-4 md:gap-6 relative">
@@ -119,7 +120,8 @@ export default function UserProfile() {
                                     description={item.description}
                                     coverUrl={item.coverUrl}
                                     authorId={item.authorId}
-                                    authorName={item.authorId}
+                                    authorName={item.handle ?? item.authorId}
+                                    authorHandle={item.handle}
                                     id={item.id}
                                     tags={item.tags}
                                     createdAt={item.createdAt}
