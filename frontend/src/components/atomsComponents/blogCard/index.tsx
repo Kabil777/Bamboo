@@ -20,12 +20,9 @@ export const BlogCard: React.FC<BlogHomeCard & { isOwner?: boolean }> = ({
     title,
     description,
     coverUrl,
-    authorId,
+    author,
     createdAt,
     tags,
-    authorName,
-    authorHandle,
-    authorAvatarUrl,
     visibility,
     status,
     collaborators,
@@ -66,26 +63,7 @@ export const BlogCard: React.FC<BlogHomeCard & { isOwner?: boolean }> = ({
         <div key={id}>
             <Card className="shadow-none rounded-none border-none bg-transparent p-0 my-0">
                 <CardContent className="p-0 w-full grid grid-cols-5 items-start gap-3 md:gap-6 py-5">
-                    {/* ── Left: text column ── */}
                     <div className="col-span-full sm:col-span-3 sm:row-start-1 flex flex-col gap-2">
-                        {/* ProfileTag sits above title — author + domain line like Image 1 */}
-                        <ProfileTag
-                            idBlog={id}
-                            profileId={authorHandle ?? undefined}
-                            createdAt={createdAt}
-                            authorName={authorName}
-                            authorAvatarUrl={authorAvatarUrl}
-                            authors={collaborators}
-                            visibility={visibility}
-                            status={status}
-                            isOwner={isOwner}
-                            showMenu={isOwner}
-                            onVisibilityUpdated={() => {
-                                if (isOwner) dispatch(getAllProfileBlog());
-                            }}
-                        />
-
-                        {/* Title + description — clickable block */}
                         {isOwner && isDraft ? (
                             <div
                                 role="button"
@@ -122,9 +100,10 @@ export const BlogCard: React.FC<BlogHomeCard & { isOwner?: boolean }> = ({
                         </div>
                         <ProfileTag
                             idBlog={id}
-                            profileId={authorName ?? "user101"}
+                            profileId={author?.handle}
                             createdAt={createdAt}
-                            authorName={authorName}
+                            authorName={author?.name}
+                            authorAvatarUrl={author?.avatarUrl}
                             visibility={visibility}
                             status={status}
                             isOwner={isOwner}

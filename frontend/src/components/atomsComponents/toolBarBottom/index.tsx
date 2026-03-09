@@ -454,7 +454,7 @@ export const ToolBarBottom = ({
                                                 ) as HTMLInputElement | null
                                             )?.value || "";
                                         await inviteUsers(emailInput, inviteRole);
-                                        e.currentTarget.reset();
+                                        form.reset();
                                     }}
                                 >
                                     <Input
@@ -523,7 +523,9 @@ export const ToolBarBottom = ({
                                             const email =
                                                 memberMeta?.email ||
                                                 "email unavailable";
-                                            const coverUrl = memberMeta?.coverUrl;
+                                            const coverUrl =
+                                                memberMeta?.coverUrl ||
+                                                onlineUser.avatarUrl;
 
                                             return (
                                                 <div

@@ -36,7 +36,7 @@ export default function Editor({
 	resourceId,
 }: {
 	idContent: string;
-	save: (visibility: "PUBLIC" | "PRIVATE") => void;
+	save: (visibility: "PUBLIC" | "PRIVATE") => void | Promise<void>;
 	resourceType: "blog" | "docs";
 	resourceId: string;
 }) {
@@ -81,24 +81,55 @@ export default function Editor({
 	const [invitedUsers, setInvitedUsers] = useState<InvitedUser[]>([]);
 	const [word, setWord] = useState(0);
 	const [synced, setSynced] = useState(false);
+	const lastSaveStatusRef = useRef<string | null>(null);
+	const pendingSaveRequestRef = useRef<number | null>(null);
+	const lastHandledPersistedAtRef = useRef<number | null>(null);
 
 	useEffect(() => {
 		if (!provider) return;
 
 		const meta = provider.document.getMap("meta");
+		lastSaveStatusRef.current =
+			typeof meta.get("saveStatus") === "string"
+				? String(meta.get("saveStatus"))
+				: null;
 
 		const observer = () => {
-			const status = meta.get("saveStatus");
-			if (status === "SAVED") {
+			const nextStatusRaw = meta.get("saveStatus");
+			const nextStatus =
+				typeof nextStatusRaw === "string" ? nextStatusRaw : null;
+			const previousStatus = lastSaveStatusRef.current;
+			lastSaveStatusRef.current = nextStatus;
+			const persistedAtRaw = meta.get("lastPersistedAt");
+			const persistedAt =
+				typeof persistedAtRaw === "number" ? persistedAtRaw : null;
+
+			if (nextStatus === previousStatus) {
+				return;
+			}
+
+			if (
+				nextStatus === "SAVED" &&
+				pendingSaveRequestRef.current != null &&
+				persistedAt != null &&
+				persistedAt >= pendingSaveRequestRef.current &&
+				persistedAt !== lastHandledPersistedAtRef.current
+			) {
+				lastHandledPersistedAtRef.current = persistedAt;
+				pendingSaveRequestRef.current = null;
 				toast.success("Saved successfully");
 			}
-			if (status === "FAILED") {
+			if (nextStatus === "FAILED") {
+				pendingSaveRequestRef.current = null;
 				toast.error("Save failed. Try again.");
 			}
 		};
 		meta.observe(observer);
 		return () => {
 			meta.unobserve(observer);
+			lastSaveStatusRef.current = null;
+			pendingSaveRequestRef.current = null;
+			lastHandledPersistedAtRef.current = null;
 		};
 	}, [provider]);
 
@@ -206,16 +237,18 @@ export default function Editor({
 
 	const onSave = (visibility: "PUBLIC" | "PRIVATE") => {
 		if (!editor) return;
-		save(visibility);
 		if (!provider) {
 			toast.warning("Service unavailable");
 			return;
 		}
 		const yDoc = provider.document;
 		const meta = yDoc.getMap("meta");
-		meta.set("saveRequestedAt", Date.now());
+		const saveRequestedAt = Date.now();
+		pendingSaveRequestRef.current = saveRequestedAt;
+		meta.set("saveRequestedAt", saveRequestedAt);
 		meta.set("publishVisibility", visibility);
 		meta.set("publishStatus", "PUBLISHED");
+		void save(visibility);
 	};
 
 	return (

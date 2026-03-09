@@ -7,6 +7,28 @@ import {
 	Profile,
 } from "@/types/Profile/profile-types";
 
+function getApiErrorMessage(
+	e: any,
+	fallback: string,
+	options?: { suppress404Toast?: boolean },
+) {
+	const status = e?.response?.status;
+	const message =
+		e?.response?.data?.message ||
+		e?.response?.data?.error ||
+		e?.message ||
+		fallback;
+
+	if (!(options?.suppress404Toast && status === 404)) {
+		toast.error(message);
+	}
+
+	return {
+		status,
+		message,
+	};
+}
+
 interface ProfileReducersState {
 	profileData: Profile | null;
 	blogs: AllProfileBlog | null;
@@ -38,13 +60,13 @@ export const getProfileDetials = createAsyncThunk<Profile, void>(
 		const URL = `${process.env.NEXT_PUBLIC_API_SERVER_URL}${process.env.NEXT_PUBLIC_API_VERSION}/user/profile/me`;
 		try {
 			const response = await api.get<Profile>(URL);
-			console.log(response.data);
 			return response.data;
 		} catch (e: any) {
-			toast.error(
-				e?.response?.data?.message || "Failed to fetch user profile details",
+			const { message } = getApiErrorMessage(
+				e,
+				"Failed to fetch user profile details",
 			);
-			return rejectWithValue("Failed to fetch user profile details");
+			return rejectWithValue(message);
 		}
 	},
 );
@@ -55,19 +77,15 @@ export const getUserProfileByHandle = createAsyncThunk<Profile, string>(
 		const URL = `${process.env.NEXT_PUBLIC_API_SERVER_URL}${process.env.NEXT_PUBLIC_API_VERSION}/user/profile/${handle}`;
 		try {
 			const response = await api.get<Profile>(URL);
-			console.log(response.data);
 			return response.data;
 		} catch (e: any) {
-			// Don't show toast for 404 - let the layout handle it
-			if (e?.response?.status !== 404) {
-				toast.error(
-					e?.response?.data?.message || "Failed to fetch user profile details",
-				);
-			}
+			const { status, message } = getApiErrorMessage(
+				e,
+				"Failed to fetch user profile details",
+				{ suppress404Toast: true },
+			);
 			return rejectWithValue(
-				e?.response?.status === 404
-					? "User not found"
-					: "Failed to fetch user profile details",
+				status === 404 ? "User not found" : message,
 			);
 		}
 	},
@@ -81,8 +99,11 @@ export const getAllProfileBlog = createAsyncThunk<AllProfileBlog, void>(
 			const response = await api.get<AllProfileBlog>(URL);
 			return response.data;
 		} catch (e: any) {
-			toast.error(e.message.status || "Failed to fetch user profile details");
-			return rejectWithValue("Failed to fetch user profile details");
+			const { message } = getApiErrorMessage(
+				e,
+				"Failed to fetch user profile blogs",
+			);
+			return rejectWithValue(message);
 		}
 	},
 );
@@ -96,8 +117,11 @@ export const getAllProfileBlogByHandle = createAsyncThunk<
 		const response = await api.get<AllProfileBlog>(URL);
 		return response.data;
 	} catch (e: any) {
-		toast.error(e.message.status || "Failed to fetch user profile details");
-		return rejectWithValue("Failed to fetch user profile details");
+		const { message } = getApiErrorMessage(
+			e,
+			"Failed to fetch user profile blogs",
+		);
+		return rejectWithValue(message);
 	}
 });
 
@@ -109,8 +133,11 @@ export const getAllProfileDocs = createAsyncThunk<AllProfileDocs, void>(
 			const response = await api.get<AllProfileDocs>(URL);
 			return response.data;
 		} catch (e: any) {
-			toast.error(e.message.status || "Failed to fetch user docs");
-			return rejectWithValue("Failed to fetch user docs");
+			const { message } = getApiErrorMessage(
+				e,
+				"Failed to fetch user docs",
+			);
+			return rejectWithValue(message);
 		}
 	},
 );
@@ -124,8 +151,11 @@ export const getAllProfileDocsByHandle = createAsyncThunk<
 		const response = await api.get<AllProfileDocs>(URL);
 		return response.data;
 	} catch (e: any) {
-		toast.error(e.message.status || "Failed to fetch user docs");
-		return rejectWithValue("Failed to fetch user docs");
+		const { message } = getApiErrorMessage(
+			e,
+			"Failed to fetch user docs",
+		);
+		return rejectWithValue(message);
 	}
 });
 
@@ -133,6 +163,11 @@ const getProfile = createSlice({
 	name: "getProfileReducers",
 	initialState: profileInitialState,
 	reducers: {
+		resetProfileView: (state) => {
+			state.profileData = null;
+			state.profileError = null;
+			state.profileLoading = false;
+		},
 		resetProfileCollections: (state) => {
 			state.blogs = null;
 			state.docs = null;
@@ -191,7 +226,7 @@ const getProfile = createSlice({
 			.addCase(getAllProfileBlog.rejected, (state, action) => {
 				state.blogLoading = false;
 				state.blogError = action.payload as string;
-				state.blogs = { blogPagesDto: [], hasNext: false, cursor: null };
+				state.blogs = { items: [], hasNext: false, cursor: null };
 			});
 
 		builder
@@ -206,7 +241,7 @@ const getProfile = createSlice({
 			.addCase(getAllProfileBlogByHandle.rejected, (state, action) => {
 				state.blogLoading = false;
 				state.blogError = action.payload as string;
-				state.blogs = { blogPagesDto: [], hasNext: false, cursor: null };
+				state.blogs = { items: [], hasNext: false, cursor: null };
 			});
 
 		// ======================
@@ -224,7 +259,7 @@ const getProfile = createSlice({
 			.addCase(getAllProfileDocs.rejected, (state, action) => {
 				state.docsLoading = false;
 				state.docsError = action.payload as string;
-				state.docs = { docs: [], hasNext: false, cursor: null };
+				state.docs = { items: [], hasNext: false, cursor: null };
 			});
 
 		builder
@@ -239,10 +274,10 @@ const getProfile = createSlice({
 			.addCase(getAllProfileDocsByHandle.rejected, (state, action) => {
 				state.docsLoading = false;
 				state.docsError = action.payload as string;
-				state.docs = { docs: [], hasNext: false, cursor: null };
+				state.docs = { items: [], hasNext: false, cursor: null };
 			});
 	},
 });
 
-export const { resetProfileCollections } = getProfile.actions;
+export const { resetProfileCollections, resetProfileView } = getProfile.actions;
 export default getProfile.reducer;

@@ -41,7 +41,7 @@ const homeBlogCoverReducers = createSlice({
     initialState: initialState,
     reducers: {
         setData: (state, action) => {
-            state.data.push(...action.payload.blogPagesDto);
+            state.data.push(...action.payload.items);
             (state.cursor = action.payload.cursor),
                 (state.hasNext = action.payload.hasNext);
         },
@@ -66,10 +66,10 @@ const homeBlogCoverReducers = createSlice({
             const { mode } = a.meta.arg;
 
             if (mode === "init") {
-                s.data = a.payload.blogPagesDto;
+                s.data = a.payload.items;
                 s.blogLoading = false;
             } else {
-                s.data.push(...a.payload.blogPagesDto);
+                s.data.push(...a.payload.items);
                 s.blogLoadMore = false;
             }
 

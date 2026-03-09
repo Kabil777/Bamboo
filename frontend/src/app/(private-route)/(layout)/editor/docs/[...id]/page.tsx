@@ -16,7 +16,7 @@ export default function DocsEditor() {
     // assertUUID(params.id, router);
 
     const docsId = params.id[0];
-    const currentPageId = params.id.at(-1)!;
+    const requestedPageId = params.id.length > 1 ? params.id.at(-1)! : null;
 
     function getCollabHttpBaseUrl() {
         const wsUrl =
@@ -57,13 +57,14 @@ export default function DocsEditor() {
                 throw new Error(message);
             }
 
-            toast.success("Docs saved");
         } catch (error: unknown) {
             const message =
                 error instanceof Error ? error.message : "Failed to save docs";
             toast.error(message);
         }
     };
+
+    const currentPageId = requestedPageId ?? docsId;
 
     return (
         <div className="w-full">

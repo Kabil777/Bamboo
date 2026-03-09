@@ -1,5 +1,12 @@
 type UUID = string;
 
+interface AuthorSummary {
+    id: UUID;
+    name: string;
+    handle: string;
+    avatarUrl?: string | null;
+}
+
 interface DocsBase {
     id: UUID;
     title: string;
@@ -9,8 +16,7 @@ interface DocsHomeCard extends DocsBase {
     coverUrl: string;
     description: string;
     createdAt: string;
-    authorName?: string;
-    authorHandle?: string;
+    author: AuthorSummary;
     visibility?: "PUBLIC" | "PRIVATE";
     status?: "PUBLISHED" | "ARCHIVED" | "DRAFT";
 }
@@ -24,7 +30,6 @@ interface DocsTreeNode {
 
 interface Docs extends DocsHomeCard {
     content: string;
-    authorId: UUID;
     tags: string[];
     tree: DocsTreeNode[];
 }
@@ -35,4 +40,4 @@ interface DocsState {
     errorById: Record<UUID, boolean>;
 }
 
-export type { DocsHomeCard, Docs, DocsState, DocsTreeNode };
+export type { AuthorSummary, DocsHomeCard, Docs, DocsState, DocsTreeNode };

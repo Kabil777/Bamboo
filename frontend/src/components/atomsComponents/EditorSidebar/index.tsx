@@ -84,11 +84,11 @@ export function EditorSidebar(props: React.ComponentProps<typeof Sidebar>) {
             className="top-14 h-[calc(100svh-56px)] bg-background text-foreground"
         >
             <SidebarHeader className="bg-background border-b border-border/40 px-4 py-3">
-                <div className="flex items-center gap-3">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-foreground text-background">
+                <div className="flex min-w-0 items-center gap-3">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-foreground text-background">
                         <FileText className="h-4 w-4" />
                     </div>
-                    <div className="flex flex-col leading-tight">
+                    <div className="flex min-w-0 flex-col leading-tight">
                         <span className="text-sm font-semibold text-foreground truncate">
                             {doc?.title || "Docs Editor"}
                         </span>
@@ -139,7 +139,7 @@ export function EditorSidebar(props: React.ComponentProps<typeof Sidebar>) {
                                     className="group/collapsible"
                                 >
                                     <SidebarMenuItem>
-                                        <div className={`flex items-center group/section rounded-lg transition-colors hover:bg-muted ${isActiveSection ? "bg-primary/10" : ""}`}>
+                                        <div className={`flex min-w-0 items-center group/section rounded-lg transition-colors hover:bg-muted ${isActiveSection ? "bg-primary/10" : ""}`}>
                                             {editingId === item.id ? (
                                                 <Input
                                                     autoFocus
@@ -158,18 +158,18 @@ export function EditorSidebar(props: React.ComponentProps<typeof Sidebar>) {
                                                         }
                                                         if (e.key === "Escape") setEditingId(null);
                                                     }}
-                                                    className="flex-1 h-9 rounded-lg border-primary/30 px-3 text-sm focus-visible:ring-primary/30"
+                                                    className="min-w-0 flex-1 h-9 rounded-lg border-primary/30 px-3 text-sm focus-visible:ring-primary/30"
                                                 />
                                             ) : (
                                                 <SidebarMenuButton
                                                     asChild
                                                     isActive={id.length === 2 && id[1] === item.id}
                                                     tooltip={item.title}
-                                                    className="flex-1 h-9 rounded-lg px-3 text-sm font-medium transition-colors data-[active=true]:text-primary data-[active=true]:bg-transparent"
+                                                    className="min-w-0 flex-1 h-9 rounded-lg px-3 text-sm font-medium transition-colors data-[active=true]:text-primary data-[active=true]:bg-transparent"
                                                 >
                                                     <Link
                                                         href={`/editor/docs/${docId}/${item.id}`}
-                                                        className="flex items-center gap-2.5"
+                                                        className="flex min-w-0 items-center gap-2.5"
                                                     >
                                                         <Folder className="h-4 w-4 shrink-0 text-foreground" />
                                                         <span className="truncate">{item.title}</span>
@@ -178,14 +178,14 @@ export function EditorSidebar(props: React.ComponentProps<typeof Sidebar>) {
                                             )}
 
                                             {/* Collapse toggle + action buttons */}
-                                            <div className="flex items-center shrink-0 opacity-0 group-hover/section:opacity-100 transition-opacity">
+                                            <div className="ml-1 flex items-center gap-0.5 shrink-0 opacity-0 group-hover/section:opacity-100 transition-opacity">
                                                 <Button
                                                     onClick={() => addPage(item.id)}
                                                     variant="ghost"
                                                     size="icon"
-                                                    className="h-7 w-7 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted"
+                                                    className="h-8 w-8 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted"
                                                 >
-                                                    <Plus className="w-3.5 h-3.5" />
+                                                    <Plus className="h-4 w-4" />
                                                 </Button>
                                                 <Button
                                                     onClick={(e) => {
@@ -194,24 +194,24 @@ export function EditorSidebar(props: React.ComponentProps<typeof Sidebar>) {
                                                     }}
                                                     variant="ghost"
                                                     size="icon"
-                                                    className="h-7 w-7 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted"
+                                                    className="h-8 w-8 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted"
                                                 >
-                                                    <Pencil className="w-3 h-3" />
+                                                    <Pencil className="h-4 w-4" />
                                                 </Button>
                                                 <Button
                                                     onClick={() => deletePage(item.id)}
                                                     variant="ghost"
                                                     size="icon"
-                                                    className="h-7 w-7 rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                                                    className="h-8 w-8 rounded-full text-muted-foreground hover:text-destructive hover:bg-destructive/10"
                                                 >
-                                                    <Trash2 className="w-3.5 h-3.5" />
+                                                    <Trash2 className="h-4 w-4" />
                                                 </Button>
                                             </div>
 
                                             {hasChildren && (
                                                 <CollapsibleTrigger asChild>
-                                                    <button className="p-1 rounded-md hover:bg-muted transition-colors shrink-0">
-                                                        <ChevronDown className="size-3.5 transition-transform duration-200 text-muted-foreground group-data-[state=open]/collapsible:rotate-180" />
+                                                    <button className="ml-0.5 p-1.5 rounded-full hover:bg-muted transition-colors shrink-0">
+                                                        <ChevronDown className="h-4 w-4 transition-transform duration-200 text-muted-foreground group-data-[state=open]/collapsible:rotate-180" />
                                                     </button>
                                                 </CollapsibleTrigger>
                                             )}
@@ -225,7 +225,7 @@ export function EditorSidebar(props: React.ComponentProps<typeof Sidebar>) {
                                                         const isActiveSub = id.length === 3 && id[1] === item.id && id[2] === sub.id;
                                                         return (
                                                             <SidebarMenuSubItem key={sub.id}>
-                                                                <div className={`flex items-center group/sub rounded-lg transition-colors hover:bg-muted ${isActiveSub ? "bg-primary/10" : ""}`}>
+                                                                <div className={`flex min-w-0 items-center group/sub rounded-lg transition-colors hover:bg-muted ${isActiveSub ? "bg-primary/10" : ""}`}>
                                                                     {editingId === sub.id ? (
                                                                         <Input
                                                                             autoFocus
@@ -245,7 +245,7 @@ export function EditorSidebar(props: React.ComponentProps<typeof Sidebar>) {
                                                                                 if (e.key === "Escape")
                                                                                     setEditingId(null);
                                                                             }}
-                                                                            className="flex-1 h-8 rounded-lg border-primary/30 px-3 text-sm focus-visible:ring-primary/30"
+                                                                            className="min-w-0 flex-1 h-8 rounded-lg border-primary/30 px-3 text-sm focus-visible:ring-primary/30"
                                                                         />
                                                                     ) : (
                                                                         <SidebarMenuSubButton
@@ -255,11 +255,11 @@ export function EditorSidebar(props: React.ComponentProps<typeof Sidebar>) {
                                                                                 id[1] === item.id &&
                                                                                 id[2] === sub.id
                                                                             }
-                                                                            className="flex-1 rounded-lg px-3 py-1.5 text-sm transition-colors data-[active=true]:bg-transparent data-[active=true]:text-primary"
+                                                                            className="min-w-0 flex-1 rounded-lg px-3 py-1.5 text-sm transition-colors data-[active=true]:bg-transparent data-[active=true]:text-primary"
                                                                         >
                                                                             <Link
                                                                                 href={`/editor/docs/${docId}/${item.id}/${sub.id}`}
-                                                                                className="flex items-center gap-2.5"
+                                                                                className="flex min-w-0 items-center gap-2.5"
                                                                             >
                                                                                 <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/40 shrink-0" />
                                                                                 <span className="truncate flex-1">{sub.title}</span>
@@ -268,7 +268,7 @@ export function EditorSidebar(props: React.ComponentProps<typeof Sidebar>) {
                                                                     )}
 
                                                                     {/* Sub-item action buttons */}
-                                                                    <div className="flex items-center shrink-0 opacity-0 group-hover/sub:opacity-100 transition-opacity">
+                                                                    <div className="ml-1 flex items-center gap-0.5 shrink-0 opacity-0 group-hover/sub:opacity-100 transition-opacity">
                                                                         <Button
                                                                             onClick={(e) => {
                                                                                 e.preventDefault();
@@ -276,17 +276,17 @@ export function EditorSidebar(props: React.ComponentProps<typeof Sidebar>) {
                                                                             }}
                                                                             variant="ghost"
                                                                             size="icon"
-                                                                            className="h-6 w-6 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted"
+                                                                            className="h-7 w-7 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted"
                                                                         >
-                                                                            <Pencil className="w-2.5 h-2.5" />
+                                                                            <Pencil className="h-3.5 w-3.5" />
                                                                         </Button>
                                                                         <Button
                                                                             onClick={() => deletePage(sub.id)}
                                                                             variant="ghost"
                                                                             size="icon"
-                                                                            className="h-6 w-6 rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                                                                            className="h-7 w-7 rounded-full text-muted-foreground hover:text-destructive hover:bg-destructive/10"
                                                                         >
-                                                                            <Trash2 className="w-3 h-3" />
+                                                                            <Trash2 className="h-3.5 w-3.5" />
                                                                         </Button>
                                                                     </div>
                                                                 </div>

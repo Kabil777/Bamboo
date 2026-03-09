@@ -9,6 +9,13 @@ export type SocialPlatform =
 
 type SocialLinks = Partial<Record<SocialPlatform, string>>;
 
+type AuthorSummary = {
+    id: string;
+    name: string;
+    handle: string;
+    avatarUrl?: string | null;
+};
+
 type UserProfile = {
     tags: string[];
     social: SocialLinks;
@@ -24,20 +31,20 @@ type Profile = {
 };
 
 type ProfileBlog = {
-    tags: string[];
     id: string;
     title: string;
     description: string;
     coverUrl: string;
     createdAt: string;
-    authorId: string;
-    handle?: string;
+    tags: string[];
+    author: AuthorSummary;
     visibility?: "PUBLIC" | "PRIVATE";
     status?: "PUBLISHED" | "ARCHIVED" | "DRAFT";
+    collaborators?: AuthorSummary[];
 };
 
 type AllProfileBlog = {
-    blogPagesDto: ProfileBlog[];
+    items: ProfileBlog[];
     hasNext: boolean;
     cursor: null | string;
 };
@@ -48,13 +55,13 @@ type ProfileDoc = {
     description: string;
     coverUrl: string;
     createdAt: string;
-    authorName?: string;
+    author: AuthorSummary;
     visibility?: "PUBLIC" | "PRIVATE";
     status?: "PUBLISHED" | "ARCHIVED" | "DRAFT";
 };
 
 type AllProfileDocs = {
-    docs: ProfileDoc[];
+    items: ProfileDoc[];
     hasNext: boolean;
     cursor: null | string;
 };
@@ -63,6 +70,7 @@ export type {
     Profile,
     UserProfile,
     SocialLinks,
+    AuthorSummary,
     AllProfileBlog,
     ProfileBlog,
     AllProfileDocs,

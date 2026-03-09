@@ -82,7 +82,7 @@ export function SectionCards({ viewingHandle }: { viewingHandle?: string }) {
 	);
 
 	// Get current logged-in user's info
-	const { user } = useAppState((s) => s.userReducer);
+	const { user, status } = useAppState((s) => s.userReducer);
 
 	// Determine if viewing own profile
 	const isOwnProfile = !viewingHandle || viewingHandle === user?.handle;
@@ -168,6 +168,10 @@ export function SectionCards({ viewingHandle }: { viewingHandle?: string }) {
 	];
 
 	useEffect(() => {
+		if (status !== "authorized") {
+			return;
+		}
+
 		// Fetch profile data when component mounts or viewingHandle changes
 		if (viewingHandle && viewingHandle !== user?.handle) {
 			// Viewing another user's profile
@@ -176,7 +180,7 @@ export function SectionCards({ viewingHandle }: { viewingHandle?: string }) {
 			// Viewing own profile
 			dispatch(getProfileDetials());
 		}
-	}, [dispatch, viewingHandle, user?.handle]);
+	}, [dispatch, viewingHandle, user?.handle, status]);
 
 	if (profileLoading || !profileData) {
 		return <SectionCardsSkeleton />;

@@ -183,7 +183,7 @@ function FeaturedCarousel({
                                         Written by
                                     </p>
                                     <p className="mt-0.5 text-sm font-semibold text-foreground">
-                                        {story.authorName?.trim() || "Bamboo Editorial"}
+                                        {story.author?.name?.trim() || "Bamboo Editorial"}
                                     </p>
                                 </div>
                                 <Link
@@ -374,8 +374,9 @@ export default function Home() {
                                                             )}
                                                             <BlogCard
                                                                 {...blog}
-                                                                authorName={blog.authorName ?? blog.handle ?? null}
-                                                                authorHandle={blog.authorHandle ?? blog.handle ?? null}
+                                                                authorName={blog.author?.name ?? null}
+                                                                authorHandle={blog.author?.handle ?? null}
+                                                                authorAvatarUrl={blog.author?.avatarUrl ?? null}
                                                                 isOwner={false}
                                                             />
                                                         </div>

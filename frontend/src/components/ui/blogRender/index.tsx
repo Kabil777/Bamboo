@@ -278,9 +278,9 @@ export default function BlogRenderPage() {
 						{/* ── Meta Row: Tags · Reading Time · Date ── */}
 							<ProfileTag
 								idBlog={id}
-								profileId={blog?.authorHandle || blog?.handle}
-								authorName={blog?.authorName}
-								authorAvatarUrl={blog?.authorAvatarUrl}
+								profileId={blog?.author?.handle}
+								authorName={blog?.author?.name}
+								authorAvatarUrl={blog?.author?.avatarUrl}
 								createdAt={blog?.createdAt}
 								variant="view"
 								contentType="blog"

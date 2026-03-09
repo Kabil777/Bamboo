@@ -74,20 +74,19 @@ export default function Profile() {
                     <>
                         {blogLoading && <BlogCardSkeleton />}
                         {!blogLoading &&
-                            blogs?.blogPagesDto?.map((item) => (
+                            blogs?.items?.map((item) => (
                                 <BlogCard
                                     key={item.id}
                                     title={item.title}
                                     description={item.description}
                                     coverUrl={item.coverUrl}
-                                    authorId={item.authorId}
-                                    authorName={item.handle || user?.handle || item.authorId}
-                                    authorHandle={item.handle || user?.handle || item.authorId}
+                                    author={item.author}
                                     id={item.id}
                                     tags={item.tags}
                                     createdAt={item.createdAt}
                                     visibility={item.visibility}
                                     status={item.status}
+                                    collaborators={item.collaborators}
                                     isOwner={isOwner}
                                 />
                             ))}
@@ -97,8 +96,8 @@ export default function Profile() {
                 {selectedTab === "docs" && (
                     <>
                         {docsLoading && <BlogCardSkeleton />}
-                        {!docsLoading && docs?.docs?.length
-                            ? docs.docs.map((doc) => (
+                        {!docsLoading && docs?.items?.length
+                            ? docs.items.map((doc) => (
                                   <DocsProfileCard
                                       key={doc.id}
                                       id={doc.id}
@@ -109,12 +108,7 @@ export default function Profile() {
                                       visibility={doc.visibility}
                                       status={doc.status}
                                       isOwner={isOwner}
-                                      authorName={
-                                          user?.handle ||
-                                          user?.name ||
-                                          user?.email ||
-                                          "user101"
-                                      }
+                                      authorName={doc.author?.name || user?.name}
                                   />
                               ))
                             : null}

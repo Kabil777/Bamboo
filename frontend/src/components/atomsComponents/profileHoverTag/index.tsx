@@ -92,12 +92,9 @@ export function ProfileHoverTag({ profileId }: { profileId?: string }) {
 			onOpenChange={setOpen}
 		>
 			<HoverCardTrigger asChild>
-				<Link
-					href={`/profile/${handle}`}
-					className="text-sm text-muted-foreground italic flex items-center gap-1 font-medium cursor-pointer"
-				>
+				<span className="text-sm text-muted-foreground italic flex items-center gap-1 font-medium cursor-default">
 					{displayHandle}
-				</Link>
+				</span>
 			</HoverCardTrigger>
 			<HoverCardContent
 				className="w-64 border-2 shadow-none bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 p-4"
@@ -147,49 +144,54 @@ export function ProfileHoverTag({ profileId }: { profileId?: string }) {
 							</div>
 						</div>
 
-						<motion.div
-							className="w-full"
-							whileTap={{ scale: 0.96 }}
-							transition={{ type: "spring", stiffness: 400, damping: 17 }}
-						>
-							<Button
-								onClick={() => setFollow(!follow)}
-								variant={follow ? "outline" : "default"}
-								size="sm"
-								className="w-full rounded-full px-6 h-9 text-sm font-semibold shadow-md hover:shadow-lg transition-all duration-200 relative overflow-hidden group"
+						<div className="flex gap-2">
+							<motion.div
+								className="flex-1"
+								whileTap={{ scale: 0.96 }}
+								transition={{ type: "spring", stiffness: 400, damping: 17 }}
 							>
-								<AnimatePresence mode="wait">
-									4 h-8 text-xs font-semibold shadow-sm hover:shadow-md
-									<motion.div
-										key={follow ? "following" : "follow"}
-										initial={{ opacity: 0, y: 10 }}
-										animate={{ opacity: 1, y: 0 }}
-										exit={{ opacity: 0, y: -10 }}
-										transition={{ duration: 0.2 }}
-										className="flex items-center gap-2"
-									>
-										{follow ? (
-											<>
-												<UserCheck className="w-4 h-4" />
-												<span>Following</span>
-											</>
-										) : (
-											<>
-												<UserPlus className="w-4 h-4" />
-												<span>Follow</span>
-											</>
-										)}
-									</motion.div>
-								</AnimatePresence>
+								<Button
+									onClick={() => setFollow(!follow)}
+									variant={follow ? "outline" : "default"}
+									size="sm"
+									className="w-full rounded-full px-4 h-9 text-sm font-semibold shadow-md hover:shadow-lg transition-all duration-200 relative overflow-hidden group"
+								>
+									<AnimatePresence mode="wait">
+										<motion.div
+											key={follow ? "following" : "follow"}
+											initial={{ opacity: 0, y: 10 }}
+											animate={{ opacity: 1, y: 0 }}
+											exit={{ opacity: 0, y: -10 }}
+											transition={{ duration: 0.2 }}
+											className="flex items-center gap-2"
+										>
+											{follow ? (
+												<>
+													<UserCheck className="w-4 h-4" />
+													<span>Following</span>
+												</>
+											) : (
+												<>
+													<UserPlus className="w-4 h-4" />
+													<span>Follow</span>
+												</>
+											)}
+										</motion.div>
+									</AnimatePresence>
 
-								<motion.div
-									className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
-									initial={{ x: "-100%" }}
-									whileHover={{ x: "100%" }}
-									transition={{ duration: 0.6 }}
-								/>
+									<motion.div
+										className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
+										initial={{ x: "-100%" }}
+										whileHover={{ x: "100%" }}
+										transition={{ duration: 0.6 }}
+									/>
+								</Button>
+							</motion.div>
+
+							<Button asChild variant="outline" size="sm" className="rounded-full px-4 h-9">
+								<Link href={`/profile/${handle}`}>Show profile</Link>
 							</Button>
-						</motion.div>
+						</div>
 					</>
 				)}
 			</HoverCardContent>

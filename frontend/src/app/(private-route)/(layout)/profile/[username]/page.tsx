@@ -63,18 +63,18 @@ export default function UserProfile() {
     const isOwnProfile = !!user?.handle && user.handle === handle;
     const { selectedTab } = useProfileTab();
     const visibleBlogs = useMemo(() => {
-        if (!blogs?.blogPagesDto) return [];
-        if (isOwnProfile) return blogs.blogPagesDto;
-        return blogs.blogPagesDto.filter(
+        if (!blogs?.items) return [];
+        if (isOwnProfile) return blogs.items;
+        return blogs.items.filter(
             (item) =>
                 item.visibility === "PUBLIC" && item.status === "PUBLISHED",
         );
     }, [blogs, isOwnProfile]);
 
     const visibleDocs = useMemo(() => {
-        if (!docs?.docs) return [];
-        if (isOwnProfile) return docs.docs;
-        return docs.docs.filter(
+        if (!docs?.items) return [];
+        if (isOwnProfile) return docs.items;
+        return docs.items.filter(
             (item) =>
                 item.visibility === "PUBLIC" && item.status === "PUBLISHED",
         );
@@ -119,14 +119,13 @@ export default function UserProfile() {
                                     title={item.title}
                                     description={item.description}
                                     coverUrl={item.coverUrl}
-                                    authorId={item.authorId}
-                                    authorName={item.handle ?? item.authorId}
-                                    authorHandle={item.handle}
+                                    author={item.author}
                                     id={item.id}
                                     tags={item.tags}
                                     createdAt={item.createdAt}
                                     visibility={item.visibility}
                                     status={item.status}
+                                    collaborators={item.collaborators}
                                     isOwner={isOwnProfile}
                                 />
                             ))}
@@ -148,7 +147,7 @@ export default function UserProfile() {
                                       visibility={doc.visibility}
                                       status={doc.status}
                                       isOwner={isOwnProfile}
-                                      authorName={doc.authorName}
+                                      authorName={doc.author?.name}
                                   />
                               ))
                             : null}

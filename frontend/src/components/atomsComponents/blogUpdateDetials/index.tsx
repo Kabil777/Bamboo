@@ -616,7 +616,7 @@ export const VisibilityPopover = ({
 					? `/api/docs/save/${resourceId}`
 					: `/api/blog/save/${resourceId}`;
 			const url = `${baseUrl}${endpoint}`;
-			await fetch(url, {
+			const response = await fetch(url, {
 				method: "POST",
 				credentials: "include",
 				headers: { "Content-Type": "application/json" },
@@ -625,10 +625,21 @@ export const VisibilityPopover = ({
 					visibility: mappedVisibility,
 				}),
 			});
+			if (!response.ok) {
+				const data = await response.json().catch(() => null);
+				const message =
+					(data as { message?: string; error?: string } | null)?.message ||
+					(data as { message?: string; error?: string } | null)?.error ||
+					"Failed to save content";
+				throw new Error(message);
+			}
 			onUpdated?.();
 			handleClose();
 		} catch (error) {
 			console.error(error);
+			const message =
+				error instanceof Error ? error.message : "Failed to save content";
+			toast.error(message);
 		} finally {
 			setLoading(false);
 		}

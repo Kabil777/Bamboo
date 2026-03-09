@@ -12,6 +12,7 @@ import {
     Trash2,
 } from "lucide-react";
 import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 import {
     DropdownMenu,
@@ -20,6 +21,14 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/shadcnUI/dropdown-menu";
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/shadcnUI/dialog";
 import {
     Avatar,
     AvatarFallback,
@@ -36,6 +45,9 @@ import { BlogUpdateDetails, VisibilityPopover } from "../blogUpdateDetials";
 import { ProfileHoverTag } from "../profileHoverTag";
 import { SharePopover } from "../sharePopover";
 import { Button } from "@/components/shadcnUI/button";
+import { UUID } from "@/types/blog/blog-base";
+import api from "@/api/axios";
+import { toast } from "sonner";
 
 export type Author = {
     id: string;
@@ -62,7 +74,6 @@ const AuthorAvatarGroup = ({
 
     const avatarSizeClass = size === "sm" ? "w-6 h-6" : "w-7 h-7";
     const fallbackTextClass = size === "sm" ? "text-[10px]" : "text-xs";
-
     return (
         <AvatarGroup className="items-center">
             {visible.map((author) => (
@@ -147,11 +158,15 @@ export const ProfileTag = ({
     showMenu?: boolean;
     onVisibilityUpdated?: () => void;
 }) => {
+    const router = useRouter();
+    const pathname = usePathname();
     const [bookmark, setBookmark] = useState(false);
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
     const [dropdownOpen, setDropdownOpen] = useState(false);
     const [copyPopoverOpen, setCopyPopoverOpen] = useState(false);
     const [visibilityPopoverOpen, setVisibilityPopoverOpen] = useState(false);
+    const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false);
 
     const handleVisibilityPopoverOpen = () => {
         setDropdownOpen(false);
@@ -216,6 +231,60 @@ export const ProfileTag = ({
 
     const hasMultipleAuthors = authors && authors.length > 1;
 
+    const getDeleteErrorMessage = (error: unknown) => {
+        if (
+            typeof error === "object" &&
+            error !== null &&
+            "response" in error &&
+            typeof (error as { response?: unknown }).response === "object" &&
+            (error as { response?: { data?: { message?: string; error?: string } } })
+                .response?.data
+        ) {
+            const response = (error as {
+                response?: { data?: { message?: string; error?: string } };
+            }).response;
+            return (
+                response?.data?.message ||
+                response?.data?.error ||
+                "Failed to delete blog"
+            );
+        }
+        if (error instanceof Error && error.message) {
+            return error.message;
+        }
+        return "Failed to delete blog";
+    };
+
+    const openDeleteDialog = () => {
+        setDropdownOpen(false);
+        setTimeout(() => {
+            setDeleteDialogOpen(true);
+        }, 100);
+    };
+
+    const handleDelete = async (blogId?: UUID) => {
+        if (!blogId || contentType !== "blog" || isDeleting) return;
+
+        setIsDeleting(true);
+        try {
+            const apiVersion = process.env.NEXT_PUBLIC_API_VERSION ?? "/api/v1";
+            await api.delete(`${apiVersion}/blog/${blogId}`);
+            toast.success("Blog deleted successfully");
+            setDeleteDialogOpen(false);
+
+            if (pathname?.startsWith(`/blog/${blogId}`)) {
+                router.replace("/");
+                return;
+            }
+
+            router.refresh();
+        } catch (error) {
+            toast.error(getDeleteErrorMessage(error));
+        } finally {
+            setIsDeleting(false);
+        }
+    };
+
     // ─── Compact variant (for docs cards) ───
     if (variant === "compact") {
         return (
@@ -253,7 +322,9 @@ export const ProfileTag = ({
                                 }
                             />
                             <AvatarFallback className="text-sm font-semibold bg-muted text-muted-foreground">
-                                {((authorName || profileId || "U")[0]).toUpperCase()}
+                                {(authorName ||
+                                    profileId ||
+                                    "U")[0].toUpperCase()}
                             </AvatarFallback>
                         </Avatar>
                     )}
@@ -313,13 +384,15 @@ export const ProfileTag = ({
                                     }}
                                 >
                                     <Bookmark
-                                        className={`transition-colors ${bookmark ? 'fill-foreground text-foreground' : 'text-muted-foreground'}`}
+                                        className={`transition-colors ${bookmark ? "fill-foreground text-foreground" : "text-muted-foreground"}`}
                                         size={18}
                                     />
                                 </motion.span>
                             </Button>
                         </TooltipTrigger>
-                        <TooltipContent side="top" className="text-xs">Bookmark</TooltipContent>
+                        <TooltipContent side="top" className="text-xs">
+                            Bookmark
+                        </TooltipContent>
                     </Tooltip>
 
                     <Tooltip>
@@ -333,7 +406,9 @@ export const ProfileTag = ({
                                 <Share2 size={18} />
                             </Button>
                         </TooltipTrigger>
-                        <TooltipContent side="top" className="text-xs">Share</TooltipContent>
+                        <TooltipContent side="top" className="text-xs">
+                            Share
+                        </TooltipContent>
                     </Tooltip>
 
                     {canManage && (
@@ -342,16 +417,29 @@ export const ProfileTag = ({
                             onOpenChange={setDropdownOpen}
                         >
                             <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="icon" className="h-9 w-9 rounded-full hover:bg-muted/50 text-muted-foreground hover:text-foreground">
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-9 w-9 rounded-full hover:bg-muted/50 text-muted-foreground hover:text-foreground"
+                                >
                                     <Ellipsis size={18} />
                                 </Button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="w-40 border-border/50 shadow-xl rounded-xl">
-                                <DropdownMenuItem onClick={handleEditClick} className="cursor-pointer">
+                            <DropdownMenuContent
+                                align="end"
+                                className="w-40 border-border/50 shadow-xl rounded-xl"
+                            >
+                                <DropdownMenuItem
+                                    onClick={handleEditClick}
+                                    className="cursor-pointer"
+                                >
                                     <Pencil className="h-4 w-4 mr-2" />
                                     <span>Edit</span>
                                 </DropdownMenuItem>
-                                <DropdownMenuItem asChild className="cursor-pointer">
+                                <DropdownMenuItem
+                                    asChild
+                                    className="cursor-pointer"
+                                >
                                     <Link
                                         href={
                                             contentType === "docs"
@@ -376,9 +464,14 @@ export const ProfileTag = ({
 
                                 <DropdownMenuSeparator />
 
-                                <DropdownMenuItem variant="destructive" className="cursor-pointer">
+                                <DropdownMenuItem
+                                    variant="destructive"
+                                    className="cursor-pointer"
+                                    disabled={isDeleting}
+                                    onClick={openDeleteDialog}
+                                >
                                     <Trash2 className="h-4 w-4 mr-2" />
-                                    <span>Delete</span>
+                                    <span>{isDeleting ? "Deleting..." : "Delete"}</span>
                                 </DropdownMenuItem>
                             </DropdownMenuContent>
                         </DropdownMenu>
@@ -387,8 +480,9 @@ export const ProfileTag = ({
 
                 {/* Modals placed at the end */}
                 <SharePopover
-                    text={`https://bamboo.dev/${contentType === "docs" ? "docs" : "blog"
-                        }/${profileId ? `?ref=${profileId}` : ""}`}
+                    text={`https://bamboo.dev/${
+                        contentType === "docs" ? "docs" : "blog"
+                    }/${profileId ? `?ref=${profileId}` : ""}`}
                     open={copyPopoverOpen}
                     setOpen={setCopyPopoverOpen}
                 >
@@ -511,9 +605,13 @@ export const ProfileTag = ({
 
                             <DropdownMenuSeparator />
 
-                            <DropdownMenuItem variant="destructive">
+                            <DropdownMenuItem
+                                variant="destructive"
+                                disabled={isDeleting}
+                                onClick={openDeleteDialog}
+                            >
                                 <Trash2 className="h-4 w-4" />
-                                <span>Delete</span>
+                                <span>{isDeleting ? "Deleting..." : "Delete"}</span>
                             </DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>
@@ -522,8 +620,9 @@ export const ProfileTag = ({
             {canManage && (
                 <>
                     <SharePopover
-                        text={`https://bamboo.dev/${contentType === "docs" ? "docs" : "blog"
-                            }/${profileId ? `?ref=${profileId}` : ""}`}
+                        text={`https://bamboo.dev/${
+                            contentType === "docs" ? "docs" : "blog"
+                        }/${profileId ? `?ref=${profileId}` : ""}`}
                         open={copyPopoverOpen}
                         setOpen={setCopyPopoverOpen}
                     >
@@ -542,6 +641,45 @@ export const ProfileTag = ({
                         open={isEditDialogOpen}
                         setOpen={setIsEditDialogOpen}
                     />
+                    <Dialog
+                        open={deleteDialogOpen}
+                        onOpenChange={setDeleteDialogOpen}
+                    >
+                        <DialogContent className="sm:max-w-md border-border/60 shadow-xl rounded-none p-7">
+                            <DialogHeader className="space-y-4">
+                                <div className="space-y-1">
+                                    <DialogTitle>Delete this blog?</DialogTitle>
+                                    <DialogDescription>
+                                        This permanently removes the blog and its
+                                        access data. This action cannot be undone.
+                                    </DialogDescription>
+                                </div>
+                            </DialogHeader>
+
+                            <div className="border border-foreground/10 bg-foreground/[0.03] px-4 py-3 text-sm text-muted-foreground">
+                                The blog will disappear from your profile and
+                                public feeds immediately after deletion.
+                            </div>
+
+                            <DialogFooter className="gap-3 pt-1 sm:justify-end">
+                                <Button
+                                    variant="outline"
+                                    onClick={() => setDeleteDialogOpen(false)}
+                                    disabled={isDeleting}
+                                    className="rounded-none"
+                                >
+                                    Keep blog
+                                </Button>
+                                <Button
+                                    onClick={() => handleDelete(idBlog)}
+                                    disabled={isDeleting}
+                                    className="rounded-none bg-foreground text-background hover:bg-foreground/90"
+                                >
+                                    {isDeleting ? "Deleting..." : "Delete blog"}
+                                </Button>
+                            </DialogFooter>
+                        </DialogContent>
+                    </Dialog>
                 </>
             )}
         </>

@@ -7,9 +7,7 @@ import injectOverview from "@/hooks/useAddOverview";
 
 export const DocsRTK = createAsyncThunk<Docs, UUID, { state: RootState }>(
     "/docs/id",
-    async (id, { getState, rejectWithValue }) => {
-        const cachedData = getState().docsReducer.entities[id];
-        if (cachedData) return cachedData;
+    async (id, { rejectWithValue }) => {
         const URL = `${process.env.NEXT_PUBLIC_API_SERVER_URL}${process.env.NEXT_PUBLIC_API_VERSION}/docs/${id}`;
         try {
             const res = await api.get(URL);
@@ -39,7 +37,7 @@ const getDocs = createSlice({
             const doc = a.payload;
             s.entities[id] = {
                 ...doc,
-                tree: injectOverview(doc.tree, doc.content),
+                tree: injectOverview(id, doc.tree, doc.content),
             };
             s.loadingById[id] = false;
         });

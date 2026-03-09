@@ -22,7 +22,7 @@ import {
 import NextImage from "next/image";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
 	ArticleRender,
 	ArticleSidebar,
@@ -116,14 +116,16 @@ export default function DocsRenderPage() {
 	);
 	const isDocsLoading = useApiLoading(loadingById[docId]);
 	const doc = entities[docId];
+	const hasDocError = Boolean(errorById[docId]);
+	const shouldShowSkeleton = isDocsLoading || (!doc && !hasDocError);
 
 	// ─── Loading ─────────────────────────────────────
-	if (isDocsLoading) {
+	if (shouldShowSkeleton) {
 		return <BlogPageSkeleton />;
 	}
 
 	// ─── Not Found ───────────────────────────────────
-	if (errorById[docId] || !doc) {
+	if (hasDocError || !doc) {
 		return (
 			<div className="flex items-center justify-center w-full ">
 				<motion.div
@@ -170,7 +172,7 @@ export default function DocsRenderPage() {
 	const toc = extractToc(md);
 	const readingTime = estimateReadingTime(md);
 
-	const handleCopyMarkdown = useCallback(async () => {
+	const handleCopyMarkdown = async () => {
 		if (!md) return;
 		try {
 			await navigator.clipboard.writeText(md);
@@ -180,9 +182,9 @@ export default function DocsRenderPage() {
 		} catch {
 			toast.error("Failed to copy to clipboard");
 		}
-	}, [md]);
+	};
 
-	const handleDialogCopy = useCallback(async () => {
+	const handleDialogCopy = async () => {
 		if (!md) return;
 		try {
 			await navigator.clipboard.writeText(md);
@@ -192,7 +194,7 @@ export default function DocsRenderPage() {
 		} catch {
 			toast.error("Failed to copy to clipboard");
 		}
-	}, [md]);
+	};
 
 	return (
 		<div className="flex flex-1 flex-col w-full">
@@ -282,7 +284,9 @@ export default function DocsRenderPage() {
 						{/* ── ProfileTag ── */}
 						<ProfileTag
 							idBlog={docId}
-							profileId={doc.authorId}
+							profileId={doc.author?.handle}
+							authorName={doc.author?.name}
+							authorAvatarUrl={doc.author?.avatarUrl}
 							createdAt={doc.createdAt}
 							variant="view"
 							contentType="docs"
