@@ -27,13 +27,18 @@ export const getCoverBlog = createAsyncThunk<
     }
 });
 
-const initialState: BlogCursorResponse = {
+interface BlogCoverState extends BlogCursorResponse {
+    fetched: boolean;
+}
+
+const initialState: BlogCoverState = {
     blogLoading: true,
     blogLoadMore: false,
     data: [],
     cursor: null,
     hasNext: true,
     error: null,
+    fetched: false,
 };
 
 const homeBlogCoverReducers = createSlice({
@@ -75,9 +80,13 @@ const homeBlogCoverReducers = createSlice({
 
             s.cursor = a.payload.cursor;
             s.hasNext = a.payload.hasNext;
+            s.fetched = true;
         });
         builder.addCase(getCoverBlog.rejected, (s, a) => {
             s.error = a.error.message ?? "Unknown error";
+            s.fetched = true;
+            s.blogLoading = false;
+            s.blogLoadMore = false;
         });
     },
 });

@@ -28,9 +28,11 @@ export function isWsForbidden(code?: number, reason?: string) {
 
 export function refreshSessionForCollab() {
     if (!inflightRefresh) {
-        const apiServerUrl = process.env.NEXT_PUBLIC_API_SERVER_URL || "";
         const apiVersion = process.env.NEXT_PUBLIC_API_VERSION || "";
-        const url = `${apiServerUrl}${apiVersion}/auth/refresh`;
+        const normalizedVersion = apiVersion
+            ? `/${apiVersion.replace(/^\/+|\/+$/g, "")}`
+            : "";
+        const url = `${normalizedVersion}/auth/refresh`;
 
         inflightRefresh = authApi.post(url).then(async () => {
             const authResult = await store.dispatch(getAuthentication());

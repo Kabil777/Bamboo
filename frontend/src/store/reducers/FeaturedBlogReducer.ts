@@ -25,12 +25,14 @@ interface FeaturedBlogState {
     loading: boolean;
     data: BlogHomeCard[];
     error: string | null;
+    fetched: boolean;
 }
 
 const initialState: FeaturedBlogState = {
     loading: true,
     data: [],
     error: null,
+    fetched: false,
 };
 
 const featuredBlogReducer = createSlice({
@@ -46,10 +48,12 @@ const featuredBlogReducer = createSlice({
             .addCase(getFeaturedBlogs.fulfilled, (state, action) => {
                 state.loading = false;
                 state.data = action.payload;
+                state.fetched = true;
             })
             .addCase(getFeaturedBlogs.rejected, (state, action) => {
                 state.loading = false;
                 state.error = (action.payload as string) ?? "Unknown error";
+                state.fetched = true;
             });
     },
 });
