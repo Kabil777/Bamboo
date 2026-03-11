@@ -69,21 +69,6 @@ export const BlogCard: React.FC<BlogHomeCard & { isOwner?: boolean }> = ({
                     {/* ── Left: text column ── */}
                     <div className="col-span-full sm:col-span-3 sm:row-start-1 flex flex-col gap-2">
                         {/* ProfileTag sits above title — author + domain line like Image 1 */}
-                        <ProfileTag
-                            idBlog={id}
-                            profileId={authorHandle ?? undefined}
-                            createdAt={createdAt}
-                            authorName={authorName}
-                            authorAvatarUrl={authorAvatarUrl}
-                            authors={collaborators}
-                            visibility={visibility}
-                            status={status}
-                            isOwner={isOwner}
-                            showMenu={isOwner}
-                            onVisibilityUpdated={() => {
-                                if (isOwner) dispatch(getAllProfileBlog());
-                            }}
-                        />
 
                         {/* Title + description — clickable block */}
                         {isOwner && isDraft ? (
