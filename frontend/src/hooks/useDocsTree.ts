@@ -32,7 +32,8 @@ export function useDocsTree(provider: any) {
 
             ydoc.transact(() => {
                 const overview = new Y.Map();
-                overview.set("id", uuidv7());
+                const overviewId = provider.configuration?.name?.split(":")?.[2];
+                overview.set("id", overviewId || uuidv7());
                 overview.set("title", "Overview");
                 overview.set("parentId", null);
                 overview.set("level", 0);

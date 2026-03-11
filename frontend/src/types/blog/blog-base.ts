@@ -1,9 +1,15 @@
 type UUID = string;
 
+interface AuthorSummary {
+    id: UUID;
+    name: string;
+    handle: string;
+    avatarUrl?: string | null;
+}
+
 interface BlogBase {
     id: UUID;
     title: string;
-    authorId: UUID;
 }
 
 interface BlogHomeCard extends BlogBase {
@@ -11,13 +17,10 @@ interface BlogHomeCard extends BlogBase {
     description: string;
     createdAt: string;
     tags: string[];
-    authorName: string | null;
-    authorHandle?: string | null;
-    authorAvatarUrl?: string | null;
-    handle?: string | null;
+    author: AuthorSummary;
     visibility?: "PUBLIC" | "PRIVATE";
     status?: "PUBLISHED" | "ARCHIVED" | "DRAFT";
-    collaborators?: { id: string; name: string; handle?: string; avatarUrl?: string }[];
+    collaborators?: AuthorSummary[];
 }
 
 interface BlogPage extends BlogHomeCard {
@@ -34,7 +37,7 @@ interface BlogCursorResponse {
     blogLoadMore: boolean;
     error: string | null;
     data: BlogHomeCard[];
-    cursor: UUID | null;
+    cursor: string | null;
     hasNext: boolean;
 }
 
@@ -42,6 +45,7 @@ interface BlogEditorState extends BlogPage {}
 
 export type {
     UUID,
+    AuthorSummary,
     BlogBase,
     BlogHomeCard,
     BlogPage,

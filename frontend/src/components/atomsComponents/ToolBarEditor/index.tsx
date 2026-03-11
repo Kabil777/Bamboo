@@ -24,6 +24,7 @@ import {
 	Avatar,
 	AvatarBadge,
 	AvatarFallback,
+	AvatarImage,
 	AvatarGroup,
 } from "@/components/shadcnUI/avatar";
 import type { userAwareness } from "@/hooks/useCollabrationAwareness";
@@ -109,7 +110,7 @@ const MainToolbarContent = ({
 						<HoverCardTrigger asChild>
 							<ShanBtn variant="ghost" size="icon" className="rounded-full">
 								<Avatar className="overflow-visible">
-									{/* <AvatarImage src={user.avatar} alt={user.name} /> */}
+									<AvatarImage src={user.avatarUrl} alt={user.name} />
 									<AvatarFallback>
 										{user.name.slice(0, 1).toUpperCase()}
 									</AvatarFallback>
@@ -120,7 +121,7 @@ const MainToolbarContent = ({
 						<HoverCardContent className="flex w-fit flex-col gap-0.5">
 							<div className="flex items-center gap-3">
 								<Avatar className="overflow-visible">
-									{/* <AvatarImage src={user.avatar} alt={user.name} /> */}
+									<AvatarImage src={user.avatarUrl} alt={user.name} />
 									<AvatarFallback>
 										{user.name.slice(0, 1).toUpperCase()}
 									</AvatarFallback>
@@ -155,7 +156,7 @@ const MainToolbarContent = ({
 							{usersOnline.slice(2).map((user) => (
 								<div key={user.userId} className="flex items-center gap-3 pb-2">
 									<Avatar className="overflow-visible">
-										{/* <AvatarImage src={user.avatar} alt={user.name} /> */}
+										<AvatarImage src={user.avatarUrl} alt={user.name} />
 										<AvatarFallback>
 											{user.name.slice(0, 1).toUpperCase()}
 										</AvatarFallback>

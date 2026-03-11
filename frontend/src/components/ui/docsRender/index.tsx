@@ -187,6 +187,8 @@ export default function DocsRenderPage() {
 	);
 	const isDocsLoading = useApiLoading(loadingById[docId]);
 	const doc = entities[docId];
+	const hasDocError = Boolean(errorById[docId]);
+	const shouldShowSkeleton = isDocsLoading || (!doc && !hasDocError);
 
 	// ─── Loading ─────────────────────────────────
 	if (isDocsLoading) {

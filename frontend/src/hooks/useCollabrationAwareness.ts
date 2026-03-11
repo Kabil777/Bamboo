@@ -6,6 +6,7 @@ export type userAwareness = {
     clientId: number;
     userId: string;
     name: string;
+    avatarUrl?: string;
     color?: string;
     cursor?: any;
     location: "editor" | "sidebar";
@@ -13,7 +14,12 @@ export type userAwareness = {
 
 export function useCollaborativeAwareness(
     provider: HocuspocusProvider | null,
-    currentUser: { name: string; userId: string; color?: string },
+    currentUser: {
+        name: string;
+        userId: string;
+        avatarUrl?: string;
+        color?: string;
+    },
     location: "editor" | "sidebar",
     options?: { suppressNotifications?: boolean },
 ) {
@@ -22,14 +28,12 @@ export function useCollaborativeAwareness(
     const mountedRef = useRef(false);
     const localUserIdRef = useRef<string>(String(currentUser.userId));
     const readyToNotifyRef = useRef(false);
-    const authenticatedRef = useRef(false);
 
     useEffect(() => {
         if (!provider) return;
 
         const awareness = provider.awareness;
         const setLocalAwareness = () => {
-            if (!authenticatedRef.current) return;
             const nameReady =
                 typeof currentUser.name === "string" &&
                 currentUser.name.trim().length > 0 &&
@@ -39,6 +43,7 @@ export function useCollaborativeAwareness(
             provider.awareness?.setLocalStateField("user", {
                 userId: String(currentUser.userId),
                 name: currentUser.name,
+                avatarUrl: currentUser.avatarUrl,
                 color: currentUser.color,
                 location,
             });
@@ -51,12 +56,7 @@ export function useCollaborativeAwareness(
                 setLocalAwareness();
             }
         };
-        const handleAuthenticated = () => {
-            authenticatedRef.current = true;
-            setLocalAwareness();
-        };
         provider.on("status", handleStatus);
-        provider.on("authenticated", handleAuthenticated);
         setLocalAwareness();
 
         localUserIdRef.current = String(currentUser.userId);
@@ -84,6 +84,11 @@ export function useCollaborativeAwareness(
                         clientId,
                         userId,
                         name,
+                        avatarUrl:
+                            typeof userState.avatarUrl === "string" &&
+                            userState.avatarUrl.trim().length > 0
+                                ? userState.avatarUrl
+                                : undefined,
                         color: userState.color,
                         cursor: userState.cursor,
                         location:
@@ -149,14 +154,13 @@ export function useCollaborativeAwareness(
             clearTimeout(timeoutId);
             awareness?.off("change", handleChange);
             provider.off("status", handleStatus);
-            provider.off("authenticated", handleAuthenticated);
             mountedRef.current = false;
             previousUsersRef.current.clear();
-            authenticatedRef.current = false;
         };
     }, [
         provider,
         currentUser.name,
+        currentUser.avatarUrl,
         currentUser.color,
         currentUser.userId,
         location,

@@ -4,7 +4,6 @@ import { Provider } from "react-redux";
 import store from "@/store/store";
 import { ThemeProvider } from "@/components/theme-provider";
 import NextTopLoader from "nextjs-toploader";
-import AuthBootstrap from "./AuthenticationBootstrap";
 import setupInterceptors from "@/api/interceptors";
 import api from "@/api/axios";
 import { Toaster } from "@/components/shadcnUI/sonner";

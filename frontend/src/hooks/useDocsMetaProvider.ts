@@ -44,8 +44,6 @@ export function useDocsMetaProvider(
                     return;
                 }
 
-                if (!shouldRefreshWsAuth(undefined, reason)) return;
-
                 try {
                     await refreshSessionForCollab();
                     await provider?.connect();
@@ -53,9 +51,11 @@ export function useDocsMetaProvider(
                     if (!expiredNotifiedRef.current) {
                         expiredNotifiedRef.current = true;
                         toast.warning(
-                            "Session expired. Refresh the page to continue.",
+                            "Session expired. Please sign in again.",
                         );
                     }
+                    provider?.destroy();
+                    router.replace("/login");
                 }
             },
             onClose: async ({ event }) => {
@@ -80,9 +80,11 @@ export function useDocsMetaProvider(
                     if (!expiredNotifiedRef.current) {
                         expiredNotifiedRef.current = true;
                         toast.warning(
-                            "Session expired. Refresh the page to continue.",
+                            "Session expired. Please sign in again.",
                         );
                     }
+                    provider?.destroy();
+                    router.replace("/login");
                 }
             },
         });

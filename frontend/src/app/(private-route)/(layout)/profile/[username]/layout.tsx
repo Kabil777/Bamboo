@@ -2,11 +2,16 @@
 import { UserX } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { ProfileRoutes, ProfileTabProvider } from "@/components/atomsComponents";
 import { SectionCards } from "@/components/atomsComponents/sectionCard";
 import { Button } from "@/components/shadcnUI/button";
-import { useAppState } from "@/hooks/ReduxHooks";
+import { useAppDispatch, useAppState } from "@/hooks/ReduxHooks";
+import {
+	getUserProfileByHandle,
+	resetProfileCollections,
+	resetProfileView,
+} from "@/store/reducers/Profile/profile.read";
 import React from "react";
 
 export default function Layout({
@@ -16,6 +21,7 @@ export default function Layout({
 }>) {
 	const params = useParams();
 	const username = params.username as string;
+	const dispatch = useAppDispatch();
 	const { user } = useAppState((s) => s.userReducer);
 	const { profileError, profileLoading } = useAppState((s) => s.getProfileReducers);
 	const [selectedTab, setSelectedTab] = React.useState("all");
@@ -44,6 +50,16 @@ export default function Layout({
 	const handleTabChange = (selecttab: string) => {
 		setSelectedTab(selecttab);
 	};
+
+	useEffect(() => {
+		if (!handle || handle === user?.handle) {
+			return;
+		}
+
+		dispatch(resetProfileView());
+		dispatch(resetProfileCollections());
+		dispatch(getUserProfileByHandle(handle));
+	}, [dispatch, handle, user?.handle]);
 
 	// Show error UI if profile not found
 	if (!profileLoading && profileError) {

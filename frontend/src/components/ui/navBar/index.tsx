@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Book, CirclePlay, File, LifeBuoy, Zap } from "lucide-react";
 import {
     DropDownProfileMenu,
@@ -93,24 +93,38 @@ const NavBar = ({
         signup: { title: "Sign up", url: "#" },
     },
 }: NavbarProps) => {
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
+
     return (
         <header className="py-2 z-50 border border-accent fixed top-0 bg-background shadow-none w-full ">
             <div className="justify-between md:px-12 px-2 sm:px-6 flex">
                 <div className="flex items-center ">
                     <div className="flex items-center gap-1">
                         <div className="md:hidden flex items-center">
-                            <SideNavBarMenu menu={menu} />
+                            {mounted ? (
+                                <SideNavBarMenu menu={menu} />
+                            ) : (
+                                <div className="size-9 rounded-md border bg-background" />
+                            )}
                         </div>
                         <Logo />
                     </div>
                     <div className="hidden items-center md:flex">
-                        <NavigationMenuBar menu={menu} />
+                        {mounted ? <NavigationMenuBar menu={menu} /> : null}
                     </div>
                 </div>
                 <div className="flex gap-5 items-center">
                     <SearchBox /> 
-                    <EditorModel />
-                    <DropDownProfileMenu  />
+                    {mounted ? <EditorModel /> : <div className="h-9 w-9 rounded-md border bg-background" />}
+                    {mounted ? (
+                        <DropDownProfileMenu />
+                    ) : (
+                        <div className="h-10 w-10 rounded-full border bg-background" />
+                    )}
                 </div>
             </div>
         </header>

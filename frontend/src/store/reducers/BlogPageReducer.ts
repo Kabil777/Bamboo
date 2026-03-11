@@ -13,14 +13,7 @@ export const BlogPageRtk = createAsyncThunk<
     const URL = `${process.env.NEXT_PUBLIC_API_SERVER_URL}${process.env.NEXT_PUBLIC_API_VERSION}/blog/${id}`;
     try {
         const res = await api.get(URL);
-        const payload = res.data;
-        return {
-            ...payload,
-            authorName: payload.authorSnapshot?.name ?? null,
-            authorHandle: payload.authorSnapshot?.handle ?? null,
-            authorAvatarUrl: payload.authorSnapshot?.avatarUrl ?? null,
-            collaborators: payload.collaborators ?? [],
-        };
+        return res.data;
     } catch (r) {
         return rejectWithValue("Failed to load blog");
     }

@@ -27,13 +27,18 @@ export const getCoverBlog = createAsyncThunk<
     }
 });
 
-const initialState: BlogCursorResponse = {
+interface BlogCoverState extends BlogCursorResponse {
+    fetched: boolean;
+}
+
+const initialState: BlogCoverState = {
     blogLoading: true,
     blogLoadMore: false,
     data: [],
     cursor: null,
     hasNext: true,
     error: null,
+    fetched: false,
 };
 
 const homeBlogCoverReducers = createSlice({
@@ -41,7 +46,7 @@ const homeBlogCoverReducers = createSlice({
     initialState: initialState,
     reducers: {
         setData: (state, action) => {
-            state.data.push(...action.payload.blogPagesDto);
+            state.data.push(...action.payload.items);
             (state.cursor = action.payload.cursor),
                 (state.hasNext = action.payload.hasNext);
         },
@@ -66,18 +71,22 @@ const homeBlogCoverReducers = createSlice({
             const { mode } = a.meta.arg;
 
             if (mode === "init") {
-                s.data = a.payload.blogPagesDto;
+                s.data = a.payload.items;
                 s.blogLoading = false;
             } else {
-                s.data.push(...a.payload.blogPagesDto);
+                s.data.push(...a.payload.items);
                 s.blogLoadMore = false;
             }
 
             s.cursor = a.payload.cursor;
             s.hasNext = a.payload.hasNext;
+            s.fetched = true;
         });
         builder.addCase(getCoverBlog.rejected, (s, a) => {
             s.error = a.error.message ?? "Unknown error";
+            s.fetched = true;
+            s.blogLoading = false;
+            s.blogLoadMore = false;
         });
     },
 });

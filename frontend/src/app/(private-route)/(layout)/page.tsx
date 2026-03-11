@@ -183,7 +183,7 @@ function FeaturedCarousel({
                                         Written by
                                     </p>
                                     <p className="mt-0.5 text-sm font-semibold text-foreground">
-                                        {story.authorName?.trim() || "Bamboo Editorial"}
+                                        {story.author?.name?.trim() || "Bamboo Editorial"}
                                     </p>
                                 </div>
                                 <Link
@@ -237,23 +237,28 @@ function FeaturedCarousel({
 
 function DocsShelf({ docs }: { docs: DocsHomeCard[] }) {
     return (
-        <section className="py-6">
-            <div className="mb-5 flex items-center gap-3">
-                <span className="whitespace-nowrap text-[10px] font-semibold uppercase tracking-[0.22em] text-foreground/50">
+        <section className="space-y-4">
+            <div className="flex items-center gap-3">
+                <span className="whitespace-nowrap text-[10px] font-semibold uppercase tracking-[0.24em] text-foreground/55">
                     Reference shelf
                 </span>
-                <div className="h-px flex-1 bg-foreground/[0.08]" />
+                <div className="h-px flex-1 bg-foreground/[0.10]" />
                 <Link
                     href="/docs"
-                    className="whitespace-nowrap text-xs font-medium text-foreground/40 transition-colors hover:text-foreground"
+                    className="text-[11px] font-semibold uppercase tracking-[0.14em] text-foreground/55 transition-colors hover:text-foreground"
                 >
                     Browse docs
                 </Link>
             </div>
-            <h2 className="mt-0.5 text-lg font-semibold tracking-tight text-foreground">
-                Continue learning
-            </h2>
-            <div className="grid gap-3 md:grid-cols-1 xl:grid-cols-3">
+            <div className="space-y-1">
+                <h2 className="text-xl font-semibold tracking-tight text-foreground">
+                    Continue learning
+                </h2>
+                <p className="mt-1 text-sm text-foreground/45">
+                    Focused docs picked from your latest workspace updates.
+                </p>
+            </div>
+            <div className="grid gap-4 md:grid-cols-1 xl:grid-cols-3">
                 {docs.map((doc) => (
                     <DocsCard
                         key={doc.id}
@@ -270,27 +275,27 @@ function DocsShelf({ docs }: { docs: DocsHomeCard[] }) {
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 export default function Home() {
-    const { blogLoading, data } = useSelector((s: RootState) => s.blogReducer);
-    const { loading: featuredLoading, data: featuredStories } = useAppState(
+    const { blogLoading, data, fetched: blogFetched } = useSelector((s: RootState) => s.blogReducer);
+    const { loading: featuredLoading, data: featuredStories, fetched: featuredFetched } = useAppState(
         (s) => s.featuredBlogReducer,
     );
-    const { isDocsLoading, docs } = useAppState((s) => s.docsHomeReducer);
+    const { isDocsLoading, docs, fetched: docsFetched } = useAppState((s) => s.docsHomeReducer);
     const dispatch = useAppDispatch();
 
     useEffect(() => {
-        if (!data || data.length === 0)
+        if (!blogFetched)
             dispatch(getCoverBlog({ cursor: null, mode: "init" }));
-    }, [dispatch, data]);
+    }, [dispatch, blogFetched]);
 
     useEffect(() => {
-        if (!featuredStories || featuredStories.length === 0) {
+        if (!featuredFetched) {
             dispatch(getFeaturedBlogs());
         }
-    }, [dispatch, featuredStories]);
+    }, [dispatch, featuredFetched]);
 
     useEffect(() => {
-        if (!docs || docs.length === 0) dispatch(DocsCoverRtk());
-    }, [dispatch, docs]);
+        if (!docsFetched) dispatch(DocsCoverRtk());
+    }, [dispatch, docsFetched]);
 
     const blogList = data ?? [];
     const docsList = docs ?? [];
@@ -326,7 +331,18 @@ export default function Home() {
                         <Skeleton className="h-[380px] w-full rounded-[28px]" />
                     ) : carouselStories.length > 0 ? (
                         <FeaturedCarousel stories={carouselStories} />
-                    ) : null}
+                    ) : (
+                        <div className="flex min-h-[220px] items-center justify-center rounded-[28px] border border-dashed border-foreground/10 bg-foreground/[0.02] p-8">
+                            <div className="max-w-md text-center">
+                                <h2 className="text-xl font-semibold tracking-tight text-foreground">
+                                    Featured stories will appear here
+                                </h2>
+                                <p className="mt-2 text-sm leading-6 text-foreground/40">
+                                    We&apos;re waiting for the next highlighted posts.
+                                </p>
+                            </div>
+                        </div>
+                    )}
 
                     {/* ROW 2 — 9-col main + 3-col sidebar */}
                     <div className="grid grid-cols-12 gap-x-8 pt-8">
@@ -338,26 +354,26 @@ export default function Home() {
                                         <BlogCardSkeleton key={i} />
                                     ))}
                                 </div>
-                            ) : carouselStories.length > 0 ? (
+                            ) : (
                                 <div className="space-y-0">
                                     {/* Recent stories */}
                                     <section>
-                                        <div className="flex items-end justify-between gap-4 pb-5">
-                                            <div>
-                                                <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-foreground/60">
+                                        <div className="space-y-2 pb-5">
+                                            <div className="flex items-center gap-3">
+                                                <p className="whitespace-nowrap text-[10px] font-semibold uppercase tracking-[0.22em] text-foreground/60">
                                                     Latest dispatches
                                                 </p>
-                                                <h2 className="mt-1 text-2xl font-semibold tracking-tight text-foreground">
-                                                    Fresh writing from the
-                                                    network
-                                                </h2>
+                                                <div className="h-px flex-1 bg-foreground/[0.08]" />
+                                                <Link
+                                                    href="/search"
+                                                    className="whitespace-nowrap text-[11px] font-semibold uppercase tracking-[0.14em] text-foreground/55 transition-colors hover:text-foreground"
+                                                >
+                                                    Explore all
+                                                </Link>
                                             </div>
-                                            <Link
-                                                href="/search"
-                                                className="flex items-center gap-1 text-sm font-medium text-foreground/40 transition-colors hover:text-foreground"
-                                            >
-                                                Explore all
-                                            </Link>
+                                            <h2 className="text-2xl font-semibold tracking-tight text-foreground">
+                                                Fresh writing from the network
+                                            </h2>
                                         </div>
                                         {recentStories.length === 0 ? (
                                             <p className="py-8 text-center text-sm text-foreground/35">
@@ -374,8 +390,9 @@ export default function Home() {
                                                             )}
                                                             <BlogCard
                                                                 {...blog}
-                                                                authorName={blog.authorName ?? blog.handle ?? null}
-                                                                authorHandle={blog.authorHandle ?? blog.handle ?? null}
+                                                                authorName={blog.author?.name ?? null}
+                                                                authorHandle={blog.author?.handle ?? null}
+                                                                authorAvatarUrl={blog.author?.avatarUrl ?? null}
                                                                 isOwner={false}
                                                             />
                                                         </div>
@@ -392,18 +409,6 @@ export default function Home() {
                                     */}
                                     <div className="pt-10">
                                         <DocsShelf docs={curatedDocs} />
-                                    </div>
-                                </div>
-                            ) : (
-                                <div className="flex min-h-[50vh] items-center justify-center rounded-[32px] border border-dashed border-foreground/10 bg-foreground/[0.02] p-10">
-                                    <div className="max-w-md text-center">
-                                        <h1 className="text-2xl font-semibold tracking-tight text-foreground">
-                                            Nothing published yet
-                                        </h1>
-                                        <p className="mt-3 text-sm leading-6 text-foreground/40">
-                                            Start with one strong post and a few
-                                            reference docs.
-                                        </p>
                                     </div>
                                 </div>
                             )}

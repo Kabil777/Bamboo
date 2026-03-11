@@ -90,8 +90,9 @@ export function useCollabUser() {
         () => ({
             id: stableDataRef.current!.id,
             name: stableNameRef.current || "",
+            avatarUrl: user?.profileImg || "",
             color: stableDataRef.current!.color,
         }),
-        [user?.name, user?.handle, user?.email],
+        [user?.name, user?.handle, user?.email, user?.profileImg],
     );
 }

@@ -2,7 +2,6 @@
 
 import Editor from "@/components/ui/editorComponent";
 import { useParams } from "next/navigation";
-import { toast } from "sonner";
 
 function getCollabHttpBaseUrl() {
     const wsUrl =
@@ -47,7 +46,6 @@ export default function BlogEditor() {
                 throw new Error(message);
             }
 
-            toast.success("Blog saved");
         } catch (error: unknown) {
             const message =
                 error instanceof Error ? error.message : "Failed to save blog";

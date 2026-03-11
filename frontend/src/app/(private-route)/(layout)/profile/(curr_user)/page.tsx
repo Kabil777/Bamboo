@@ -67,6 +67,7 @@ export default function Profile() {
             dispatch(getAllProfileDocs());
         }
     }, [selectedTab, blogs, dispatch, blogLoading, docsLoading, docs]);
+    
     return (
         <div className="container grid grid-cols-4 transition-all duration-200 ease-linear gap-4 md:gap-6 relative">
             <div className="col-span-full xl:col-span-3 mx-2 md:mx-0 xl:border-r-1 p-0 sm:p-2 relative">
@@ -74,20 +75,19 @@ export default function Profile() {
                     <>
                         {blogLoading && <BlogCardSkeleton />}
                         {!blogLoading &&
-                            blogs?.blogPagesDto?.map((item) => (
+                            blogs?.items?.map((item) => (
                                 <BlogCard
                                     key={item.id}
                                     title={item.title}
                                     description={item.description}
                                     coverUrl={item.coverUrl}
-                                    authorId={item.authorId}
-                                    authorName={item.handle || user?.handle || item.authorId}
-                                    authorHandle={item.handle || user?.handle || item.authorId}
+                                    author={item.author}
                                     id={item.id}
                                     tags={item.tags}
                                     createdAt={item.createdAt}
                                     visibility={item.visibility}
                                     status={item.status}
+                                    collaborators={item.collaborators}
                                     isOwner={isOwner}
                                 />
                             ))}
@@ -97,8 +97,8 @@ export default function Profile() {
                 {selectedTab === "docs" && (
                     <>
                         {docsLoading && <BlogCardSkeleton />}
-                        {!docsLoading && docs?.docs?.length
-                            ? docs.docs.map((doc) => (
+                        {!docsLoading && docs?.items?.length
+                            ? docs.items.map((doc) => (
                                   <DocsProfileCard
                                       key={doc.id}
                                       id={doc.id}
@@ -109,12 +109,7 @@ export default function Profile() {
                                       visibility={doc.visibility}
                                       status={doc.status}
                                       isOwner={isOwner}
-                                      authorName={
-                                          user?.handle ||
-                                          user?.name ||
-                                          user?.email ||
-                                          "user101"
-                                      }
+                                      authorName={doc.author?.name || user?.name}
                                   />
                               ))
                             : null}

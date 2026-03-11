@@ -58,8 +58,6 @@ export function useHocuspocusProvider(
                         return;
                     }
 
-                    if (!shouldRefreshWsAuth(undefined, reason)) return;
-
                     try {
                         await refreshSessionForCollab();
                         await providerRef.current?.connect();
@@ -67,9 +65,11 @@ export function useHocuspocusProvider(
                         if (!expiredNotifiedRef.current) {
                             expiredNotifiedRef.current = true;
                             toast.warning(
-                                "Session expired. Refresh the page to continue.",
+                                "Session expired. Please sign in again.",
                             );
                         }
+                        providerRef.current?.destroy();
+                        router.replace("/login");
                     }
                 },
                 onClose: async ({ event }) => {
@@ -94,9 +94,11 @@ export function useHocuspocusProvider(
                         if (!expiredNotifiedRef.current) {
                             expiredNotifiedRef.current = true;
                             toast.warning(
-                                "Session expired. Refresh the page to continue.",
+                                "Session expired. Please sign in again.",
                             );
                         }
+                        providerRef.current?.destroy();
+                        router.replace("/login");
                     }
                 },
             });

@@ -23,11 +23,13 @@ interface initialType {
     isDocsLoading: boolean;
     docs: DocsHomeCard[] | [];
     isError: boolean;
+    fetched: boolean;
 }
 const initialState: initialType = {
     isDocsLoading: true,
     docs: [],
     isError: false,
+    fetched: false,
 };
 const getCoverDocs = createSlice({
     name: "docsHomeReducer",
@@ -45,10 +47,12 @@ const getCoverDocs = createSlice({
         builder.addCase(DocsCoverRtk.fulfilled, (state, action) => {
             state.isDocsLoading = false;
             state.docs = action.payload;
+            state.fetched = true;
         });
         builder.addCase(DocsCoverRtk.rejected, (state, _) => {
             state.isDocsLoading = false;
             state.isError = true;
+            state.fetched = true;
         });
     },
 });

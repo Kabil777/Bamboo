@@ -128,7 +128,7 @@ export const DocsCard = ({
                 <div className="flex items-center gap-2 text-xs text-muted-foreground font-medium">
                     <span className="inline-flex items-center gap-1.5">
                         <PenLine size={12} className="opacity-70" />
-                        {doc?.authorName || "Unknown writer"}
+                        {doc?.author?.name || "Unknown writer"}
                     </span>
                     <span className="w-1 h-1 rounded-full bg-muted-foreground/40" />
                     <span>~ {relativeTime || "just now"}</span>
