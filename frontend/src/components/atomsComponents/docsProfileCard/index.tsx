@@ -15,7 +15,7 @@ import { toast } from "sonner";
 import { useAppDispatch } from "@/hooks/ReduxHooks";
 import { getAllProfileDocs } from "@/store/reducers/Profile/profile.read";
 
-export const DocsProfileCard: React.FC<ProfileDoc & { isOwner?: boolean }> = ({
+export const DocsProfileCard: React.FC<ProfileDoc & { isOwner?: boolean; authorName?: string }> = ({
     id,
     title,
     description,

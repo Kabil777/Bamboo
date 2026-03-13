@@ -26,7 +26,8 @@ import {
 	MessageCircle,
 	ExternalLink,
 	Send,
-	User,
+	MoreVertical,
+	X,
 } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
@@ -57,12 +58,22 @@ import {
 	TooltipContent,
 	TooltipTrigger,
 } from "@/components/shadcnUI/tooltip";
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuTrigger,
+} from "@/components/shadcnUI/dropdown-menu";
 import { useAppDispatch, useAppState } from "@/hooks/ReduxHooks";
 import { extractToc } from "@/lib/utils";
 import { BlogPageRtk } from "@/store/reducers/BlogPageReducer";
 import type { BlogPage } from "@/types/blog/blog-base";
 import { toast } from "sonner";
 import Image from "next/image";
+import { Drawer, DrawerClose, DrawerContent, DrawerDescription, DrawerFooter, DrawerHeader, DrawerTitle, DrawerTrigger } from "@/components/shadcnUI/drawer";
+import { Avatar } from "@/components/shadcnUI/avatar";
+import { Input } from "@/components/shadcnUI/input";
+import { Textarea } from "@/components/shadcnUI/textarea";
 
 // ─── Helpers ─────────────────────────────────────────
 
@@ -97,6 +108,13 @@ function formatCommentDate(date: Date) {
 interface Comment {
 	id: string;
 	name: string;
+	text: string;
+	timestamp: Date;
+	replies?: CommentReply[];
+}
+
+interface CommentReply {
+	id: string;
 	text: string;
 	timestamp: Date;
 }
@@ -165,9 +183,10 @@ export default function BlogRenderPage() {
 
 	// ─── Comments State ──────────────────────────
 	const [comments, setComments] = useState<Comment[]>([]);
-	const [commentName, setCommentName] = useState("");
 	const [commentText, setCommentText] = useState("");
 	const [showComments, setShowComments] = useState(true);
+	const [replyToId, setReplyToId] = useState<string | null>(null);
+	const [replyText, setReplyText] = useState("");
 
 	useEffect(() => {
 		if (!id) return;
@@ -225,7 +244,6 @@ export default function BlogRenderPage() {
 
 	// ─── Comment Handlers ────────────────────────
 	const handleAddComment = useCallback(() => {
-		const trimmedName = commentName.trim() || "Anonymous";
 		const trimmedText = commentText.trim();
 		if (!trimmedText) {
 			toast.error("Please write a comment");
@@ -233,14 +251,50 @@ export default function BlogRenderPage() {
 		}
 		const newComment: Comment = {
 			id: crypto.randomUUID(),
-			name: trimmedName,
+			name: "Anonymous",
 			text: trimmedText,
 			timestamp: new Date(),
+			replies: [],
 		};
 		setComments((prev) => [newComment, ...prev]);
 		setCommentText("");
 		toast.success("Comment added!");
-	}, [commentName, commentText]);
+	}, [commentText]);
+
+	const handleAddReply = useCallback((commentId: string) => {
+		const trimmedText = replyText.trim();
+		if (!trimmedText) {
+			toast.error("Please write a reply");
+			return;
+		}
+		const newReply: CommentReply = {
+			id: crypto.randomUUID(),
+			text: trimmedText,
+			timestamp: new Date(),
+		};
+		setComments((prev) =>
+			prev.map((comment) =>
+				comment.id === commentId
+					? {
+						...comment,
+						replies: [...(comment.replies ?? []), newReply],
+					}
+					: comment,
+			),
+		);
+		setReplyText("");
+		setReplyToId(null);
+		toast.success("Reply added!");
+	}, [replyText]);
+
+	const handleDeleteComment = useCallback((commentId: string) => {
+		setComments((prev) => prev.filter((comment) => comment.id !== commentId));
+		toast.success("Comment deleted");
+	}, []);
+
+	const handleReportComment = useCallback(() => {
+		toast.success("Reported. Thanks for the feedback.");
+	}, []);
 
 	// ─── Loading ─────────────────────────────────
 	if (!id || loadingById[id]) {
@@ -339,7 +393,7 @@ export default function BlogRenderPage() {
 			{/* ─── Main Layout ─── */}
 			<div className="flex justify-center relative w-full gap-6 lg:gap-10">
 				{/* ─── Article ─── */}
-				<article className="flex-1 min-w-0 w-full max-w-3xl mx-auto px-4 sm:px-6 lg:px-2">
+				<article className="flex-1 min-w-0 w-full max-w-3xl px-4 sm:px-6 lg:px-2">
 					<motion.div
 						className="flex w-full min-w-0 flex-1 flex-col py-6 lg:py-10 text-neutral-800 dark:text-neutral-300"
 						initial="hidden"
@@ -418,10 +472,226 @@ export default function BlogRenderPage() {
 								<CalendarDays className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
 								{formatDate(blog.createdAt)}
 							</span>
-						</motion.div>
+						<Drawer>
+							<DrawerTrigger asChild>
+								<Button variant="ghost" className="w-fit text-[11px] sm:text-xs h-fit text-muted-foreground/80"><MessageCircle size={24} />Comments</Button>
+							</DrawerTrigger>
+							<DrawerContent
+								hideOverlay
+								showHandle={false}
+								className="h-full w-full mx-auto border border-border/40 bg-background/95 backdrop-blur-sm shadow-2xl data-[vaul-drawer-direction=bottom]:border-t-0 data-[vaul-drawer-direction=bottom]:max-h-[80vh] rounded-t-3xl"
+							>
+								<div className="w-full md:max-w-xl mx-auto flex h-full flex-col">
+									<DrawerClose asChild>
+										<Button
+											variant="ghost"
+											size="icon"
+											className="absolute right-3 top-3 z-20 h-8 w-8 rounded-full bg-background/70 shadow-sm hover:bg-background/90 transition-all duration-300"
+											aria-label="Close"
+										>
+											<X className="h-4 w-4" />
+										</Button>
+									</DrawerClose>
 
+									<DrawerHeader className="pt-6">
+										<DrawerTitle>
+											<div className="flex gap-2">
+
+												<MessageCircle size={24} />Comments
+											</div>
+										</DrawerTitle>
+									</DrawerHeader>
+
+
+									<div className="relative flex-1 overflow-y-auto custom-scroll pb-28">
+
+										{/* Comments List */}
+										{comments.length === 0 ? (
+											<motion.div
+												initial={{ opacity: 0, scale: 0.95 }}
+												animate={{ opacity: 1, scale: 1 }}
+												className="text-center py-12"
+											>
+												<div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-muted/60 to-muted/20 border border-border/30 flex items-center justify-center mx-auto mb-4 shadow-sm">
+													<MessageCircle className="w-7 h-7 text-muted-foreground/30" />
+												</div>
+												<p className="text-sm text-muted-foreground/60 font-medium">
+													No comments yet
+												</p>
+												<p className="text-xs text-muted-foreground/40 mt-1">
+													Be the first to share your thoughts!
+												</p>
+											</motion.div>
+										) : (
+											<div className="space-y-3 pb-2">
+												<AnimatePresence>
+													{comments.map((comment) => (
+														<motion.div
+															key={comment.id}
+															initial={{ opacity: 0, y: 12, scale: 0.98 }}
+															animate={{ opacity: 1, y: 0, scale: 1 }}
+															exit={{ opacity: 0, y: -12, scale: 0.98 }}
+															transition={{ duration: 0.3, ease: "easeOut" }}
+															className="group flex gap-3 p-4 rounded-2xl transition-all duration-300"
+														>
+															<Avatar className={`w-9 h-9 rounded-full bg-gradient-to-br ${getAvatarGradient(comment.name)} flex items-center justify-center shrink-0 shadow-sm`}>
+																<span className="text-xs font-bold text-background uppercase drop-shadow-sm">
+																	{comment.name.charAt(0)}
+																</span>
+															</Avatar>
+															<div className="flex-1 min-w-0">
+																<div className="flex items-center gap-2 mb-1">
+																	<span className="text-sm font-semibold text-foreground">
+																		Anonymous
+																	</span>
+																	<span className="text-[10px] text-muted-foreground/50 font-medium">
+																		{formatCommentDate(comment.timestamp)}
+																	</span>
+																	<DropdownMenu>
+																		<DropdownMenuTrigger asChild>
+																			<Button
+																				variant="ghost"
+																				size="icon"
+																				className="ml-auto h-7 w-7 rounded-full"
+																				aria-label="Comment actions"
+																			>
+																				<MoreVertical className="h-4 w-4" />
+																			</Button>
+																		</DropdownMenuTrigger>
+																		<DropdownMenuContent
+																			align="end"
+																			className="rounded-xl"
+																		>
+																			<DropdownMenuItem onClick={handleReportComment}>
+																				Report
+																			</DropdownMenuItem>
+																			<DropdownMenuItem
+																				className="text-destructive focus:text-destructive"
+																				onClick={() => handleDeleteComment(comment.id)}
+																			>
+																				Delete
+																			</DropdownMenuItem>
+																		</DropdownMenuContent>
+																	</DropdownMenu>
+																</div>
+																<p className="text-[13px] text-foreground/75 leading-relaxed break-words">
+																	{comment.text}
+																</p>
+																<div className="mt-2 flex items-center gap-3 text-[11px] text-muted-foreground">
+																	<button
+																		type="button"
+																		onClick={() => {
+																			setReplyToId(comment.id);
+																			setReplyText("");
+																		}}
+																		className="rounded-full px-2 py-0.5 hover:bg-muted/50 transition"
+																	>
+																		Reply
+																	</button>
+																</div>
+
+																{(comment.replies?.length ?? 0) > 0 && (
+																	<div className="mt-2 space-y-2 border-l border-border pl-3">
+																		{comment.replies?.map((reply) => (
+																			<div
+																				key={reply.id}
+																				className="rounded-xl bg-muted/20 p-3"
+																			>
+																				<div className="flex items-center gap-2 mb-1">
+																					<span className="text-xs font-semibold text-foreground">
+																						Anonymous
+																					</span>
+																					<span className="text-[10px] text-muted-foreground/50 font-medium">
+																						{formatCommentDate(reply.timestamp)}
+																					</span>
+																				</div>
+																				<p className="text-[12px] text-foreground/75 leading-relaxed break-words">
+																					{reply.text}
+																				</p>
+																			</div>
+																		))}
+																	</div>
+																)}
+
+																{replyToId === comment.id && (
+																	<div className="mt-3 rounded-xl border border-border/30 bg-background/60 p-3">
+																		<Textarea
+																			placeholder="Write a reply..."
+																			value={replyText}
+																			onChange={(e) =>
+																				setReplyText(e.target.value)
+																			}
+																			rows={2}
+																			className="focus-visible:ring-0 focus:ring-0 focus-visible:border-foreground"
+																		/>
+																		<div className="flex items-center justify-between mt-2">
+																			<span className="text-[10px] text-muted-foreground/50">
+																				{replyText.length > 0 &&
+																					`${replyText.length} characters`}
+																			</span>
+																			<div className="flex items-center gap-2">
+																				<Button
+																					variant="ghost"
+																					size="sm"
+																					className="h-7 px-2 text-[11px]"
+																					onClick={() => {
+																						setReplyToId(null);
+																						setReplyText("");
+																					}}
+																				>
+																					Cancel
+																				</Button>
+																				<Button
+																					size="sm"
+																					className="h-7 px-2 text-[11px]"
+																					onClick={() => handleAddReply(comment.id)}
+																					disabled={!replyText.trim()}
+																				>
+																					Reply
+																				</Button>
+																			</div>
+																		</div>
+																	</div>
+																)}
+															</div>
+														</motion.div>
+													))}
+												</AnimatePresence>
+											</div>
+										)}
+									</div>
+
+									<div className="sticky bottom-0 z-20 border-t border-border/30 bg-background/85 backdrop-blur-md px-4 py-3">
+										<textarea
+											placeholder="Share your thoughts..."
+											value={commentText}
+											onChange={(e) =>
+												setCommentText(e.target.value)
+											}
+											rows={2}
+											className="w-full rounded-xl border border-border/30 bg-background/60 p-3 text-sm text-foreground placeholder:text-muted-foreground/40 outline-none focus:border-primary/30 focus:ring-2 focus:ring-primary/10 transition-all duration-300 resize-none"
+										/>
+										<div className="flex items-center justify-between mt-2">
+											<span className="text-[10px] text-muted-foreground/50">
+												{commentText.length > 0 && `${commentText.length} characters`}
+											</span>
+											<Button
+												size="sm"
+												className="gap-1.5 rounded-xl text-xs h-8 bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary shadow-sm shadow-primary/20 hover:shadow-md hover:shadow-primary/25 transition-all duration-300"
+												onClick={handleAddComment}
+												disabled={!commentText.trim()}
+											>
+												<Send className="w-3.5 h-3.5" />
+												Post Comment
+											</Button>
+										</div>
+									</div>
+								</div>
+							</DrawerContent>
+						</Drawer>
+						</motion.div>
 						{/* ── Top Action Bar ── */}
-						<motion.div
+						{/* <motion.div
 							className="flex flex-wrap items-center gap-0.5 mb-8 p-1 rounded-2xl border border-border/30 bg-gradient-to-r from-muted/40 via-muted/20 to-muted/40 backdrop-blur-sm w-fit shadow-sm"
 							variants={fadeUp}
 						>
@@ -519,7 +789,7 @@ export default function BlogRenderPage() {
 								</TooltipTrigger>
 								<TooltipContent side="bottom" className="rounded-xl">Ask with LLM</TooltipContent>
 							</Tooltip>
-						</motion.div>
+						</motion.div> */}
 
 						{/* ── Description ── */}
 						{description && (
@@ -528,7 +798,7 @@ export default function BlogRenderPage() {
 								variants={fadeUp}
 							>
 								{/* Gradient left border accent */}
-								<div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-primary via-violet-500 to-primary/50 rounded-full" />
+								<div className="absolute left-0 top-0 bottom-0 w-1  rounded-full" />
 								<div className="bg-gradient-to-r from-muted/60 to-muted/20 border border-border/30 rounded-2xl p-5 sm:p-6 pl-5 sm:pl-7">
 									<svg
 										className="absolute top-4 right-4 w-7 h-7 text-primary/8"
@@ -587,138 +857,9 @@ export default function BlogRenderPage() {
 								</div>
 							</Link>
 						</motion.div>
-
-						{/* ── Comments Section ── */}
-						<motion.div className="mt-14" variants={fadeUp}>
-							{/* Section Divider */}
-							<div className="flex items-center gap-4 mb-8">
-								<div className="h-px flex-1 bg-gradient-to-r from-transparent via-border/50 to-transparent" />
-								<button
-									onClick={() => setShowComments(!showComments)}
-									className="flex items-center gap-2.5 group cursor-pointer px-4 py-2 rounded-full border border-border/30 bg-gradient-to-r from-muted/30 to-muted/10 hover:from-muted/50 hover:to-muted/30 transition-all duration-300 shadow-sm"
-								>
-									<MessageCircle className="w-4 h-4 text-primary" />
-									<span className="text-sm font-semibold text-foreground">
-										Discussion
-									</span>
-									<span className="text-[10px] text-muted-foreground bg-primary/10 text-primary px-2 py-0.5 rounded-full font-bold">
-										{comments.length}
-									</span>
-									<ChevronRight
-										className={`w-3.5 h-3.5 text-muted-foreground transition-transform duration-300 ${showComments ? "rotate-90" : ""}`}
-									/>
-								</button>
-								<div className="h-px flex-1 bg-gradient-to-r from-transparent via-border/50 to-transparent" />
-							</div>
-
-							<AnimatePresence>
-								{showComments && (
-									<motion.div
-										initial={{ opacity: 0, height: 0 }}
-										animate={{ opacity: 1, height: "auto" }}
-										exit={{ opacity: 0, height: 0 }}
-										transition={{ duration: 0.4, ease: "easeInOut" }}
-										className="overflow-hidden"
-									>
-										{/* Comment Input */}
-										<div className="relative rounded-2xl border border-border/30 bg-gradient-to-br from-muted/30 via-background to-muted/10 p-4 sm:p-5 mb-6 shadow-sm">
-											<div className="flex items-center gap-3 mb-3">
-												<div className="w-9 h-9 rounded-full bg-gradient-to-br from-primary/20 to-violet-500/20 border border-primary/10 flex items-center justify-center shrink-0 shadow-sm shadow-primary/5">
-													<User className="w-4 h-4 text-primary" />
-												</div>
-												<input
-													type="text"
-													placeholder="Your name (optional)"
-													value={commentName}
-													onChange={(e) =>
-														setCommentName(e.target.value)
-													}
-													className="flex-1 min-w-0 bg-transparent text-sm text-foreground placeholder:text-muted-foreground/40 outline-none font-medium"
-												/>
-											</div>
-											<textarea
-												placeholder="Share your thoughts..."
-												value={commentText}
-												onChange={(e) =>
-													setCommentText(e.target.value)
-												}
-												rows={3}
-												className="w-full bg-background/60 rounded-xl border border-border/30 p-3.5 text-sm text-foreground placeholder:text-muted-foreground/40 outline-none focus:border-primary/30 focus:ring-2 focus:ring-primary/10 transition-all duration-300 resize-none backdrop-blur-sm"
-											/>
-											<div className="flex items-center justify-between mt-3">
-												<span className="text-[10px] text-muted-foreground/50">
-													{commentText.length > 0 && `${commentText.length} characters`}
-												</span>
-												<Button
-													size="sm"
-													className="gap-1.5 rounded-xl text-xs h-8 bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary shadow-sm shadow-primary/20 hover:shadow-md hover:shadow-primary/25 transition-all duration-300"
-													onClick={handleAddComment}
-													disabled={!commentText.trim()}
-												>
-													<Send className="w-3.5 h-3.5" />
-													Post Comment
-												</Button>
-											</div>
-										</div>
-
-										{/* Comments List */}
-										{comments.length === 0 ? (
-											<motion.div
-												initial={{ opacity: 0, scale: 0.95 }}
-												animate={{ opacity: 1, scale: 1 }}
-												className="text-center py-12"
-											>
-												<div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-muted/60 to-muted/20 border border-border/30 flex items-center justify-center mx-auto mb-4 shadow-sm">
-													<MessageCircle className="w-7 h-7 text-muted-foreground/30" />
-												</div>
-												<p className="text-sm text-muted-foreground/60 font-medium">
-													No comments yet
-												</p>
-												<p className="text-xs text-muted-foreground/40 mt-1">
-													Be the first to share your thoughts!
-												</p>
-											</motion.div>
-										) : (
-											<div className="space-y-3">
-												<AnimatePresence>
-													{comments.map((comment) => (
-														<motion.div
-															key={comment.id}
-															initial={{ opacity: 0, y: 12, scale: 0.98 }}
-															animate={{ opacity: 1, y: 0, scale: 1 }}
-															exit={{ opacity: 0, y: -12, scale: 0.98 }}
-															transition={{ duration: 0.3, ease: "easeOut" }}
-															className="group flex gap-3 p-4 rounded-2xl border border-border/20 bg-gradient-to-br from-muted/20 to-transparent hover:from-muted/30 hover:to-muted/10 hover:border-border/40 hover:shadow-sm transition-all duration-300"
-														>
-															<div className={`w-9 h-9 rounded-full bg-gradient-to-br ${getAvatarGradient(comment.name)} flex items-center justify-center shrink-0 shadow-sm`}>
-																<span className="text-xs font-bold text-white uppercase drop-shadow-sm">
-																	{comment.name.charAt(0)}
-																</span>
-															</div>
-															<div className="flex-1 min-w-0">
-																<div className="flex items-center gap-2 mb-1">
-																	<span className="text-sm font-semibold text-foreground">
-																		{comment.name}
-																	</span>
-																	<span className="text-[10px] text-muted-foreground/50 font-medium">
-																		{formatCommentDate(comment.timestamp)}
-																	</span>
-																</div>
-																<p className="text-[13px] text-foreground/75 leading-relaxed break-words">
-																	{comment.text}
-																</p>
-															</div>
-														</motion.div>
-													))}
-												</AnimatePresence>
-											</div>
-										)}
-									</motion.div>
-								)}
-							</AnimatePresence>
-						</motion.div>
 					</motion.div>
 				</article>
+
 
 				{/* ─── Right Sidebar: TOC ─── */}
 				<aside className="hidden lg:block shrink-0 w-56 xl:w-64 sticky top-24 self-start max-h-[calc(100vh-7rem)] overflow-y-auto pb-8 custom-scroll">
