@@ -1,4 +1,5 @@
 import { Check, FileText, Link2, Upload, Users, X } from "lucide-react";
+import { IoLogoMarkdown } from "react-icons/io";
 import { useEffect, useState } from "react";
 import type { Editor } from "@tiptap/react";
 import { Button } from "@/components/shadcnUI/button";
@@ -17,8 +18,6 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/shadcnUI/select";
-import Popup from "@/components/ui/editorComponent/Popup";
-import { motion } from "framer-motion";
 
 import {
     Avatar,
@@ -40,7 +39,7 @@ import api from "@/api/axios";
 import { toast } from "sonner";
 import type { AxiosError } from "axios";
 import type { userAwareness } from "@/hooks/useCollabrationAwareness";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/shadcnUI/tooltip";
+import { FloatingActionBar, Popup } from "@/components/atomsComponents";
 
 type InvitedUser = {
     userId?: string;
@@ -305,65 +304,40 @@ export const ToolBarBottom = ({
         <>
             {editor && (
                 <>
-                    <motion.div
-                        initial={{ opacity: 0, y: 20, scale: 0.95 }}
-                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                        transition={{ delay: 0.8, duration: 0.35, ease: "easeOut" }}
-                        className="fixed bottom-10 right-6 z-50 flex gap-2 flex-col"
-                    >
-                        <div className="flex flex-col items-center rounded-2xl border border-border bg-background/70 backdrop-blur-2xl shadow-xl shadow-black/5 dark:shadow-black/20  p-1.5 w-full text-center text-xs text-foreground/50">
-                            {word ?? 0} characters
-                        </div>
-                        <div className="flex items-center gap-1 rounded-2xl border border-border bg-background/70 backdrop-blur-2xl shadow-xl shadow-black/5 dark:shadow-black/20  p-1.5">
-                            <Tooltip>
-                                <TooltipTrigger asChild>
-                                    <Popup
-                                        open={openMd}
-                                        setOpen={setOpenMd}
-                                        onClick={() => {
-                                            setOpenMd(true);
-                                        }}
-                                        editor={editor}
-                                    />
-                                </TooltipTrigger>
-                                <TooltipContent side="top">Copy as Markdown</TooltipContent>
-                            </Tooltip>
+                    <FloatingActionBar
+                        prefix={
+                            <span className="whitespace-nowrap">
+                                {word ?? 0} characters
+                            </span>
+                        }
+                        actions={[
+                            {
+                                icon: IoLogoMarkdown,
+                                label: "Import Markdown",
+                                onClick: () => setOpenMd(true),
+                            },
+                            "separator",
+                            {
+                                icon: Users,
+                                label: "Share this file",
+                                onClick: () => setOpenColab(true),
+                            },
+                            "separator",
+                            {
+                                icon: Upload,
+                                label: "Upload this file",
+                                onClick: () => setOpenUpload(true),
+                            },
+                        ]}
+                    />
 
-                            <div className="w-px h-5 bg-border mx-0.5" />
 
-                            <Tooltip>
-                                <TooltipTrigger asChild>
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        className="h-9 w-9 rounded-xl hover:bg-primary/10 transition-all duration-200"
-                                        onClick={() => setOpenColab(true)}
-
-                                    >
-                                        <Users className="w-4 h-4" />
-                                    </Button>
-                                </TooltipTrigger>
-                                <TooltipContent side="top">Share this file</TooltipContent>
-                            </Tooltip>
-                            <div className="w-px h-5 bg-border mx-0.5" />
-                            <Tooltip>
-                                <TooltipTrigger asChild>
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        className="h-9 w-9 rounded-xl hover:bg-primary/10 transition-all duration-200"
-                                        onClick={() => setOpenUpload(true)}
-
-                                    >
-                                        <Upload className="w-4 h-4" />
-                                    </Button>
-                                </TooltipTrigger>
-                                <TooltipContent side="top">Upload this file</TooltipContent>
-                            </Tooltip>
-                        </div>
-
-                    </motion.div>
-
+                    <Popup
+                        open={openMd}
+                        setOpen={setOpenMd}
+                        editor={editor}
+                        onClick={() => { }}
+                    />
 
                     <AlertDialog open={openUpload} onOpenChange={setOpenUpload} >
                         <AlertDialogContent>

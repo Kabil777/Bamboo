@@ -2,6 +2,7 @@
 
 import Editor from "@/components/ui/editorComponent";
 import { useParams } from "next/navigation";
+import { toast } from "sonner";
 
 function getCollabHttpBaseUrl() {
     const wsUrl =

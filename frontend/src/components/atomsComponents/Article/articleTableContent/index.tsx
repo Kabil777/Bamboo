@@ -9,6 +9,7 @@ import {
 import { ChevronRight } from "lucide-react"
 import React, { useState, useEffect } from "react"
 import { motion, AnimatePresence, LayoutGroup } from "motion/react"
+import Link from "next/link"
 
 type TocItem = {
   id: string
@@ -72,21 +73,21 @@ function renderSidebarItems(items: TocItem[], activeId: string | null, depth: nu
               )}
               <SidebarMenuButton asChild className="hover:bg-transparent focus:!bg-transparent data-[active=true]:bg-transparent active:bg-transparent min-w-0 w-full !h-auto">
                 <span className="!py-[5px] !px-0 !gap-0 flex items-center min-w-0 w-full">
-                  <a
+                  <Link
                     href={`#${item.id}`}
                     className={`
                       block w-full text-left truncate min-w-0 flex-1
-                      transition-all duration-200 ease-out
+                      transition-all duration-200 ease-out !pl-2
                       ${depth === 0 ? "!text-[13px] font-semibold" : "!text-[12px] font-medium"}
                       ${isActive
-                        ? "text-primary !pl-3"
-                        : "text-muted-foreground/70 hover:text-foreground !pl-2"
+                        ? "text-primary"
+                        : "text-muted-foreground/70 hover:text-foreground"
                       }
                     `}
                     title={item.value}
                   >
                     {item.value}
-                  </a>
+                  </Link>
                   {/* Chevron toggle */}
                   {hasChildren && (
                     <CollapsibleTrigger asChild>
@@ -131,7 +132,7 @@ function renderSidebarItems(items: TocItem[], activeId: string | null, depth: nu
                     willChange: "height"
                   }}
                 >
-                  <SidebarMenuSub className="mr-0 pr-0 min-w-0 overflow-hidden !ml-2 !pl-2.5 !border-l-[1.5px] !border-border/40">
+                  <SidebarMenuSub className="mr-0 pr-0 min-w-0 overflow-hidden !ml-2 !pl-2.5 !border-l">
                     {renderSidebarItems(item.items!, activeId, depth + 1)}
                   </SidebarMenuSub>
                 </motion.div>

@@ -1,6 +1,6 @@
 import type { Editor } from "@tiptap/react";
 import { BubbleMenu } from "@tiptap/react/menus";
-import { Ban, RemoveFormatting } from "lucide-react";
+import { RemoveFormatting } from "lucide-react";
 import { Button } from "@/components/shadcnUI/button";
 
 export const BubbleMenuEditor = ({

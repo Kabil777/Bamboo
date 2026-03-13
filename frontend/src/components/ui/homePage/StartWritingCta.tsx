@@ -3,7 +3,6 @@ import Link from "next/link";
 export function StartWritingCTA() {
     return (
         <div className="px-1">
-            {/* inline title divider — matches WhatToReadNext pattern */}
             <div className="mb-5 flex items-center gap-3">
                 <span className="whitespace-nowrap text-[10px] font-semibold uppercase tracking-[0.22em] text-foreground/50">
                     Publish
