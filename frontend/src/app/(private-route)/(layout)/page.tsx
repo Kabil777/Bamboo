@@ -111,7 +111,6 @@ function FeaturedCarousel({
             >
                 {/* Mobile: image on top, text below. md+: side-by-side */}
                 <div className="flex flex-col md:grid md:grid-cols-[1fr_minmax(260px,0.65fr)] lg:grid-cols-[1fr_minmax(300px,0.7fr)]">
-
                     {/* ── Image side — top on mobile, right on desktop ── */}
                     <div className="relative h-52 sm:h-64 md:h-auto md:min-h-[340px] overflow-hidden order-first md:order-last border-b md:border-b-0 md:border-l border-border/50">
                         {story.coverUrl ? (
@@ -146,7 +145,8 @@ function FeaturedCarousel({
                                     {formatDateLabel(story.createdAt)}
                                 </span>
                                 <span className="ml-auto text-[10px] tabular-nums text-muted-foreground/50">
-                                    {active + 1}&thinsp;/&thinsp;{stories.length}
+                                    {active + 1}&thinsp;/&thinsp;
+                                    {stories.length}
                                 </span>
                             </div>
 
@@ -183,7 +183,8 @@ function FeaturedCarousel({
                                         Written by
                                     </p>
                                     <p className="mt-0.5 text-sm font-semibold text-foreground">
-                                        {story.author?.name?.trim() || "Bamboo Editorial"}
+                                        {story.author?.name?.trim() ||
+                                            "Bamboo Editorial"}
                                     </p>
                                 </div>
                                 <Link
@@ -216,13 +217,19 @@ function FeaturedCarousel({
                                         <button
                                             key={i}
                                             onClick={() =>
-                                                go(i, i > active ? "right" : "left")
+                                                go(
+                                                    i,
+                                                    i > active
+                                                        ? "right"
+                                                        : "left",
+                                                )
                                             }
                                             aria-label={`Go to slide ${i + 1}`}
-                                            className={`h-1.5 rounded-full transition-all duration-300 ${i === active
+                                            className={`h-1.5 rounded-full transition-all duration-300 ${
+                                                i === active
                                                     ? "w-6 bg-foreground"
                                                     : "w-1.5 bg-muted-foreground/25 hover:bg-muted-foreground/50"
-                                                }`}
+                                            }`}
                                         />
                                     ))}
                                 </div>
@@ -265,7 +272,7 @@ function DocsShelf({ docs }: { docs: DocsHomeCard[] }) {
                         doc={doc}
                         hoverOpen={false}
                         active=""
-                        setActiveCard={() => { }}
+                        setActiveCard={() => {}}
                     />
                 ))}
             </div>
@@ -275,11 +282,21 @@ function DocsShelf({ docs }: { docs: DocsHomeCard[] }) {
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 export default function Home() {
-    const { blogLoading, data, fetched: blogFetched } = useSelector((s: RootState) => s.blogReducer);
-    const { loading: featuredLoading, data: featuredStories, fetched: featuredFetched } = useAppState(
-        (s) => s.featuredBlogReducer,
-    );
-    const { isDocsLoading, docs, fetched: docsFetched } = useAppState((s) => s.docsHomeReducer);
+    const {
+        blogLoading,
+        data,
+        fetched: blogFetched,
+    } = useSelector((s: RootState) => s.blogReducer);
+    const {
+        loading: featuredLoading,
+        data: featuredStories,
+        fetched: featuredFetched,
+    } = useAppState((s) => s.featuredBlogReducer);
+    const {
+        isDocsLoading,
+        docs,
+        fetched: docsFetched,
+    } = useAppState((s) => s.docsHomeReducer);
     const dispatch = useAppDispatch();
 
     useEffect(() => {
@@ -302,7 +319,9 @@ export default function Home() {
 
     const carouselStories = featuredStories ?? [];
     const featuredIds = new Set(carouselStories.map((story) => story.id));
-    const nonFeaturedStories = blogList.filter((story) => !featuredIds.has(story.id));
+    const nonFeaturedStories = blogList.filter(
+        (story) => !featuredIds.has(story.id),
+    );
     // feed: next posts after featured selection
     const recentStories = nonFeaturedStories.slice(0, 6);
     // What to read next: posts 9–13 — genuinely beyond what's already visible
@@ -320,7 +339,7 @@ export default function Home() {
                     {blogLoading ? (
                         <Skeleton className="mt-3 h-9 w-full rounded-full" />
                     ) : (
-                        <TabChips tabs={tabs} onTabChange={() => { }} />
+                        <TabChips tabs={tabs} onTabChange={() => {}} />
                     )}
                     <hr className="border-foreground/[0.06]" />
                 </div>
@@ -338,7 +357,8 @@ export default function Home() {
                                     Featured stories will appear here
                                 </h2>
                                 <p className="mt-2 text-sm leading-6 text-foreground/40">
-                                    We&apos;re waiting for the next highlighted posts.
+                                    We&apos;re waiting for the next highlighted
+                                    posts.
                                 </p>
                             </div>
                         </div>
@@ -390,9 +410,21 @@ export default function Home() {
                                                             )}
                                                             <BlogCard
                                                                 {...blog}
-                                                                authorName={blog.author?.name ?? null}
-                                                                authorHandle={blog.author?.handle ?? null}
-                                                                authorAvatarUrl={blog.author?.avatarUrl ?? null}
+                                                                authorName={
+                                                                    blog.author
+                                                                        ?.name ??
+                                                                    null
+                                                                }
+                                                                authorHandle={
+                                                                    blog.author
+                                                                        ?.handle ??
+                                                                    null
+                                                                }
+                                                                authorAvatarUrl={
+                                                                    blog.author
+                                                                        ?.avatarUrl ??
+                                                                    null
+                                                                }
                                                                 isOwner={false}
                                                             />
                                                         </div>
