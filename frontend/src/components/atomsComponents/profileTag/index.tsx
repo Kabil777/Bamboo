@@ -53,7 +53,7 @@ export type Author = {
     id: string;
     name: string;
     handle?: string;
-    avatarUrl?: string;
+    avatarUrl?: string | null;
 };
 
 const MAX_VISIBLE_AVATARS = 3;

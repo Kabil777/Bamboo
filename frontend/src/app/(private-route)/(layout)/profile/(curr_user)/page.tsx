@@ -1,6 +1,6 @@
 "use client";
 import { motion } from "framer-motion";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { BlogCard, DocsProfileCard, useProfileTab } from "@/components/atomsComponents";
 import {
     Avatar,
@@ -10,6 +10,7 @@ import {
 import { Button } from "@/components/shadcnUI/button";
 import { Separator } from "@/components/shadcnUI/separator";
 import { useAppDispatch, useAppState } from "@/hooks/ReduxHooks";
+import { toast } from "sonner";
 import {
     getAllProfileBlog,
     getAllProfileDocs,
@@ -52,21 +53,37 @@ const cardData = [
 
 export default function Profile() {
     const dispatch = useAppDispatch();
-    const { blogLoading, blogs, docsLoading, docs } = useAppState(
+    const { blogLoading, blogs, docsLoading, docs, blogError, docsError } = useAppState(
         (s) => s.getProfileReducers,
     );
     const { user } = useAppState((s) => s.userReducer);
     const [activeDocId, setActiveDocId] = useState<string>("");
     const { selectedTab } = useProfileTab();
     const isOwner = true;
+
+    const fetchedPosts = useRef(false);
+    const fetchedDocs = useRef(false);
+
     useEffect(() => {
-        if (selectedTab === "posts" && !blogLoading && !blogs) {
+        if (selectedTab === "posts" && !fetchedPosts.current) {
             dispatch(getAllProfileBlog());
+            fetchedPosts.current = true;
         }
-        if (selectedTab === "docs" && !docsLoading && !docs) {
+        if (selectedTab === "docs" && !fetchedDocs.current) {
             dispatch(getAllProfileDocs());
+            fetchedDocs.current = true;
         }
-    }, [selectedTab, blogs, dispatch, blogLoading, docsLoading, docs]);
+    }, [selectedTab, dispatch]);
+
+    useEffect(() => {
+        if (blogError) {
+            toast.error(blogError || "Failed to load blogs");
+        }
+        if (docsError) {
+            toast.error(docsError || "Failed to load docs");
+        }
+    }, [blogError, docsError]);
+    
     return (
         <div className="container grid grid-cols-4 transition-all duration-200 ease-linear gap-4 md:gap-6 relative">
             <div className="col-span-full xl:col-span-3 mx-2 md:mx-0 xl:border-r-1 p-0 sm:p-2 relative">
@@ -109,6 +126,7 @@ export default function Profile() {
                                       status={doc.status}
                                       isOwner={isOwner}
                                       authorName={doc.author?.name || user?.name}
+                                      author={doc.author!}
                                   />
                               ))
                             : null}

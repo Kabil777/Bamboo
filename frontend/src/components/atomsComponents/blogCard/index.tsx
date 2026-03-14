@@ -64,6 +64,9 @@ export const BlogCard: React.FC<BlogHomeCard & { isOwner?: boolean }> = ({
             <Card className="shadow-none rounded-none border-none bg-transparent p-0 my-0">
                 <CardContent className="p-0 w-full grid grid-cols-5 items-start gap-3 md:gap-6 py-5">
                     <div className="col-span-full sm:col-span-3 sm:row-start-1 flex flex-col gap-2">
+                        {/* ProfileTag sits above title — author + domain line like Image 1 */}
+
+                        {/* Title + description — clickable block */}
                         {isOwner && isDraft ? (
                             <div
                                 role="button"

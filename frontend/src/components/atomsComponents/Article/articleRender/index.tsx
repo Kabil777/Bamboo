@@ -1,5 +1,7 @@
 "use client";
 
+import "highlight.js/styles/tokyo-night-dark.css";
+import "@/styles/render.css"
 import { JetBrains_Mono } from "next/font/google";
 
 import * as React from "react";
@@ -8,10 +10,12 @@ import remarkGfm from "remark-gfm";
 import remarkBreaks from "remark-breaks";
 import rehypeRaw from "rehype-raw";
 import rehypeHighlight from "rehype-highlight";
-import { Check, Copy, ExternalLink, SquareArrowOutUpRight } from "lucide-react";
+import { Check, Copy, SquareArrowOutUpRight } from "lucide-react";
 import { Button } from "@/components/shadcnUI/button";
 import Image from "next/image";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/shadcnUI/dialog";
+import Link from "next/link";
+import { ZoomableImage } from "@/components/atomsComponents/ZoomableImage";
 
 const jetBrains_Mono = JetBrains_Mono({
     subsets: ["latin"],
@@ -54,121 +58,6 @@ function extractText(node: React.ReactNode): string {
     return "";
 }
 
-/* ── Zoomable Image Component ── */
-function ZoomableImage({ src, alt, width, height }: { src: string; alt: string; width: number; height: number }) {
-    const [scale, setScale] = React.useState(1);
-    const [position, setPosition] = React.useState({ x: 0, y: 0 });
-    const [isDragging, setIsDragging] = React.useState(false);
-    const [dragStart, setDragStart] = React.useState({ x: 0, y: 0 });
-
-    const minScale = 1;
-    const maxScale = 5;
-
-    const handleWheel = React.useCallback((e: React.WheelEvent) => {
-        e.preventDefault();
-        e.stopPropagation();
-        const delta = e.deltaY > 0 ? -0.15 : 0.15;
-        setScale(prev => {
-            const next = Math.min(maxScale, Math.max(minScale, prev + delta));
-            if (next <= 1) setPosition({ x: 0, y: 0 });
-            return next;
-        });
-    }, []);
-
-    const handleMouseDown = React.useCallback((e: React.MouseEvent) => {
-        if (scale <= 1) return;
-        e.preventDefault();
-        setIsDragging(true);
-        setDragStart({ x: e.clientX - position.x, y: e.clientY - position.y });
-    }, [scale, position]);
-
-    const handleMouseMove = React.useCallback((e: React.MouseEvent) => {
-        if (!isDragging) return;
-        setPosition({ x: e.clientX - dragStart.x, y: e.clientY - dragStart.y });
-    }, [isDragging, dragStart]);
-
-    const handleMouseUp = React.useCallback(() => {
-        setIsDragging(false);
-    }, []);
-
-    const handleDoubleClick = React.useCallback(() => {
-        if (scale > 1) {
-            setScale(1);
-            setPosition({ x: 0, y: 0 });
-        } else {
-            setScale(2);
-        }
-    }, [scale]);
-
-    const zoomIn = () => setScale(prev => Math.min(maxScale, prev + 0.5));
-    const zoomOut = () => {
-        setScale(prev => {
-            const next = Math.max(minScale, prev - 0.5);
-            if (next <= 1) setPosition({ x: 0, y: 0 });
-            return next;
-        });
-    };
-    const resetZoom = () => {
-        setScale(1);
-        setPosition({ x: 0, y: 0 });
-    };
-
-    return (
-        <div className="relative flex flex-col">
-            {/* Image container */}
-            <div
-                className="relative overflow-hidden flex items-center justify-center bg-black/5 dark:bg-white/5"
-                style={{ height: 'calc(100vh - 10rem)', cursor: scale > 1 ? (isDragging ? 'grabbing' : 'grab') : 'zoom-in' }}
-                onWheel={handleWheel}
-                onMouseDown={handleMouseDown}
-                onMouseMove={handleMouseMove}
-                onMouseUp={handleMouseUp}
-                onMouseLeave={handleMouseUp}
-                onDoubleClick={handleDoubleClick}
-            >
-                <Image
-                    width={width}
-                    height={height}
-                    src={src}
-                    alt={alt}
-                    className="select-none pointer-events-none max-w-full max-h-full object-contain"
-                    style={{
-                        transform: `translate(${position.x}px, ${position.y}px) scale(${scale})`,
-                        transition: isDragging ? 'none' : 'transform 0.2s ease-out',
-                    }}
-                    draggable={false}
-                />
-            </div>
-
-            {/* Zoom controls */}
-            <div className="flex items-center justify-center gap-1 py-2 px-4 border-t border-border/40 bg-background">
-                <button
-                    onClick={zoomOut}
-                    disabled={scale <= minScale}
-                    className="p-1.5 rounded-lg hover:bg-muted disabled:opacity-30 disabled:cursor-not-allowed transition-colors text-foreground"
-                    aria-label="Zoom out"
-                >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeWidth={2} d="M5 12h14" /></svg>
-                </button>
-                <button
-                    onClick={resetZoom}
-                    className="px-2.5 py-1 rounded-lg hover:bg-muted transition-colors text-xs font-medium text-muted-foreground min-w-[3.5rem] tabular-nums"
-                >
-                    {Math.round(scale * 100)}%
-                </button>
-                <button
-                    onClick={zoomIn}
-                    disabled={scale >= maxScale}
-                    className="p-1.5 rounded-lg hover:bg-muted disabled:opacity-30 disabled:cursor-not-allowed transition-colors text-foreground"
-                    aria-label="Zoom in"
-                >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeWidth={2} d="M12 5v14M5 12h14" /></svg>
-                </button>
-            </div>
-        </div>
-    );
-}
-
 export const ArticleRender = ({ content }: { content: string }) => {
     const [buttonText, setButtonText] = React.useState<Record<string, boolean>>(
         {},
@@ -197,97 +86,6 @@ export const ArticleRender = ({ content }: { content: string }) => {
 
     return (
         <div className="article-render-root">
-            {/* Scoped styles for the article */}
-            <style jsx global>{`
-                .article-render-root {
-                    --article-text: hsl(var(--foreground));
-                    --article-muted: hsl(var(--muted-foreground));
-                    --article-accent: hsl(var(--primary));
-                    --article-border: hsl(var(--border));
-                    --article-bg-muted: hsl(var(--muted));
-                    --article-code-bg: #1a1b26;
-                    --article-code-header: #13141c;
-                }
-
-                /* Smooth anchor scroll */
-                .article-render-root * {
-                    scroll-margin-top: 5rem;
-                }
-
-                /* Heading hover anchor link effect */
-                .article-heading {
-                    position: relative;
-                }
-                .article-heading::before {
-                    content: '#';
-                    position: absolute;
-                    left: -1.5em;
-                    opacity: 0;
-                    color: var(--article-accent);
-                    font-weight: 400;
-                    transition: opacity 0.2s ease;
-                }
-                .article-heading:hover::before {
-                    opacity: 0.4;
-                }
-
-                /* Inline code shimmer on hover */
-                .article-inline-code {
-                    transition: background-color 0.2s ease, box-shadow 0.2s ease;
-                }
-                .article-inline-code:hover {
-                    box-shadow: 0 0 0 1px hsl(var(--primary) / 0.15);
-                }
-
-                /* Link underline animation */
-                .article-link {
-                    text-decoration: none;
-                    background-image: linear-gradient(
-                        hsl(var(--primary) / 0.3),
-                        hsl(var(--primary) / 0.3)
-                    );
-                    background-size: 0% 1.5px;
-                    background-position: 0% 100%;
-                    background-repeat: no-repeat;
-                    transition: background-size 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94),
-                        color 0.2s ease;
-                }
-                .article-link:hover {
-                    background-size: 100% 1.5px;
-                    color: hsl(var(--primary));
-                }
-
-                /* Table row hover */
-                .article-table-row {
-                    transition: background-color 0.15s ease;
-                }
-
-                /* Code block copy button */
-                .code-block-copy-btn {
-                    transition: all 0.2s ease;
-                }
-                .code-block-copy-btn:hover {
-                    background: rgba(255, 255, 255, 0.1) !important;
-                }
-
-                /* Blockquote left border gradient */
-                .article-blockquote {
-                    border-image: linear-gradient(
-                        to bottom,
-                        hsl(var(--primary)),
-                        hsl(var(--primary) / 0.2)
-                    ) 1;
-                }
-
-                /* Checkbox styling for task lists */
-                .article-render-root input[type="checkbox"] {
-                    accent-color: hsl(var(--primary));
-                    width: 1em;
-                    height: 1em;
-                    margin-right: 0.5em;
-                    vertical-align: middle;
-                }
-            `}</style>
 
             <ReactMarkdown
                 remarkPlugins={[remarkGfm, remarkBreaks]}
@@ -298,7 +96,7 @@ export const ArticleRender = ({ content }: { content: string }) => {
                         <h1
                             id={extractId(children)}
                             {...props}
-                            className="article-heading text-2xl sm:text-3xl lg:text-4xl scroll-m-20 font-extrabold tracking-tight text-foreground mt-10 mb-4 first:mt-0 leading-[1.15]"
+                            className="article-heading text-2xl sm:text-3xl lg:text-4xl scroll-m-20 font-extrabold tracking-tight text-foreground mt-10 mb-4 first:mt-0 leading-[1.50]"
                         >
                             {children}
                         </h1>
@@ -462,7 +260,7 @@ export const ArticleRender = ({ content }: { content: string }) => {
                             </div>
                         ) : (
                             <code
-                                className={`article-inline-code px-1.5 py-0.5 mx-0.5 text-[13px] sm:text-sm rounded-md text-foreground font-medium border border-border/60 bg-muted/60 ${jetBrains_Mono.className}`}
+                                className={`article-inline-code px-1.5 py-0.5 mx-0.5 rounded-md font-bold text-foreground border border-border/60 bg-muted/60 ${jetBrains_Mono.className}`}
                                 {...rest}
                             >
                                 {children}
@@ -544,9 +342,9 @@ export const ArticleRender = ({ content }: { content: string }) => {
                             !href.includes(window.location.hostname);
 
                         return (
-                            <a
-                                className="article-link text-foreground/80 font-medium items-center inline-flex items-baseline gap-0.5"
-                                href={href}
+                            <Link
+                                className="article-link text-foreground/80 font-medium items-center inline-flex gap-0.5"
+                                href={href || "#"}
                                 target={isExternal ? "_blank" : undefined}
                                 rel={
                                     isExternal
@@ -559,7 +357,7 @@ export const ArticleRender = ({ content }: { content: string }) => {
                                 {isExternal && (
                                     <SquareArrowOutUpRight className="w-3 h-3 inline-block ml-0.5 opacity-50 flex-shrink-0" />
                                 )}
-                            </a>
+                            </Link>
                         );
                     },
 

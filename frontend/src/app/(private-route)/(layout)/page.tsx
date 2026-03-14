@@ -1,25 +1,21 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useState, useCallback } from "react";
+import { useEffect } from "react";
 import { useSelector } from "react-redux";
-import { ArrowRight, ArrowLeft, BookOpenText, BookText } from "lucide-react";
 import {
     BlogCard,
-    DocsCard,
-    MoreAbout,
+    DocsShelf,
+    FeaturedCarousel,
     TabChips,
 } from "@/components/atomsComponents";
 import { BlogCardSkeleton } from "@/components/atomsComponents/skleton/blogCardSkleton";
-import { SidebarSkeleton } from "@/components/atomsComponents/skleton/sidebarSkleton";
 import { Skeleton } from "@/components/shadcnUI/skeleton";
 import { useAppDispatch, useAppState } from "@/hooks/ReduxHooks";
 import { getCoverBlog } from "@/store/reducers/BlogCoverReducer";
 import { DocsCoverRtk } from "@/store/reducers/DocsCoverReducer";
 import { getFeaturedBlogs } from "@/store/reducers/FeaturedBlogReducer";
 import type { RootState } from "@/store/store";
-import type { BlogHomeCard } from "@/types/blog/blog-base";
 import type { DocsHomeCard } from "@/types/docs/docs-base";
 
 import { WhatToReadNext } from "@/components/ui/homePage/WhatToReadNext";
@@ -51,14 +47,6 @@ const tabs = [
 ];
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
-function formatDateLabel(createdAt: string) {
-    const date = new Date(createdAt);
-    if (Number.isNaN(date.getTime())) return "Fresh today";
-    return new Intl.DateTimeFormat("en-US", {
-        month: "short",
-        day: "numeric",
-    }).format(date);
-}
 
 function pickCuratedDocs(docs: DocsHomeCard[], size: number) {
     return docs.slice(0, Math.min(size, docs.length));
@@ -434,11 +422,6 @@ export default function Home() {
                                         )}
                                     </section>
 
-                                    {/*
-                                        FIX #4 — Docs shelf gets a distinct visual mode:
-                                        tinted surface + icon badge + ring, clearly
-                                        differentiated from the post feed above
-                                    */}
                                     <div className="pt-10">
                                         <DocsShelf docs={curatedDocs} />
                                     </div>
@@ -446,12 +429,6 @@ export default function Home() {
                             )}
                         </section>
 
-                        {/*
-                            Sidebar — 3 elements, clear hierarchy:
-                            1. WhatToReadNext  — editorial reading stack
-                            2. StartWritingCTA — single elegant author prompt
-                            3. RecentlyUpdatedDocs — useful discovery, not telemetry
-                        */}
                         <aside className="col-span-12 xl:col-span-3">
                             <div className="flex flex-col gap-4 xl:sticky xl:top-[132px]">
                                 <WhatToReadNext stories={whatToReadNext} />

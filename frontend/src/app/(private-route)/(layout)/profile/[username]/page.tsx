@@ -11,6 +11,7 @@ import {
 import { Button } from "@/components/shadcnUI/button";
 import { Separator } from "@/components/shadcnUI/separator";
 import { useAppDispatch, useAppState } from "@/hooks/ReduxHooks";
+import { toast } from "sonner";
 import {
     getAllProfileBlog,
     getAllProfileBlogByHandle,
@@ -55,7 +56,7 @@ const cardData = [
 
 export default function UserProfile() {
     const dispatch = useAppDispatch();
-    const { blogLoading, blogs, docsLoading, docs } = useAppState((s) => s.getProfileReducers);
+    const { blogLoading, blogs, docsLoading, docs, blogError, docsError } = useAppState((s) => s.getProfileReducers);
     const { user } = useAppState((s) => s.userReducer);
     const params = useParams();
     const username = params.username as string;
@@ -106,6 +107,15 @@ export default function UserProfile() {
         }
     }, [dispatch, handle, selectedTab, isOwnProfile]);
 
+    useEffect(() => {
+        if (blogError) {
+            toast.error(blogError || "Failed to load blogs");
+        }
+        if (docsError) {
+            toast.error(docsError || "Failed to load docs");
+        }
+    }, [blogError, docsError]);
+
     return (
         <div className="container grid grid-cols-4 transition-all duration-200 ease-linear gap-4 md:gap-6 relative">
             <div className="col-span-full xl:col-span-3 mx-2 md:mx-0 xl:border-r-1 p-0 sm:p-2 relative">
@@ -148,6 +158,7 @@ export default function UserProfile() {
                                       status={doc.status}
                                       isOwner={isOwnProfile}
                                       authorName={doc.author?.name}
+                                      author={doc.author!}
                                   />
                               ))
                             : null}

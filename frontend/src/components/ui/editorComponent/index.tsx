@@ -6,13 +6,12 @@ import "@/components/tiptap-node/image-node/image-node.scss";
 import "@/components/tiptap-node/paragraph-node/paragraph-node.scss";
 
 import "highlight.js/styles/tokyo-night-dark.css";
-import "./syntax.css";
-import "./tiptapstyles.scss";
+import "@/styles/syntax.css";
+import "@/styles/tiptapstyles.scss";
 
 import Collaboration from "@tiptap/extension-collaboration";
 import CollaborationCaret from "@tiptap/extension-collaboration-caret";
 import { EditorContext, useEditor } from "@tiptap/react";
-import { renderToMarkdown } from "@tiptap/static-renderer";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import type { Doc } from "yjs";
@@ -29,6 +28,17 @@ import extensions from "@/lib/extensions";
 import { handleImageUpload, uploadImageFromUrl } from "@/lib/tiptap-utils";
 import { useHocuspocusProvider } from "@/lib/hocuspocus";
 import { motion } from "framer-motion";
+import { Placeholder } from '@tiptap/extensions/placeholder'
+
+type InvitedUser = {
+	userId?: string;
+	email?: string | null;
+	name?: string | null;
+	handle?: string | null;
+	coverUrl?: string | null;
+	role: "owner" | "can edit" | "can view";
+};
+
 export default function Editor({
 	idContent,
 	save,
@@ -40,14 +50,6 @@ export default function Editor({
 	resourceType: "blog" | "docs";
 	resourceId: string;
 }) {
-	type InvitedUser = {
-		userId?: string;
-		email?: string | null;
-		name?: string | null;
-		handle?: string | null;
-		coverUrl?: string | null;
-		role: "owner" | "can edit" | "can view";
-	};
 
 	const roomType: CollabRoomType =
 		resourceType === "blog" ? "blog" : "docs-page";
@@ -198,6 +200,9 @@ export default function Editor({
 			extensions: provider
 				? [
 					...extensions,
+					Placeholder.configure({
+						placeholder: 'Start Writing here...'
+					}),
 					Collaboration.configure({
 						provider,
 						document: provider.document as Doc,
@@ -221,6 +226,7 @@ export default function Editor({
 			onUpdate({ editor }) {
 				setWord(editor.storage.characterCount.characters());
 			},
+
 		},
 		[provider, collabUser.name, collabUser.color, isCollabReady],
 	); // Add provider as dependency
