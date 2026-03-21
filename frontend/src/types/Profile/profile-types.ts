@@ -16,6 +16,20 @@ type AuthorSummary = {
     avatarUrl?: string | null;
 };
 
+type VisibilityCount = {
+    total: number;
+    publicCount: number;
+    privateCount: number;
+};
+
+type ProfileCounts = {
+    followers: number;
+    following: number;
+    blogs: VisibilityCount;
+    docs: VisibilityCount;
+    otherCounts: Record<string, number>;
+};
+
 type UserProfile = {
     tags: string[];
     social: SocialLinks;
@@ -75,4 +89,6 @@ export type {
     ProfileBlog,
     AllProfileDocs,
     ProfileDoc,
+    VisibilityCount,
+    ProfileCounts,
 };

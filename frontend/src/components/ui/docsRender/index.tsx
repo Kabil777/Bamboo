@@ -80,11 +80,6 @@ export default function DocsRenderPage({ id }: { id: string[] }) {
 	const dispatch = useAppDispatch();
 	const docId = id[0];
 
-	useEffect(() => {
-		if (!docId) return;
-		dispatch(DocsRTK(docId));
-	}, [docId, dispatch]);
-
 	const [accordionValue, setAccordionValue] = useState<string | undefined>(
 		undefined,
 	);
@@ -95,8 +90,13 @@ export default function DocsRenderPage({ id }: { id: string[] }) {
 	const { entities, loadingById, errorById } = useAppState(
 		(s) => s.docsReducer,
 	);
-	const isDocsLoading = useApiLoading(loadingById[docId]);
 	const doc = entities[docId];
+	const isDocsLoading = useApiLoading(loadingById[docId]);
+
+	useEffect(() => {
+		if (!docId || doc) return;
+		dispatch(DocsRTK(docId));
+	}, [docId, doc, dispatch]);
 
 	// ─── Derived State & Hooks (Must be before early returns) ───
 	const { title, content: md, isOverview } = usePathResolver(
@@ -120,7 +120,7 @@ export default function DocsRenderPage({ id }: { id: string[] }) {
 	}, [md]);
 
 	// ─── Loading ─────────────────────────────────
-	if (isDocsLoading) {
+	if (isDocsLoading && !doc) {
 		return <BlogPageSkeleton />;
 	}
 
@@ -133,7 +133,7 @@ export default function DocsRenderPage({ id }: { id: string[] }) {
 
 	// ─── Prev/Next from Docs Tree ────────────────
 	const flatPages = flattenTree(doc.tree || []);
-	const currentPageId = id.length === 1 ? doc.tree?.[0]?.id : id[id.length - 1];
+	const currentPageId = id.length === 1 ? docId : id[id.length - 1];
 	const currentIdx = flatPages.findIndex((p) => p.id === currentPageId);
 	const prevPage = currentIdx > 0 ? flatPages[currentIdx - 1] : null;
 	const nextPage =
@@ -156,7 +156,7 @@ export default function DocsRenderPage({ id }: { id: string[] }) {
 				<ArticleSidebar
 					className="border-none !sticky !top-18 max-h-[calc(100vh-7rem)] gap-4"
 					navData={tree}
-					activeId={id.length === 1 ? tree?.[0]?.id : id[id.length - 1]}
+					activeId={id.length === 1 ? docId : id[id.length - 1]}
 				/>
 
 				{/* ─── Article ─── */}

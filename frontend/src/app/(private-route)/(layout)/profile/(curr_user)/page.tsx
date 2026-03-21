@@ -1,6 +1,6 @@
 "use client";
-import { motion } from "framer-motion";
-import { useEffect, useState, useRef } from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import { useEffect, useState } from "react";
 import { BlogCard, DocsProfileCard, useProfileTab } from "@/components/atomsComponents";
 import {
     Avatar,
@@ -10,7 +10,6 @@ import {
 import { Button } from "@/components/shadcnUI/button";
 import { Separator } from "@/components/shadcnUI/separator";
 import { useAppDispatch, useAppState } from "@/hooks/ReduxHooks";
-import { toast } from "sonner";
 import {
     getAllProfileBlog,
     getAllProfileDocs,
@@ -51,87 +50,128 @@ const cardData = [
     },
 ];
 
+const fadeTransition = { duration: 0.18, ease: "easeOut" as const };
+
+const fadePanelProps = {
+    initial: { opacity: 0, y: 8 },
+    animate: { opacity: 1, y: 0 },
+    exit: { opacity: 0, y: -8 },
+    transition: fadeTransition,
+};
+
 export default function Profile() {
     const dispatch = useAppDispatch();
-    const { blogLoading, blogs, docsLoading, docs, blogError, docsError } = useAppState(
+    const { profileLoading, blogLoading, blogs, docsLoading, docs, blogError, docsError } = useAppState(
         (s) => s.getProfileReducers,
     );
     const { user } = useAppState((s) => s.userReducer);
     const [activeDocId, setActiveDocId] = useState<string>("");
     const { selectedTab } = useProfileTab();
     const isOwner = true;
+    const isFeedLoading =
+        (selectedTab === "posts" && (profileLoading || blogLoading || blogs === null)) ||
+        (selectedTab === "docs" && (profileLoading || docsLoading || docs === null));
+    const showEmptyPosts =
+        selectedTab === "posts" &&
+        !isFeedLoading &&
+        (blogs?.items?.length ?? 0) === 0;
+    const showEmptyDocs =
+        selectedTab === "docs" &&
+        !isFeedLoading &&
+        (docs?.items?.length ?? 0) === 0;
 
-    const fetchedPosts = useRef(false);
-    const fetchedDocs = useRef(false);
 
     useEffect(() => {
-        if (selectedTab === "posts" && !fetchedPosts.current) {
+        const shouldLoadPosts =
+            selectedTab === "posts" && !blogLoading && (blogs === null || !!blogError);
+        const shouldLoadDocs =
+            selectedTab === "docs" && !docsLoading && (docs === null || !!docsError);
+
+        if (shouldLoadPosts) {
             dispatch(getAllProfileBlog());
-            fetchedPosts.current = true;
         }
-        if (selectedTab === "docs" && !fetchedDocs.current) {
-            dispatch(getAllProfileDocs());
-            fetchedDocs.current = true;
-        }
-    }, [selectedTab, dispatch]);
 
-    useEffect(() => {
-        if (blogError) {
-            toast.error(blogError || "Failed to load blogs");
+        if (shouldLoadDocs) {
+            dispatch(getAllProfileDocs());
         }
-        if (docsError) {
-            toast.error(docsError || "Failed to load docs");
-        }
-    }, [blogError, docsError]);
+    }, [selectedTab, dispatch, blogLoading, blogs, blogError, docsLoading, docs, docsError]);
+
     
     return (
         <div className="container grid grid-cols-4 transition-all duration-200 ease-linear gap-4 md:gap-6 relative">
             <div className="col-span-full xl:col-span-3 mx-2 md:mx-0 xl:border-r-1 p-0 sm:p-2 relative">
-                {selectedTab === "posts" && (
-                    <>
-                        {blogLoading && <BlogCardSkeleton />}
-                        {!blogLoading &&
-                            blogs?.items?.map((item) => (
-                                <BlogCard
-                                    key={item.id}
-                                    title={item.title}
-                                    description={item.description}
-                                    coverUrl={item.coverUrl}
-                                    author={item.author}
-                                    id={item.id}
-                                    tags={item.tags}
-                                    createdAt={item.createdAt}
-                                    visibility={item.visibility}
-                                    status={item.status}
-                                    collaborators={item.collaborators}
-                                    isOwner={isOwner}
-                                />
-                            ))}
-                    </>
-                )}
+                <AnimatePresence mode="wait" initial={false}>
+                    {selectedTab === "posts" && (
+                        isFeedLoading ? (
+                            <motion.div key="posts-loading" {...fadePanelProps}>
+                                <div className="space-y-4">
+                                    {Array.from({ length: 3 }).map((_, index) => (
+                                        <BlogCardSkeleton key={index} />
+                                    ))}
+                                </div>
+                            </motion.div>
+                        ) : blogs?.items?.length ? (
+                            <motion.div key="posts-content" {...fadePanelProps} className="space-y-4">
+                                {blogs.items.map((item) => (
+                                    <BlogCard
+                                        key={item.id}
+                                        title={item.title}
+                                        description={item.description}
+                                        coverUrl={item.coverUrl}
+                                        author={item.author}
+                                        id={item.id}
+                                        tags={item.tags}
+                                        createdAt={item.createdAt}
+                                        visibility={item.visibility}
+                                        status={item.status}
+                                        collaborators={item.collaborators}
+                                        isOwner={isOwner}
+                                    />
+                                ))}
+                            </motion.div>
+                        ) : (
+                            <motion.div key="posts-empty" {...fadePanelProps} className="min-h-[220px] rounded-xl p-8 flex items-center justify-center text-center text-sm text-muted-foreground">
+                                No posts yet.
+                            </motion.div>
+                        )
+                    )}
 
-                {selectedTab === "docs" && (
-                    <>
-                        {docsLoading && <BlogCardSkeleton />}
-                        {!docsLoading && docs?.items?.length
-                            ? docs.items.map((doc) => (
-                                  <DocsProfileCard
-                                      key={doc.id}
-                                      id={doc.id}
-                                      title={doc.title}
-                                      description={doc.description}
-                                      coverUrl={doc.coverUrl}
-                                      createdAt={doc.createdAt}
-                                      visibility={doc.visibility}
-                                      status={doc.status}
-                                      isOwner={isOwner}
-                                      authorName={doc.author?.name || user?.name}
-                                      author={doc.author!}
-                                  />
-                              ))
-                            : null}
-                    </>
-                )}
+                    {selectedTab === "docs" && (
+                        isFeedLoading ? (
+                            <motion.div key="docs-loading" {...fadePanelProps}>
+                                <ProfileBlogListSkeleton count={3} />
+                            </motion.div>
+                        ) : docs?.items?.length ? (
+                            <motion.div key="docs-content" {...fadePanelProps} className="space-y-4">
+                                {docs.items.map((doc) => (
+                                    <DocsProfileCard
+                                        key={doc.id}
+                                        id={doc.id}
+                                        title={doc.title}
+                                        description={doc.description}
+                                        coverUrl={doc.coverUrl}
+                                        createdAt={doc.createdAt}
+                                        visibility={doc.visibility}
+                                        status={doc.status}
+                                        isOwner={isOwner}
+                                        authorName={doc.author?.name || user?.name}
+                                        author={doc.author!}
+                                    />
+                                ))}
+                            </motion.div>
+                        ) : (
+                            <motion.div key="docs-empty" {...fadePanelProps} className="min-h-[220px] rounded-xl p-8 flex items-center justify-center text-center text-sm text-muted-foreground">
+                                No docs yet.
+                            </motion.div>
+                        )
+                    )}
+
+                    {selectedTab === "bookmark" && (
+                        <motion.div key="bookmark-empty" {...fadePanelProps} className="min-h-[220px] rounded-xl p-8 flex items-center justify-center text-center text-sm text-muted-foreground">
+                            No bookmarks yet.
+                        </motion.div>
+                    )}
+                </AnimatePresence>
             </div>
             <div className="hidden xl:flex flex-col xl:col-span-1 line-clamp-2 p-2 gap-4 xl:sticky top-[140px] z-8 max-h-[calc(100vh-150px)] overflow-y-auto custom-scroll">
                 <div>
@@ -198,3 +238,4 @@ export default function Profile() {
         </div>
     );
 }
+

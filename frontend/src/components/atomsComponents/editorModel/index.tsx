@@ -183,7 +183,7 @@ export const EditorModel = () => {
         if (!(title.length >= 5))
             errors.title = "Title must be at least 5 characters long.";
         if (!(title.length <= 100))
-            errors.title = "Title must be less than 100 characters long.";
+            errors.title = "Title must be at most 100 characters long.";
         if (!description.trim())
             errors.description = "Description is required.";
         if (!(description.length >= 10))
@@ -332,9 +332,10 @@ export const EditorModel = () => {
                             Title<span className="text-red-500">*</span>
                         </Label>
                         <Input
-                            onChange={(e) => setTitle(e.target.value)}
+                            onChange={(e) => setTitle(e.target.value.slice(0, 100))}
                             id="title"
                             name="title"
+                            maxLength={100}
                         />
                         {formErrors.title && (
                             <p className="text-sm text-red-500">

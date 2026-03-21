@@ -1,14 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect } from "react";
+import Image from "next/image";
+import { useCallback, useEffect, useState } from "react";
 import { useSelector } from "react-redux";
-import {
-    BlogCard,
-    DocsShelf,
-    FeaturedCarousel,
-    TabChips,
-} from "@/components/atomsComponents";
+import { ArrowLeft, ArrowRight, BookOpenText } from "lucide-react";
+import { BlogCard, DocsCard, TabChips } from "@/components/atomsComponents";
 import { BlogCardSkeleton } from "@/components/atomsComponents/skleton/blogCardSkleton";
 import { Skeleton } from "@/components/shadcnUI/skeleton";
 import { useAppDispatch, useAppState } from "@/hooks/ReduxHooks";
@@ -16,6 +13,7 @@ import { getCoverBlog } from "@/store/reducers/BlogCoverReducer";
 import { DocsCoverRtk } from "@/store/reducers/DocsCoverReducer";
 import { getFeaturedBlogs } from "@/store/reducers/FeaturedBlogReducer";
 import type { RootState } from "@/store/store";
+import type { BlogHomeCard } from "@/types/blog/blog-base";
 import type { DocsHomeCard } from "@/types/docs/docs-base";
 
 import { WhatToReadNext } from "@/components/ui/homePage/WhatToReadNext";
@@ -48,8 +46,18 @@ const tabs = [
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-function pickCuratedDocs(docs: DocsHomeCard[], size: number) {
-    return docs.slice(0, Math.min(size, docs.length));
+function pickCuratedDocs(docs: DocsHomeCard[] | unknown, size: number) {
+    const safeDocs = Array.isArray(docs) ? docs : [];
+    return safeDocs.slice(0, Math.min(size, safeDocs.length));
+}
+
+function formatDateLabel(createdAt: string) {
+    const date = new Date(createdAt);
+    if (Number.isNaN(date.getTime())) return "Fresh today";
+    return new Intl.DateTimeFormat("en-US", {
+        month: "short",
+        day: "numeric",
+    }).format(date);
 }
 
 // ─── Featured Carousel ────────────────────────────────────────────────────────
@@ -62,6 +70,7 @@ function FeaturedCarousel({
     stories: BlogHomeCard[];
     onSlideChange?: (index: number) => void;
 }) {
+    const safeStories = Array.isArray(stories) ? stories : [];
     const [active, setActive] = useState(0);
     const [dir, setDir] = useState<"left" | "right">("right");
     const [animating, setAnim] = useState(false);
@@ -81,9 +90,24 @@ function FeaturedCarousel({
     );
 
     const prev = () =>
-        go((active - 1 + stories.length) % stories.length, "left");
-    const next = () => go((active + 1) % stories.length, "right");
-    const story = stories[active];
+        go((active - 1 + safeStories.length) % safeStories.length, "left");
+    const next = () => go((active + 1) % safeStories.length, "right");
+    if (safeStories.length === 0) {
+        return (
+            <div className="flex min-h-[220px] items-center justify-center rounded-[28px] border border-dashed border-foreground/10 bg-foreground/[0.02] p-8">
+                <div className="max-w-md text-center">
+                    <h2 className="text-xl font-semibold tracking-tight text-foreground">
+                        Featured stories are unavailable right now
+                    </h2>
+                    <p className="mt-2 text-sm leading-6 text-foreground/40">
+                        The rest of the homepage is still available while the content service recovers.
+                    </p>
+                </div>
+            </div>
+        );
+    }
+
+    const story = safeStories[Math.min(active, safeStories.length - 1)];
 
     return (
         <div className="relative overflow-hidden rounded-xl border border-border bg-card shadow-none dark:ring-1 dark:ring-border/40">
@@ -134,7 +158,7 @@ function FeaturedCarousel({
                                 </span>
                                 <span className="ml-auto text-[10px] tabular-nums text-muted-foreground/50">
                                     {active + 1}&thinsp;/&thinsp;
-                                    {stories.length}
+                                    {safeStories.length}
                                 </span>
                             </div>
 
@@ -201,7 +225,7 @@ function FeaturedCarousel({
                                     <ArrowRight size={12} />
                                 </button>
                                 <div className="flex items-center gap-1.5 pl-1">
-                                    {stories.map((_, i) => (
+                                    {safeStories.map((_, i) => (
                                         <button
                                             key={i}
                                             onClick={() =>
@@ -231,6 +255,30 @@ function FeaturedCarousel({
 }
 
 function DocsShelf({ docs }: { docs: DocsHomeCard[] }) {
+    const safeDocs = Array.isArray(docs) ? docs : [];
+
+    if (safeDocs.length === 0) {
+        return (
+            <section className="space-y-4">
+                <div className="flex items-center gap-3">
+                    <span className="whitespace-nowrap text-[10px] font-semibold uppercase tracking-[0.24em] text-foreground/55">
+                        Reference shelf
+                    </span>
+                    <div className="h-px flex-1 bg-foreground/[0.10]" />
+                    <Link
+                        href="/docs"
+                        className="text-[11px] font-semibold uppercase tracking-[0.14em] text-foreground/55 transition-colors hover:text-foreground"
+                    >
+                        Browse docs
+                    </Link>
+                </div>
+                <p className="py-8 text-center text-sm text-foreground/35">
+                    More docs will appear here soon.
+                </p>
+            </section>
+        );
+    }
+
     return (
         <section className="space-y-4">
             <div className="flex items-center gap-3">
@@ -254,7 +302,7 @@ function DocsShelf({ docs }: { docs: DocsHomeCard[] }) {
                 </p>
             </div>
             <div className="grid gap-4 md:grid-cols-1 xl:grid-cols-3">
-                {docs.map((doc) => (
+                {safeDocs.map((doc) => (
                     <DocsCard
                         key={doc.id}
                         doc={doc}
@@ -303,9 +351,9 @@ export default function Home() {
     }, [dispatch, docsFetched]);
 
     const blogList = data ?? [];
-    const docsList = docs ?? [];
+    const docsList = Array.isArray(docs) ? docs : [];
 
-    const carouselStories = featuredStories ?? [];
+    const carouselStories = Array.isArray(featuredStories) ? featuredStories : [];
     const featuredIds = new Set(carouselStories.map((story) => story.id));
     const nonFeaturedStories = blogList.filter(
         (story) => !featuredIds.has(story.id),
@@ -335,21 +383,44 @@ export default function Home() {
                 <div className="space-y-0 pt-6">
                     {/* ROW 1 — full-width carousel */}
                     {featuredLoading ? (
-                        <Skeleton className="h-[380px] w-full rounded-[28px]" />
-                    ) : carouselStories.length > 0 ? (
-                        <FeaturedCarousel stories={carouselStories} />
-                    ) : (
-                        <div className="flex min-h-[220px] items-center justify-center rounded-[28px] border border-dashed border-foreground/10 bg-foreground/[0.02] p-8">
-                            <div className="max-w-md text-center">
-                                <h2 className="text-xl font-semibold tracking-tight text-foreground">
-                                    Featured stories will appear here
-                                </h2>
-                                <p className="mt-2 text-sm leading-6 text-foreground/40">
-                                    We&apos;re waiting for the next highlighted
-                                    posts.
-                                </p>
+                        <div className="overflow-hidden rounded-[28px] border border-border/60 bg-card">
+                            <div className="flex flex-col md:grid md:grid-cols-[1fr_minmax(260px,0.65fr)] lg:grid-cols-[1fr_minmax(300px,0.7fr)]">
+                                <div className="order-first h-52 border-b border-border/50 md:order-last md:h-auto md:min-h-[340px] md:border-b-0 md:border-l">
+                                    <Skeleton className="h-full w-full rounded-none" />
+                                </div>
+                                <div className="order-last flex flex-col gap-4 p-5 sm:p-7 lg:p-8 md:order-first">
+                                    <div className="flex items-center gap-2">
+                                        <Skeleton className="h-5 w-20 rounded-full" />
+                                        <Skeleton className="h-3 w-16" />
+                                        <Skeleton className="ml-auto h-3 w-10" />
+                                    </div>
+                                    <div className="space-y-3">
+                                        <Skeleton className="h-9 w-[82%]" />
+                                        <Skeleton className="h-9 w-[56%]" />
+                                        <Skeleton className="h-4 w-full" />
+                                        <Skeleton className="h-4 w-[88%]" />
+                                    </div>
+                                    <div className="flex gap-2">
+                                        <Skeleton className="h-6 w-16 rounded-full" />
+                                        <Skeleton className="h-6 w-20 rounded-full" />
+                                        <Skeleton className="h-6 w-14 rounded-full" />
+                                    </div>
+                                    <div className="mt-auto flex items-center justify-between gap-4 pt-4">
+                                        <div className="space-y-2">
+                                            <Skeleton className="h-3 w-16" />
+                                            <Skeleton className="h-4 w-28" />
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <Skeleton className="h-8 w-8 rounded-full" />
+                                            <Skeleton className="h-8 w-8 rounded-full" />
+                                            <Skeleton className="h-8 w-20 rounded-lg" />
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
+                    ) : (
+                        <FeaturedCarousel stories={carouselStories} />
                     )}
 
                     {/* ROW 2 — 9-col main + 3-col sidebar */}

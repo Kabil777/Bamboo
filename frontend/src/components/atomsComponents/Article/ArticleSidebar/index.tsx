@@ -53,11 +53,15 @@ export function ArticleSidebar({
                                 OverView
                             </Link>
                         </SidebarMenuButton> */}
-                        {NavData.map((item, index) => {
+                        {NavData.map((item: any) => {
                             const subItems = item.subPages || item.subTree;
                             const hasChildren = subItems && subItems.length > 0;
-                            const isFirst = index === 0;
-                            const itemHref = isFirst ? "/docs/" + id[0] : "/docs/" + id[0] + "/" + item.id;
+                            const isOverviewItem =
+                                item.id === id[0] ||
+                                item.title?.trim().toLowerCase() === "overview";
+                            const itemHref = isOverviewItem
+                                ? "/docs/" + id[0]
+                                : "/docs/" + id[0] + "/" + item.id;
 
                             return (
                                 <Collapsible

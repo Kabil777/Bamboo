@@ -39,6 +39,21 @@ export function FeaturedCarousel({
         [animating, active, onSlideChange],
     );
 
+    if (stories.length === 0) {
+        return (
+            <div className="flex min-h-[220px] items-center justify-center rounded-[28px] border border-dashed border-foreground/10 bg-foreground/[0.02] p-8">
+                <div className="max-w-md text-center">
+                    <h2 className="text-xl font-semibold tracking-tight text-foreground">
+                        Featured stories will appear here
+                    </h2>
+                    <p className="mt-2 text-sm leading-6 text-foreground/40">
+                        We're waiting for the next highlighted posts.
+                    </p>
+                </div>
+            </div>
+        );
+    }
+
     const prev = () =>
         go((active - 1 + stories.length) % stories.length, "left");
     const next = () => go((active + 1) % stories.length, "right");

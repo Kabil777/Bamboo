@@ -1,6 +1,6 @@
 import { Button } from "@/components/shadcnUI/button";
-import { Drawer, DrawerClose, DrawerContent, DrawerHeader, DrawerTitle, DrawerTrigger } from "@/components/shadcnUI/drawer";
-import { Forward, MessageCircle, MoreVertical, Send, SendHorizonal, X } from "lucide-react";
+import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerTrigger } from "@/components/shadcnUI/drawer";
+import { MessageCircle, MoreVertical, SendHorizonal } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Avatar } from "@/components/shadcnUI/avatar";
 import {
@@ -37,7 +37,6 @@ export default function CommentsDrawer({ children, comment }: { children: React.
 
     const [comments, setComments] = useState<Comment[]>([]);
     const [commentText, setCommentText] = useState("");
-    const [showComments, setShowComments] = useState(true);
     const [replyToId, setReplyToId] = useState<string | null>(null);
     const [replyText, setReplyText] = useState("");
 
@@ -130,17 +129,6 @@ export default function CommentsDrawer({ children, comment }: { children: React.
                 className="h-full w-full mx-auto border border-border/40 bg-background/95 backdrop-blur-sm shadow-2xl data-[vaul-drawer-direction=bottom]:border-t-0 data-[vaul-drawer-direction=bottom]:max-h-[80vh] rounded-t-3xl"
             >
                 <div className="w-full md:max-w-xl mx-auto flex h-full flex-col">
-                    <DrawerClose asChild>
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            className="absolute right-3 top-3 z-20 h-8 w-8 rounded-full bg-background/70 shadow-sm hover:bg-background/90 transition-all duration-300"
-                            aria-label="Close"
-                        >
-                            <X className="h-4 w-4" />
-                        </Button>
-                    </DrawerClose>
-
                     <DrawerHeader className="pt-6">
                         <DrawerTitle>
                             <div className="flex gap-2">
@@ -350,4 +338,3 @@ export default function CommentsDrawer({ children, comment }: { children: React.
             </DrawerContent>
         </Drawer>)
 }
-

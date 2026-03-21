@@ -22,17 +22,17 @@ export function useDocsTree(provider: any) {
         const pages = ydoc.getArray<Y.Map<any>>("pages");
 
         const ensureOverview = () => {
-            const exists = pages
-                .toArray()
-                .some(
-                    (p) => p.get("level") === 0 && p.get("parentId") === null,
-                );
+            const overviewId = provider.configuration?.name?.split(":")?.[2];
+            const exists = pages.toArray().some((page: any) => {
+                const pageId = page.get("id");
+                const title = String(page.get("title") ?? "").trim().toLowerCase();
+                return pageId === overviewId || title === "overview";
+            });
 
             if (exists) return;
 
             ydoc.transact(() => {
                 const overview = new Y.Map();
-                const overviewId = provider.configuration?.name?.split(":")?.[2];
                 overview.set("id", overviewId || uuidv7());
                 overview.set("title", "Overview");
                 overview.set("parentId", null);
@@ -66,7 +66,7 @@ export function useDocsTree(provider: any) {
         const pages = ydoc.getArray("pages");
 
         const sync = () => {
-            const nodes = pages.toArray().map((p) => ({
+            const nodes = pages.toArray().map((p: any) => ({
                 id: p.get("id"),
                 title: p.get("title"),
                 parentId: p.get("parentId"),
@@ -93,7 +93,7 @@ export function useDocsTree(provider: any) {
             if (parentId) {
                 const parent = pages
                     .toArray()
-                    .find((p) => p.get("id") === parentId);
+                    .find((p: any) => p.get("id") === parentId);
                 if (!parent || parent.get("level") === 1) return;
                 level = 1;
             }
@@ -112,7 +112,7 @@ export function useDocsTree(provider: any) {
     const deletePage = (pageId: string) => {
         if (!provider) return;
         const pages = provider.document.getArray("pages");
-        const index = pages.toArray().findIndex((p) => p.get("id") === pageId);
+        const index = pages.toArray().findIndex((p: any) => p.get("id") === pageId);
         if (index !== -1) pages.delete(index, 1);
     };
 

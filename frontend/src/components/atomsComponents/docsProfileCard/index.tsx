@@ -13,7 +13,10 @@ import { useState } from "react";
 import type { ProfileDoc } from "@/types/Profile/profile-types";
 import { toast } from "sonner";
 import { useAppDispatch } from "@/hooks/ReduxHooks";
-import { getAllProfileDocs } from "@/store/reducers/Profile/profile.read";
+import {
+    removeProfileDocItem,
+    updateProfileDocMeta,
+} from "@/store/reducers/Profile/profile.read";
 
 export const DocsProfileCard: React.FC<ProfileDoc & { isOwner?: boolean; authorName?: string }> = ({
     id,
@@ -75,15 +78,21 @@ export const DocsProfileCard: React.FC<ProfileDoc & { isOwner?: boolean; authorN
                         <ProfileTag
                             idBlog={id}
                             profileId={undefined}
+                            authorName={authorName}
                             contentType="docs"
                             createdAt={createdAt}
                             visibility={visibility}
                             status={status}
                             isOwner={isOwner}
                             showMenu={isOwner}
-                            onVisibilityUpdated={() => {
+                            onVisibilityUpdated={(payload) => {
                                 if (isOwner) {
-                                    dispatch(getAllProfileDocs());
+                                    dispatch(updateProfileDocMeta({ id, ...payload }));
+                                }
+                            }}
+                            onDeleteCompleted={() => {
+                                if (isOwner) {
+                                    dispatch(removeProfileDocItem(id));
                                 }
                             }}
                         />

@@ -1,5 +1,5 @@
 "use client";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useMemo } from "react";
 import { useParams } from "next/navigation";
 import { BlogCard, DocsProfileCard, useProfileTab } from "@/components/atomsComponents";
@@ -11,15 +11,13 @@ import {
 import { Button } from "@/components/shadcnUI/button";
 import { Separator } from "@/components/shadcnUI/separator";
 import { useAppDispatch, useAppState } from "@/hooks/ReduxHooks";
-import { toast } from "sonner";
 import {
-    getAllProfileBlog,
     getAllProfileBlogByHandle,
-    getAllProfileDocs,
     getAllProfileDocsByHandle,
     resetProfileCollections,
 } from "@/store/reducers/Profile/profile.read";
 import { BlogCardSkeleton } from "@/components/atomsComponents/skleton/blogCardSkleton";
+import { ProfileBlogListSkeleton } from "@/components/atomsComponents/skleton/Profile/profileBlogSkleton";
 
 const cardData = [
     {
@@ -54,14 +52,33 @@ const cardData = [
     },
 ];
 
+const fadeTransition = { duration: 0.18, ease: "easeOut" as const };
+
+const fadePanelProps = {
+    initial: { opacity: 0, y: 8 },
+    animate: { opacity: 1, y: 0 },
+    exit: { opacity: 0, y: -8 },
+    transition: fadeTransition,
+};
+
 export default function UserProfile() {
     const dispatch = useAppDispatch();
-    const { blogLoading, blogs, docsLoading, docs, blogError, docsError } = useAppState((s) => s.getProfileReducers);
+    const {
+        profileLoading,
+        blogLoading,
+        blogs,
+        docsLoading,
+        docs,
+        blogError,
+        docsError,
+    } = useAppState((s) => s.getProfileReducers);
     const { user } = useAppState((s) => s.userReducer);
     const params = useParams();
     const username = params.username as string;
     const handle = username?.startsWith("@") ? username.slice(1) : username;
-    const isOwnProfile = !!user?.handle && user.handle === handle;
+    const isOwnProfile =
+        !!user?.handle &&
+        user.handle.trim().toLowerCase() === handle?.trim().toLowerCase();
     const { selectedTab } = useProfileTab();
     const visibleBlogs = useMemo(() => {
         if (!blogs?.items) return [];
@@ -80,90 +97,173 @@ export default function UserProfile() {
                 item.visibility === "PUBLIC" && item.status === "PUBLISHED",
         );
     }, [docs, isOwnProfile]);
+    const hasProfileError = !!useAppState((s) => s.getProfileReducers.profileError);
+    const showBlogsSection = selectedTab === "posts" || selectedTab === "all";
+    const showDocsSection = selectedTab === "docs" || selectedTab === "all";
+    const showBookmarksSection = selectedTab === "bookmark";
+    const showAllSectionDivider = selectedTab === "all";
+    const canLoadCollections = !!handle && !profileLoading && !hasProfileError;
+    const isBlogsSectionLoading = showBlogsSection && (profileLoading || (canLoadCollections && (blogLoading || blogs === null)));
+    const isDocsSectionLoading = showDocsSection && (profileLoading || (canLoadCollections && (docsLoading || docs === null)));
+    const showEmptyBlogs = showBlogsSection && !isBlogsSectionLoading && visibleBlogs.length === 0;
     
     useEffect(() => {
         dispatch(resetProfileCollections());
-    }, [dispatch, handle, isOwnProfile]);
+    }, [dispatch, handle]);
 
     useEffect(() => {
-        if (!handle) {
+        if (!canLoadCollections) {
             return;
         }
 
-        if (selectedTab === "posts" || selectedTab === "all") {
-            if (isOwnProfile) {
-                dispatch(getAllProfileBlog());
-            } else {
-                dispatch(getAllProfileBlogByHandle(handle));
-            }
+        const shouldLoadPosts =
+            (selectedTab === "posts" || selectedTab === "all") &&
+            !blogLoading &&
+            (blogs === null || !!blogError);
+        const shouldLoadDocs =
+            (selectedTab === "docs" || selectedTab === "all") &&
+            !docsLoading &&
+            (docs === null || !!docsError);
+
+        if (shouldLoadPosts) {
+            dispatch(getAllProfileBlogByHandle(handle));
         }
 
-        if (selectedTab === "docs" || selectedTab === "all") {
-            if (isOwnProfile) {
-                dispatch(getAllProfileDocs());
-            } else {
-                dispatch(getAllProfileDocsByHandle(handle));
-            }
+        if (shouldLoadDocs) {
+            dispatch(getAllProfileDocsByHandle(handle));
         }
-    }, [dispatch, handle, selectedTab, isOwnProfile]);
+    }, [dispatch, handle, selectedTab, canLoadCollections, blogLoading, blogs, blogError, docsLoading, docs, docsError]);
 
-    useEffect(() => {
-        if (blogError) {
-            toast.error(blogError || "Failed to load blogs");
-        }
-        if (docsError) {
-            toast.error(docsError || "Failed to load docs");
-        }
-    }, [blogError, docsError]);
+
 
     return (
         <div className="container grid grid-cols-4 transition-all duration-200 ease-linear gap-4 md:gap-6 relative">
             <div className="col-span-full xl:col-span-3 mx-2 md:mx-0 xl:border-r-1 p-0 sm:p-2 relative">
-                {(selectedTab === "posts" || selectedTab === "all") && (
-                    <>
-                        {blogLoading && <BlogCardSkeleton />}
-                        {!blogLoading &&
-                            visibleBlogs.map((item) => (
-                                <BlogCard
-                                    key={item.id}
-                                    title={item.title}
-                                    description={item.description}
-                                    coverUrl={item.coverUrl}
-                                    author={item.author}
-                                    id={item.id}
-                                    tags={item.tags}
-                                    createdAt={item.createdAt}
-                                    visibility={item.visibility}
-                                    status={item.status}
-                                    collaborators={item.collaborators}
-                                    isOwner={isOwnProfile}
-                                />
-                            ))}
-                    </>
-                )}
+                
+                <AnimatePresence mode="wait" initial={false}>
+                    {showBlogsSection && (
+                        isBlogsSectionLoading ? (
+                            <motion.div key="user-posts-loading" {...fadePanelProps} className="space-y-4">
+                                {showAllSectionDivider && (
+                                    <div className="flex items-center gap-4 py-2">
+                                        <span className="text-[11px] font-medium uppercase tracking-[0.28em] text-muted-foreground/80">
+                                            Posts
+                                        </span>
+                                        <div className="h-px flex-1 bg-border/70" />
+                                    </div>
+                                )}
+                                <div className="space-y-4">
+                                    {Array.from({ length: 3 }).map((_, index) => (
+                                        <BlogCardSkeleton key={index} />
+                                    ))}
+                                </div>
+                            </motion.div>
+                        ) : visibleBlogs.length ? (
+                            <motion.div key="user-posts-content" {...fadePanelProps} className="space-y-4">
+                                {showAllSectionDivider && (
+                                    <div className="flex items-center gap-4 py-2">
+                                        <span className="text-[11px] font-medium uppercase tracking-[0.28em] text-muted-foreground/80">
+                                            Posts
+                                        </span>
+                                        <div className="h-px flex-1 bg-border/70" />
+                                    </div>
+                                )}
+                                {visibleBlogs.map((item) => (
+                                    <BlogCard
+                                        key={item.id}
+                                        title={item.title}
+                                        description={item.description}
+                                        coverUrl={item.coverUrl}
+                                        author={item.author}
+                                        id={item.id}
+                                        tags={item.tags}
+                                        createdAt={item.createdAt}
+                                        visibility={item.visibility}
+                                        status={item.status}
+                                        collaborators={item.collaborators}
+                                        isOwner={isOwnProfile}
+                                    />
+                                ))}
+                            </motion.div>
+                        ) : (
+                            <motion.div key="user-posts-empty" {...fadePanelProps} className="space-y-4">
+                                {showAllSectionDivider && (
+                                    <div className="flex items-center gap-4 py-2">
+                                        <span className="text-[11px] font-medium uppercase tracking-[0.28em] text-muted-foreground/80">
+                                            Posts
+                                        </span>
+                                        <div className="h-px flex-1 bg-border/70" />
+                                    </div>
+                                )}
+                                <div className="min-h-[220px] rounded-xl p-8 flex items-center justify-center text-center text-sm text-muted-foreground">
+                                    No posts yet.
+                                </div>
+                            </motion.div>
+                        )
+                    )}
 
-                {(selectedTab === "docs" || selectedTab === "all") && (
-                    <>
-                        {docsLoading && <BlogCardSkeleton />}
-                        {!docsLoading && visibleDocs.length
-                            ? visibleDocs.map((doc) => (
-                                  <DocsProfileCard
-                                      key={doc.id}
-                                      id={doc.id}
-                                      title={doc.title}
-                                      description={doc.description}
-                                      coverUrl={doc.coverUrl}
-                                      createdAt={doc.createdAt}
-                                      visibility={doc.visibility}
-                                      status={doc.status}
-                                      isOwner={isOwnProfile}
-                                      authorName={doc.author?.name}
-                                      author={doc.author!}
-                                  />
-                              ))
-                            : null}
-                    </>
-                )}
+                    {showDocsSection && (
+                        isDocsSectionLoading ? (
+                            <motion.div key="user-docs-loading" {...fadePanelProps} className="space-y-4">
+                                {showAllSectionDivider && (
+                                    <div className="flex items-center gap-4 py-2">
+                                        <span className="text-[11px] font-medium uppercase tracking-[0.28em] text-muted-foreground/80">
+                                            Documents
+                                        </span>
+                                        <div className="h-px flex-1 bg-border/70" />
+                                    </div>
+                                )}
+                                <ProfileBlogListSkeleton count={3} />
+                            </motion.div>
+                        ) : visibleDocs.length ? (
+                            <motion.div key="user-docs-content" {...fadePanelProps} className="space-y-4">
+                                {showAllSectionDivider && (
+                                    <div className="flex items-center gap-4 py-2">
+                                        <span className="text-[11px] font-medium uppercase tracking-[0.28em] text-muted-foreground/80">
+                                            Documents
+                                        </span>
+                                        <div className="h-px flex-1 bg-border/70" />
+                                    </div>
+                                )}
+                                {visibleDocs.map((doc) => (
+                                    <DocsProfileCard
+                                        key={doc.id}
+                                        id={doc.id}
+                                        title={doc.title}
+                                        description={doc.description}
+                                        coverUrl={doc.coverUrl}
+                                        createdAt={doc.createdAt}
+                                        visibility={doc.visibility}
+                                        status={doc.status}
+                                        isOwner={isOwnProfile}
+                                        authorName={doc.author?.name}
+                                        author={doc.author!}
+                                    />
+                                ))}
+                            </motion.div>
+                        ) : (
+                            <motion.div key="user-docs-empty" {...fadePanelProps} className="space-y-4">
+                                {showAllSectionDivider && (
+                                    <div className="flex items-center gap-4 py-2">
+                                        <span className="text-[11px] font-medium uppercase tracking-[0.28em] text-muted-foreground/80">
+                                            Documents
+                                        </span>
+                                        <div className="h-px flex-1 bg-border/70" />
+                                    </div>
+                                )}
+                                <div className="min-h-[220px] rounded-xl p-8 flex items-center justify-center text-center text-sm text-muted-foreground">
+                                    No docs yet.
+                                </div>
+                            </motion.div>
+                        )
+                    )}
+
+                    {showBookmarksSection && (
+                        <motion.div key="user-bookmarks-empty" {...fadePanelProps} className="min-h-[220px] rounded-xl p-8 flex items-center justify-center text-center text-sm text-muted-foreground">
+                            No bookmarks yet.
+                        </motion.div>
+                    )}
+                </AnimatePresence>
             </div>
             <div className="hidden xl:flex flex-col xl:col-span-1 line-clamp-2 p-2 gap-4 xl:sticky top-[140px] z-8 max-h-[calc(100vh-150px)] overflow-y-auto custom-scroll">
                 <div>
@@ -230,3 +330,4 @@ export default function UserProfile() {
         </div>
     );
 }
+

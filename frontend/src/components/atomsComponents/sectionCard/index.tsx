@@ -34,6 +34,8 @@ import { Skeleton } from "@/components/shadcnUI/skeleton";
 import { useAppDispatch, useAppState } from "@/hooks/ReduxHooks";
 import { useImageColors } from "@/hooks/useImageColors";
 import {
+	getProfileCounts,
+	getProfileCountsByHandle,
 	getProfileDetials,
 	getUserProfileByHandle,
 } from "@/store/reducers/Profile/profile.read";
@@ -77,7 +79,7 @@ export function SectionCards({ viewingHandle }: { viewingHandle?: string }) {
 	const dispatch = useAppDispatch();
 	const router = useRouter();
 
-	const { profileData, profileLoading } = useAppState(
+	const { profileData, profileCounts, profileLoading, profileCountsLoading } = useAppState(
 		(s) => s.getProfileReducers,
 	);
 
@@ -176,13 +178,15 @@ export function SectionCards({ viewingHandle }: { viewingHandle?: string }) {
 		if (viewingHandle && viewingHandle !== user?.handle) {
 			// Viewing another user's profile
 			dispatch(getUserProfileByHandle(viewingHandle));
+			dispatch(getProfileCountsByHandle(viewingHandle));
 		} else if (!viewingHandle || viewingHandle === user?.handle) {
 			// Viewing own profile
 			dispatch(getProfileDetials());
+			dispatch(getProfileCounts());
 		}
 	}, [dispatch, viewingHandle, user?.handle, status]);
 
-	if (profileLoading || !profileData) {
+	if (profileLoading || profileCountsLoading || !profileData) {
 		return <SectionCardsSkeleton />;
 	}
 
@@ -356,22 +360,22 @@ export function SectionCards({ viewingHandle }: { viewingHandle?: string }) {
 					<div className="flex items-center flex-wrap gap-x-1.5 gap-y-2 text-xs sm:text-sm">
 						<UserListDialog
 							title="Followers"
-							label="50k followers"
+							label={`${profileCounts?.followers ?? 0} followers`}
 							users={mockFollowers}
 						/>
 						<span className="text-primary text-2xl">·</span>
 						<UserListDialog
 							title="Following"
-							label="70 following"
+							label={`${profileCounts?.following ?? 0} following`}
 							users={mockFollowing}
 						/>
 						<span className="text-primary text-2xl">·</span>
 						<span className="items-center text-primary inline-flex justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive">
-							<MdOutlineArticle className="w-3.5 h-3.5" /> 100 posts
+							<MdOutlineArticle className="w-3.5 h-3.5" /> {profileCounts?.blogs?.total ?? 0} posts
 						</span>
 						<span className="text-primary text-2xl">·</span>
 						<span className="items-center text-primary inline-flex justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive">
-							<HiOutlineDocumentText className="w-3.5 h-3.5" /> 25 docs
+							<HiOutlineDocumentText className="w-3.5 h-3.5" /> {profileCounts?.docs?.total ?? 0} docs
 						</span>
 					</div>
 

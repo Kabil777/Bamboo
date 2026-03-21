@@ -50,6 +50,11 @@ export function EditorSidebar(props: React.ComponentProps<typeof Sidebar>) {
                 : Array.isArray(id) && id.length > 0,
     });
     const { tree, addPage, deletePage } = useDocsTree(provider);
+    const sections = tree.filter(
+        (item) =>
+            item.id !== docId &&
+            item.title?.trim().toLowerCase() !== "overview",
+    );
     const dispatch = useAppDispatch();
     const doc = useAppState((s) => s.docsReducer?.entities?.[docId]);
 
@@ -59,7 +64,7 @@ export function EditorSidebar(props: React.ComponentProps<typeof Sidebar>) {
 
     const [editingId, setEditingId] = useState<string | null>(null);
     const [openSectionId, setOpenSectionId] = useState<string | null>(
-        Array.isArray(id) && id.length >= 2 ? id[1] : tree[0]?.id ?? null,
+        Array.isArray(id) && id.length >= 2 ? id[1] : sections[0]?.id ?? null,
     );
 
     if (!provider) return null;
@@ -121,7 +126,7 @@ export function EditorSidebar(props: React.ComponentProps<typeof Sidebar>) {
                         <div className="h-px bg-border/50 mx-2 my-1.5" />
 
                         {/* Tree sections */}
-                        {tree.map((item, sectionIndex) => {
+                        {sections.map((item, sectionIndex) => {
                             const hasChildren = item.children && item.children.length > 0;
                             const isActiveSection =
                                 (id.length === 2 && id[1] === item.id) ||

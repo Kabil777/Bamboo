@@ -13,7 +13,10 @@ import { Skeleton } from "@/components/shadcnUI/skeleton";
 import { useAppDispatch } from "@/hooks/ReduxHooks";
 import Link from "next/link";
 import { toast } from "sonner";
-import { getAllProfileBlog } from "@/store/reducers/Profile/profile.read";
+import {
+    removeProfileBlogItem,
+    updateProfileBlogMeta,
+} from "@/store/reducers/Profile/profile.read";
 
 export const BlogCard: React.FC<BlogHomeCard & { isOwner?: boolean }> = ({
     id,
@@ -111,8 +114,15 @@ export const BlogCard: React.FC<BlogHomeCard & { isOwner?: boolean }> = ({
                             status={status}
                             isOwner={isOwner}
                             showMenu={isOwner}
-                            onVisibilityUpdated={() => {
-                                if (isOwner) dispatch(getAllProfileBlog());
+                            onVisibilityUpdated={(payload) => {
+                                if (isOwner) {
+                                    dispatch(updateProfileBlogMeta({ id, ...payload }));
+                                }
+                            }}
+                            onDeleteCompleted={() => {
+                                if (isOwner) {
+                                    dispatch(removeProfileBlogItem(id));
+                                }
                             }}
                         />
                     </div>

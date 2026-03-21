@@ -142,6 +142,7 @@ export const ProfileTag = ({
     resourceId,
     showMenu = true,
     onVisibilityUpdated,
+    onDeleteCompleted,
 }: {
     profileId?: string;
     idBlog?: string;
@@ -156,7 +157,11 @@ export const ProfileTag = ({
     isOwner?: boolean;
     resourceId?: string;
     showMenu?: boolean;
-    onVisibilityUpdated?: () => void;
+    onVisibilityUpdated?: (payload: {
+        visibility: "PUBLIC" | "PRIVATE";
+        status: "PUBLISHED" | "ARCHIVED" | "DRAFT";
+    }) => void;
+    onDeleteCompleted?: () => void;
 }) => {
     const router = useRouter();
     const pathname = usePathname();
@@ -231,6 +236,10 @@ export const ProfileTag = ({
 
     const hasMultipleAuthors = authors && authors.length > 1;
 
+    const resourceLabel = contentType === "docs" ? "document" : "blog";
+    const resourceRoute = contentType === "docs" ? "docs" : "blog";
+    const resourceTitle = contentType === "docs" ? "Docs" : "Blog";
+
     const getDeleteErrorMessage = (error: unknown) => {
         if (
             typeof error === "object" &&
@@ -246,13 +255,13 @@ export const ProfileTag = ({
             return (
                 response?.data?.message ||
                 response?.data?.error ||
-                "Failed to delete blog"
+                `Failed to delete ${resourceLabel}`
             );
         }
         if (error instanceof Error && error.message) {
             return error.message;
         }
-        return "Failed to delete blog";
+        return `Failed to delete ${resourceLabel}`;
     };
 
     const openDeleteDialog = () => {
@@ -262,17 +271,21 @@ export const ProfileTag = ({
         }, 100);
     };
 
-    const handleDelete = async (blogId?: UUID) => {
-        if (!blogId || contentType !== "blog" || isDeleting) return;
+    const handleDelete = async (resourceId?: UUID) => {
+        if (!resourceId || isDeleting) return;
 
         setIsDeleting(true);
         try {
             const apiVersion = process.env.NEXT_PUBLIC_API_VERSION ?? "/api/v1";
-            await api.delete(`${apiVersion}/blog/${blogId}`);
-            toast.success("Blog deleted successfully");
+            await api.delete(`${apiVersion}/${resourceRoute}/${resourceId}`);
+            toast.success(`${resourceTitle} deleted successfully`);
+            onDeleteCompleted?.();
             setDeleteDialogOpen(false);
 
-            if (pathname?.startsWith(`/blog/${blogId}`)) {
+            if (
+                pathname?.startsWith(`/${resourceRoute}/${resourceId}`) ||
+                pathname?.startsWith(`/editor/${resourceRoute}/${resourceId}`)
+            ) {
                 router.replace("/");
                 return;
             }
@@ -648,17 +661,15 @@ export const ProfileTag = ({
                         <DialogContent className="sm:max-w-md border-border/60 shadow-xl rounded-none p-7">
                             <DialogHeader className="space-y-4">
                                 <div className="space-y-1">
-                                    <DialogTitle>Delete this blog?</DialogTitle>
+                                    <DialogTitle>{`Delete this ${resourceLabel}?`}</DialogTitle>
                                     <DialogDescription>
-                                        This permanently removes the blog and its
-                                        access data. This action cannot be undone.
+                                        {`This permanently removes the ${resourceLabel} and its access data. This action cannot be undone.`}
                                     </DialogDescription>
                                 </div>
                             </DialogHeader>
 
                             <div className="border border-foreground/10 bg-foreground/[0.03] px-4 py-3 text-sm text-muted-foreground">
-                                The blog will disappear from your profile and
-                                public feeds immediately after deletion.
+                                {`The ${resourceLabel} will disappear from your profile and public feeds immediately after deletion.`}
                             </div>
 
                             <DialogFooter className="gap-3 pt-1 sm:justify-end">
@@ -668,14 +679,14 @@ export const ProfileTag = ({
                                     disabled={isDeleting}
                                     className="rounded-none"
                                 >
-                                    Keep blog
+                                    {`Keep ${resourceLabel}`}
                                 </Button>
                                 <Button
                                     onClick={() => handleDelete(idBlog)}
                                     disabled={isDeleting}
                                     className="rounded-none bg-foreground text-background hover:bg-foreground/90"
                                 >
-                                    {isDeleting ? "Deleting..." : "Delete blog"}
+                                    {isDeleting ? "Deleting..." : `Delete ${resourceLabel}`}
                                 </Button>
                             </DialogFooter>
                         </DialogContent>

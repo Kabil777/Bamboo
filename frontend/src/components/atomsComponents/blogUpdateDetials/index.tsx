@@ -193,7 +193,7 @@ export const BlogUpdateDetails = ({
 		if (!(title.length >= 5))
 			errors.title = "Title must be at least 5 characters long.";
 		if (!(title.length <= 100))
-			errors.title = "Title must be less than 100 characters long.";
+			errors.title = "Title must be at most 100 characters long.";
 		if (!description.trim()) errors.description = "Description is required.";
 		if (!(description.length >= 10))
 			errors.description = "Description must be at least 10 characters long.";
@@ -282,13 +282,14 @@ export const BlogUpdateDetails = ({
 						<Label htmlFor="title">
 							Title<span className="text-red-500">*</span>
 						</Label>
-						<Input
-							onChange={(e) => setTitle(e.target.value)}
-							id="title"
-							name="title"
-							value={title}
-							disabled={loading}
-						/>
+							<Input
+								onChange={(e) => setTitle(e.target.value.slice(0, 100))}
+								id="title"
+								name="title"
+								value={title}
+								disabled={loading}
+								maxLength={100}
+							/>
 						{formErrors.title && (
 							<p className="text-sm text-red-500">{formErrors.title}</p>
 						)}
@@ -562,7 +563,10 @@ export const VisibilityPopover = ({
 	resourceId?: string;
 	initialStatus?: "PUBLISHED" | "ARCHIVED" | "DRAFT";
 	initialVisibility?: "PUBLIC" | "PRIVATE";
-	onUpdated?: () => void;
+	onUpdated?: (payload: {
+		visibility: "PUBLIC" | "PRIVATE";
+		status: "PUBLISHED" | "ARCHIVED" | "DRAFT";
+	}) => void;
 }) => {
 	// State declarations
 	const [status, setStatus] = useState<"draft" | "publish" | "archived">(
@@ -633,7 +637,7 @@ export const VisibilityPopover = ({
 					"Failed to save content";
 				throw new Error(message);
 			}
-			onUpdated?.();
+			onUpdated?.({ visibility: mappedVisibility, status: mappedStatus });
 			handleClose();
 		} catch (error) {
 			console.error(error);

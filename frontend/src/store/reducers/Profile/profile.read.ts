@@ -1,16 +1,19 @@
-import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
+import { PayloadAction, createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { toast } from "sonner";
 import api from "@/api/axios";
 import {
 	AllProfileBlog,
 	AllProfileDocs,
 	Profile,
+	ProfileBlog,
+	ProfileDoc,
+	ProfileCounts,
 } from "@/types/Profile/profile-types";
 
 function getApiErrorMessage(
 	e: any,
 	fallback: string,
-	options?: { suppress404Toast?: boolean },
+	options?: { suppress404Toast?: boolean; suppressToast?: boolean },
 ) {
 	const status = e?.response?.status;
 	const message =
@@ -19,7 +22,7 @@ function getApiErrorMessage(
 		e?.message ||
 		fallback;
 
-	if (!(options?.suppress404Toast && status === 404)) {
+	if (!options?.suppressToast && !(options?.suppress404Toast && status === 404)) {
 		toast.error(message);
 	}
 
@@ -31,25 +34,31 @@ function getApiErrorMessage(
 
 interface ProfileReducersState {
 	profileData: Profile | null;
+	profileCounts: ProfileCounts | null;
 	blogs: AllProfileBlog | null;
 	docs: AllProfileDocs | null;
 
 	profileLoading: boolean;
+	profileCountsLoading: boolean;
 	blogLoading: boolean;
 	docsLoading: boolean;
 	profileError: string | null;
+	profileCountsError: string | null;
 	blogError: string | null;
 	docsError: string | null;
 }
 
 const profileInitialState: ProfileReducersState = {
 	profileData: null,
+	profileCounts: null,
 	blogs: null,
 	docs: null,
 	profileLoading: false,
+	profileCountsLoading: false,
 	blogLoading: false,
 	docsLoading: false,
 	profileError: null,
+	profileCountsError: null,
 	blogError: null,
 	docsError: null,
 };
@@ -91,6 +100,42 @@ export const getUserProfileByHandle = createAsyncThunk<Profile, string>(
 	},
 );
 
+export const getProfileCounts = createAsyncThunk<ProfileCounts, void>(
+	"/api/getprofilecounts",
+	async (_, { rejectWithValue }) => {
+		const URL = `${process.env.NEXT_PUBLIC_API_SERVER_URL}${process.env.NEXT_PUBLIC_API_VERSION}/user/profile/me/counts`;
+		try {
+			const response = await api.get<ProfileCounts>(URL);
+			return response.data;
+		} catch (e: any) {
+			const { message } = getApiErrorMessage(
+				e,
+				"Failed to fetch profile counts",
+				{ suppressToast: true },
+			);
+			return rejectWithValue(message);
+		}
+	},
+);
+
+export const getProfileCountsByHandle = createAsyncThunk<ProfileCounts, string>(
+	"/api/getprofilecountsbyhandle",
+	async (handle: string, { rejectWithValue }) => {
+		const URL = `${process.env.NEXT_PUBLIC_API_SERVER_URL}${process.env.NEXT_PUBLIC_API_VERSION}/user/profile/${handle}/counts`;
+		try {
+			const response = await api.get<ProfileCounts>(URL);
+			return response.data;
+		} catch (e: any) {
+			const { message } = getApiErrorMessage(
+				e,
+				"Failed to fetch profile counts",
+				{ suppressToast: true },
+			);
+			return rejectWithValue(message);
+		}
+	},
+);
+
 export const getAllProfileBlog = createAsyncThunk<AllProfileBlog, void>(
 	"/api/getallprofileblog",
 	async (_, { rejectWithValue }) => {
@@ -102,6 +147,7 @@ export const getAllProfileBlog = createAsyncThunk<AllProfileBlog, void>(
 			const { message } = getApiErrorMessage(
 				e,
 				"Failed to fetch user profile blogs",
+				{ suppressToast: true },
 			);
 			return rejectWithValue(message);
 		}
@@ -120,6 +166,7 @@ export const getAllProfileBlogByHandle = createAsyncThunk<
 		const { message } = getApiErrorMessage(
 			e,
 			"Failed to fetch user profile blogs",
+			{ suppressToast: true },
 		);
 		return rejectWithValue(message);
 	}
@@ -136,6 +183,7 @@ export const getAllProfileDocs = createAsyncThunk<AllProfileDocs, void>(
 			const { message } = getApiErrorMessage(
 				e,
 				"Failed to fetch user docs",
+				{ suppressToast: true },
 			);
 			return rejectWithValue(message);
 		}
@@ -154,6 +202,7 @@ export const getAllProfileDocsByHandle = createAsyncThunk<
 		const { message } = getApiErrorMessage(
 			e,
 			"Failed to fetch user docs",
+			{ suppressToast: true },
 		);
 		return rejectWithValue(message);
 	}
@@ -165,8 +214,11 @@ const getProfile = createSlice({
 	reducers: {
 		resetProfileView: (state) => {
 			state.profileData = null;
+			state.profileCounts = null;
 			state.profileError = null;
+			state.profileCountsError = null;
 			state.profileLoading = false;
+			state.profileCountsLoading = false;
 		},
 		resetProfileCollections: (state) => {
 			state.blogs = null;
@@ -175,6 +227,46 @@ const getProfile = createSlice({
 			state.docsError = null;
 			state.blogLoading = false;
 			state.docsLoading = false;
+		},
+		removeProfileBlogItem: (state, action: PayloadAction<string>) => {
+			if (!state.blogs) return;
+			state.blogs.items = state.blogs.items.filter((item) => item.id !== action.payload);
+			if (state.profileCounts?.blogs) {
+				state.profileCounts.blogs.total = Math.max(0, state.profileCounts.blogs.total - 1);
+			}
+		},
+		removeProfileDocItem: (state, action: PayloadAction<string>) => {
+			if (!state.docs) return;
+			state.docs.items = state.docs.items.filter((item) => item.id !== action.payload);
+			if (state.profileCounts?.docs) {
+				state.profileCounts.docs.total = Math.max(0, state.profileCounts.docs.total - 1);
+			}
+		},
+		updateProfileBlogMeta: (
+			state,
+			action: PayloadAction<{
+				id: string;
+				visibility?: ProfileBlog["visibility"];
+				status?: ProfileBlog["status"];
+			}>,
+		) => {
+			const target = state.blogs?.items.find((item) => item.id === action.payload.id);
+			if (!target) return;
+			if (action.payload.visibility !== undefined) target.visibility = action.payload.visibility;
+			if (action.payload.status !== undefined) target.status = action.payload.status;
+		},
+		updateProfileDocMeta: (
+			state,
+			action: PayloadAction<{
+				id: string;
+				visibility?: ProfileDoc["visibility"];
+				status?: ProfileDoc["status"];
+			}>,
+		) => {
+			const target = state.docs?.items.find((item) => item.id === action.payload.id);
+			if (!target) return;
+			if (action.payload.visibility !== undefined) target.visibility = action.payload.visibility;
+			if (action.payload.status !== undefined) target.status = action.payload.status;
 		},
 	},
 	extraReducers: (builder) => {
@@ -209,6 +301,34 @@ const getProfile = createSlice({
 				state.profileLoading = false;
 				state.profileData = null; // Clear profile data on error
 				state.profileError = action.payload as string;
+			});
+
+		builder
+			.addCase(getProfileCounts.pending, (state) => {
+				state.profileCountsLoading = true;
+				state.profileCountsError = null;
+			})
+			.addCase(getProfileCounts.fulfilled, (state, action) => {
+				state.profileCountsLoading = false;
+				state.profileCounts = action.payload;
+			})
+			.addCase(getProfileCounts.rejected, (state, action) => {
+				state.profileCountsLoading = false;
+				state.profileCountsError = action.payload as string;
+			});
+
+		builder
+			.addCase(getProfileCountsByHandle.pending, (state) => {
+				state.profileCountsLoading = true;
+				state.profileCountsError = null;
+			})
+			.addCase(getProfileCountsByHandle.fulfilled, (state, action) => {
+				state.profileCountsLoading = false;
+				state.profileCounts = action.payload;
+			})
+			.addCase(getProfileCountsByHandle.rejected, (state, action) => {
+				state.profileCountsLoading = false;
+				state.profileCountsError = action.payload as string;
 			});
 
 		// ======================
@@ -279,5 +399,12 @@ const getProfile = createSlice({
 	},
 });
 
-export const { resetProfileCollections, resetProfileView } = getProfile.actions;
+export const {
+	resetProfileCollections,
+	resetProfileView,
+	removeProfileBlogItem,
+	removeProfileDocItem,
+	updateProfileBlogMeta,
+	updateProfileDocMeta,
+} = getProfile.actions;
 export default getProfile.reducer;
