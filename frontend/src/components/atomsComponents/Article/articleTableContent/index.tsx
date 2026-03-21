@@ -27,40 +27,50 @@ function buildTocTree(flatItems: TocItem[]): TocItem[] {
     while (stack.length > 0 && stack[stack.length - 1].depth >= item.depth) {
       stack.pop()
     }
-
     if (stack.length === 0) {
       root.push(newItem)
     } else {
       stack[stack.length - 1].items!.push(newItem)
     }
-
     stack.push(newItem)
   })
 
   return root
 }
 
-function renderSidebarItems(items: TocItem[], activeId: string | null, depth: number = 0) {
-  return items.map((item) => {
-    const hasChildren = item.items && item.items.length > 0
-    const [open, setOpen] = useState<boolean>(true)
-    const isActive = activeId === item.id
+// ─── Proper React component so hooks are legal ─────────────────────────────
+function TocItemNode({
+  item,
+  activeIds,
+  depth = 0,
+}: {
+  item: TocItem
+  activeIds: Set<string>
+  depth?: number
+}) {
+  const hasChildren = item.items && item.items.length > 0
+  const [open, setOpen] = useState<boolean>(true)
+  const isActive = activeIds.has(item.id)
 
-    return (
-      <Collapsible
-        key={item.id}
-        asChild
-        open={open}
-        onOpenChange={setOpen}
-        className="group/collapsible min-w-0 w-full"
-      >
-        <div>
-          <SidebarMenuItem className="!w-full min-w-0 !list-none">
-            <div className="flex items-center w-full min-w-0 group/tocitem relative">
-              {/* Smooth sliding active indicator — shared layoutId makes it glide between items */}
+  return (
+    <Collapsible
+      asChild
+      open={open}
+      onOpenChange={setOpen}
+      className="group/collapsible min-w-0 w-full"
+    >
+      <div>
+        <SidebarMenuItem className="!w-full min-w-0 !list-none">
+          <div className="flex items-center w-full min-w-0 group/tocitem relative">
+            {/* Each active item gets its own indicator — no shared layoutId
+                since multiple items can be active simultaneously */}
+            <AnimatePresence>
               {isActive && (
                 <motion.div
-                  layoutId="toc-active-indicator"
+                  key={item.id}
+                  initial={{ opacity: 0, scaleY: 0.5 }}
+                  animate={{ opacity: 1, scaleY: 1 }}
+                  exit={{ opacity: 0, scaleY: 0.5 }}
                   className="absolute left-0 top-[3px] bottom-[3px] w-[2.5px] rounded-full bg-primary"
                   style={{ originY: 0.5 }}
                   transition={{
@@ -71,117 +81,156 @@ function renderSidebarItems(items: TocItem[], activeId: string | null, depth: nu
                   }}
                 />
               )}
-              <SidebarMenuButton asChild className="hover:bg-transparent focus:!bg-transparent data-[active=true]:bg-transparent active:bg-transparent min-w-0 w-full !h-auto">
-                <span className="!py-[5px] !px-0 !gap-0 flex items-center min-w-0 w-full">
-                  <Link
-                    href={`#${item.id}`}
-                    className={`
-                      block w-full text-left truncate min-w-0 flex-1
-                      transition-all duration-200 ease-out !pl-2
-                      ${depth === 0 ? "!text-[13px] font-semibold" : "!text-[12px] font-medium"}
-                      ${isActive
-                        ? "text-primary"
-                        : "text-muted-foreground/70 hover:text-foreground"
-                      }
-                    `}
-                    title={item.value}
-                  >
-                    {item.value}
-                  </Link>
-                  {/* Chevron toggle */}
-                  {hasChildren && (
-                    <CollapsibleTrigger asChild>
-                      <button
-                        type="button"
-                        className="p-1 rounded-md flex-shrink-0 hover:bg-muted/50 transition-colors duration-150 ml-1"
-                        aria-label={open ? "Collapse" : "Expand"}
-                      >
-                        <ChevronRight
-                          size={14}
-                          className={`text-muted-foreground/50 transition-transform duration-200 ${open ? "rotate-90" : ""}`}
-                        />
-                      </button>
-                    </CollapsibleTrigger>
-                  )}
-                </span>
-              </SidebarMenuButton>
-            </div>
+            </AnimatePresence>
 
-            {hasChildren && (
-              <CollapsibleContent forceMount asChild>
-                <motion.div
-                  initial={false}
-                  animate={open ? "open" : "closed"}
-                  variants={{
-                    open: {
-                      height: "auto",
-                      opacity: 1,
-                    },
-                    closed: {
-                      height: 0,
-                      opacity: 0,
+            <SidebarMenuButton asChild className="hover:bg-transparent focus:!bg-transparent data-[active=true]:bg-transparent active:bg-transparent min-w-0 w-full !h-auto">
+              <span className="!py-[5px] !px-0 !gap-0 flex items-center min-w-0 w-full">
+                <Link
+                  href={`#${item.id}`}
+                  className={`
+                    block w-full text-left truncate min-w-0 flex-1
+                    transition-all duration-200 ease-out !pl-2
+                    ${depth === 0 ? "!text-[13px] font-semibold" : "!text-[12px] font-medium"}
+                    ${isActive
+                      ? "text-primary"
+                      : "text-muted-foreground/70 hover:text-foreground"
                     }
-                  }}
-                  transition={{
-                    duration: 0.25,
-                    ease: [0.25, 0.46, 0.45, 0.94],
-                  }}
-                  style={{
-                    overflow: "hidden",
-                    transformOrigin: "top",
-                    willChange: "height"
-                  }}
+                  `}
+                  title={item.value}
                 >
-                  <SidebarMenuSub className="mr-0 pr-0 min-w-0 overflow-hidden !ml-2 !pl-2.5 !border-l">
-                    {renderSidebarItems(item.items!, activeId, depth + 1)}
-                  </SidebarMenuSub>
-                </motion.div>
-              </CollapsibleContent>
-            )}
-          </SidebarMenuItem>
-        </div>
-      </Collapsible>
-    )
-  })
+                  {item.value}
+                </Link>
+                {hasChildren && (
+                  <CollapsibleTrigger asChild>
+                    <button
+                      type="button"
+                      className="p-1 rounded-md flex-shrink-0 hover:bg-muted/50 transition-colors duration-150 ml-1"
+                      aria-label={open ? "Collapse" : "Expand"}
+                    >
+                      <ChevronRight
+                        size={14}
+                        className={`text-muted-foreground/50 transition-transform duration-200 ${open ? "rotate-90" : ""}`}
+                      />
+                    </button>
+                  </CollapsibleTrigger>
+                )}
+              </span>
+            </SidebarMenuButton>
+          </div>
+
+          {hasChildren && (
+            <CollapsibleContent forceMount asChild>
+              <motion.div
+                initial={false}
+                animate={open ? "open" : "closed"}
+                variants={{
+                  open: { height: "auto", opacity: 1 },
+                  closed: { height: 0, opacity: 0 },
+                }}
+                transition={{
+                  duration: 0.25,
+                  ease: [0.25, 0.46, 0.45, 0.94],
+                }}
+                style={{
+                  overflow: "hidden",
+                  transformOrigin: "top",
+                  willChange: "height",
+                }}
+              >
+                <SidebarMenuSub className="mr-0 pr-0 min-w-0 overflow-hidden !ml-2 !pl-2.5 !border-l">
+                  {item.items!.map((child) => (
+                    <TocItemNode key={child.id} item={child} activeIds={activeIds} depth={depth + 1} />
+                  ))}
+                </SidebarMenuSub>
+              </motion.div>
+            </CollapsibleContent>
+          )}
+        </SidebarMenuItem>
+      </div>
+    </Collapsible>
+  )
 }
 
 export const ArticleTableContent = ({ toc }: { toc: TocItem[] }) => {
   const tocTree = buildTocTree(toc)
-  const [activeId, setActiveId] = useState<string | null>(null)
+  const [activeIds, setActiveIds] = useState<Set<string>>(new Set())
 
-  // Track the active heading via IntersectionObserver
   useEffect(() => {
     if (toc.length === 0) return
 
     const headingIds = toc.map((t) => t.id)
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const visible = entries.find((e) => e.isIntersecting)
-        if (visible?.target?.id) {
-          setActiveId(visible.target.id)
+
+    const THRESHOLD = 80 // px: navbar (~80px) + comfortable read offset
+
+    let rafId: number
+
+    const updateActive = () => {
+      const elements = headingIds
+        .map((id) => document.getElementById(id))
+        .filter(Boolean) as HTMLElement[]
+
+      const next = new Set<string>()
+      const vh = window.innerHeight
+
+      // Pass 1: find the last heading above the threshold (current section)
+      let currentSection: string | null = null
+      for (const el of elements) {
+        if (el.getBoundingClientRect().top <= THRESHOLD) {
+          currentSection = el.id
+        } else {
+          break // document order — stop once below threshold
         }
-      },
-      {
-        rootMargin: "-80px 0px -60% 0px",
-        threshold: 0,
       }
-    )
+      if (currentSection) {
+        next.add(currentSection)
+      }
 
-    const elements = headingIds
-      .map((id) => document.getElementById(id))
-      .filter(Boolean) as HTMLElement[]
+      // Pass 2: add every heading visible below the threshold
+      for (const el of elements) {
+        const top = el.getBoundingClientRect().top
+        if (top > THRESHOLD && top < vh) {
+          next.add(el.id)
+        }
+      }
 
-    elements.forEach((el) => observer.observe(el))
+      // Edge case: user is above ALL headings — activate the first visible one
+      if (next.size === 0 && elements.length > 0) {
+        const firstTop = elements[0].getBoundingClientRect().top
+        if (firstTop < vh * 0.9) {
+          next.add(elements[0].id)
+        }
+      }
+
+      // Only trigger a re-render when the set actually changed
+      setActiveIds((prev) => {
+        const same =
+          prev.size === next.size && [...next].every((id) => prev.has(id))
+        return same ? prev : next
+      })
+    }
+
+    const onScroll = () => {
+      cancelAnimationFrame(rafId)
+      rafId = requestAnimationFrame(updateActive)
+    }
+
+    window.addEventListener("scroll", onScroll, { passive: true })
+    updateActive() // initial call on mount
 
     return () => {
-      elements.forEach((el) => observer.unobserve(el))
+      window.removeEventListener("scroll", onScroll)
+      cancelAnimationFrame(rafId)
     }
   }, [toc])
 
   return (
     <div className="space-y-0.5 min-w-0 overflow-hidden">
       <LayoutGroup>
-        <SidebarMenu className="min-w-0 gap-0">{renderSidebarItems(tocTree, activeId)}</SidebarMenu>
+        <SidebarMenu className="min-w-0 gap-0">
+          {tocTree.map((item) => (
+            <TocItemNode key={item.id} item={item} activeIds={activeIds} />
+          ))}
+        </SidebarMenu>
       </LayoutGroup>
     </div>
   )

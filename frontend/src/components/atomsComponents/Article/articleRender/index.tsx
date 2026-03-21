@@ -30,15 +30,10 @@ function slugify(text: string) {
         .replace(/^-+|-+$/g, "");
 }
 
+// Collects the full plain-text string from React children, then slugifies
+// once — exactly matching what extractToc does on the raw markdown.
 function extractId(node: React.ReactNode): string {
-    if (typeof node === "string") return slugify(node);
-    if (Array.isArray(node)) return node.map(extractId).join("");
-    if (typeof node === "object" && node && "props" in node) {
-        return extractId(
-            (node as { props: { children: React.ReactNode } }).props.children,
-        );
-    }
-    return "";
+    return slugify(extractText(node));
 }
 
 function extractText(node: React.ReactNode): string {
@@ -179,7 +174,7 @@ export const ArticleRender = ({ content }: { content: string }) => {
                                             {...props}
                                         />
                                     </DialogTrigger>
-                                    <DialogContent className="sm:!max-w-6xl max-h-[calc(100vh-4rem)] overflow-hidden p-0">
+                                    <DialogContent showCloseButton={true} className="sm:!max-w-6xl max-h-[calc(100vh-4rem)] overflow-hidden p-0">
                                         <DialogHeader className="sr-only">
                                             <DialogTitle>{alt || "Image"}</DialogTitle>
                                         </DialogHeader>

@@ -8,9 +8,10 @@ import React from "react";
 export interface FloatingAction {
     icon: React.ElementType;
     label: string;
-    onClick: () => void;
+    onClick?: () => void;
     showCheck?: boolean;
     variant?: "ghost" | "violet";
+    wrapper?: (children: React.ReactNode) => React.ReactNode;
 }
 
 interface FloatingActionBarProps {
@@ -39,10 +40,9 @@ export default function FloatingActionBar({ actions, prefix }: FloatingActionBar
                     return <div key={`sep-${index}`} className="w-px h-5 bg-border/20 mx-0.5" />;
                 }
 
-                const { icon: Icon, label, onClick, showCheck, variant = "ghost" } = action;
+                const { icon: Icon, label, onClick, showCheck, variant = "ghost", wrapper } = action;
 
-                return (
-                    <ToolTip key={label} title={label}>
+                const buttonEl = (
                         <Button
                             variant="ghost"
                             size="icon"
@@ -77,7 +77,16 @@ export default function FloatingActionBar({ actions, prefix }: FloatingActionBar
                                 )}
                             </AnimatePresence>
                         </Button>
-                    </ToolTip>
+                );
+
+                return (
+                    <React.Fragment key={label}>
+                        {wrapper ? wrapper(buttonEl) : (
+                            <ToolTip title={label}>
+                                {buttonEl}
+                            </ToolTip>
+                        )}
+                    </React.Fragment>
                 );
             })}
         </motion.div>

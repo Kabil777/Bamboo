@@ -25,7 +25,7 @@ export { SharePopover } from "./sharePopover";
 export { TabChips } from "./tabChips";
 export { default as FloatingActionBar } from "./floatingActionBar";
 export { MarkdownViewDialog } from "./markdownViewDialog";
-export { AskWithAiDialog } from "./askWithAiDialog";
+export { AskWithAiDropdown } from "./askWithAiDialog";
 export { default as Popup } from "./popup";
 export { FeaturedCarousel } from "./featuredCarousel";
 export { DocsShelf } from "./DocsShelf";

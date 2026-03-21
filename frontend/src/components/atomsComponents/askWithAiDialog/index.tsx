@@ -1,102 +1,127 @@
 "use client";
 
-import { useState, useCallback, useMemo } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Sparkles, Copy, Check, Terminal } from "lucide-react";
+import { useCallback } from "react";
+import { Sparkles, Terminal } from "lucide-react";
 import {
-    Dialog,
-    DialogContent,
-    DialogHeader,
-    DialogTitle,
-    DialogDescription,
-} from "@/components/shadcnUI/dialog";
-import { Button } from "@/components/shadcnUI/button";
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+} from "@/components/shadcnUI/dropdown-menu";
 import { toast } from "sonner";
 
-interface AskWithAiDialogProps {
-    open: boolean;
-    onOpenChange: (open: boolean) => void;
+interface AskWithAiDropdownProps {
+    children: React.ReactNode;
     content: string;
     title: string;
 }
 
-export function AskWithAiDialog({
-    open,
-    onOpenChange,
+export function AskWithAiDropdown({
+    children,
     content,
     title,
-}: AskWithAiDialogProps) {
-    const [llmQuestion, setLlmQuestion] = useState("");
-    const [llmPromptCopied, setLlmPromptCopied] = useState(false);
+}: AskWithAiDropdownProps) {
+    const handleAskAi = useCallback(
+        async (baseUrl: string, platformName: string) => {
+            const link = window.location.href;
+            
+            // We want to pass this via the URL ?q= parameter, but URLs have a max length
+            // limit (usually ~2000 to ~8000 chars before servers reject them).
+            // We will safely truncate the markdown content if it gets too large so it safely pre-fills.
+            const SAFE_MAX_PROMPT_LENGTH = 3500;
+            const prefix = `I'm reading an article titled "${title}" at ${link}\n\nHere is the content in markdown:\n\n---\n`;
+            const suffix = `\n---\n\n`;
+            
+            let safeContent = content;
+            const projectedLength = prefix.length + content.length + suffix.length;
+            
+            if (projectedLength > SAFE_MAX_PROMPT_LENGTH) {
+                const allowedContentLen = SAFE_MAX_PROMPT_LENGTH - prefix.length - suffix.length - 100; // 100 char buffer
+                safeContent = content.substring(0, allowedContentLen) + "\n\n...[Content truncated for length]...";
+            }
 
-    const generatedPrompt = useMemo(() => {
-        if (!content) return "";
-        return `I'm reading a post titled "${title}". Here is the content:\n\n---\n${content}\n---\n\nMy question: ${llmQuestion}`;
-    }, [content, title, llmQuestion]);
+            const prompt = prefix + safeContent + suffix;
+            
+            // Build the ?q= URL
+            const urlWithPrompt = new URL(baseUrl);
+            urlWithPrompt.searchParams.set("q", prompt);
 
-    const handleCopyLlmPrompt = useCallback(async () => {
-        if (!llmQuestion.trim()) {
-            toast.error("Please enter a question first");
-            return;
-        }
-        try {
-            await navigator.clipboard.writeText(generatedPrompt);
-            setLlmPromptCopied(true);
-            toast.success("Prompt copied! Paste it into your favorite LLM.");
-            setTimeout(() => setLlmPromptCopied(false), 2000);
-        } catch {
-            toast.error("Failed to copy prompt");
-        }
-    }, [generatedPrompt, llmQuestion]);
+            try {
+                // Also copy the *full* untruncated content to clipboard just in case they need it all
+                const fullPrompt = prefix + content + suffix;
+                await navigator.clipboard.writeText(fullPrompt);
+                
+                toast.success(
+                    `Opening ${platformName}. Full content also copied to clipboard!`,
+                    { duration: 4000 }
+                );
+                
+                setTimeout(() => {
+                    window.open(urlWithPrompt.toString(), "_blank");
+                }, 800);
+            } catch {
+                toast.error(`Opening ${platformName}...`);
+                window.open(urlWithPrompt.toString(), "_blank");
+            }
+        },
+        [content, title]
+    );
 
     return (
-        <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="max-w-2xl w-[95vw] flex flex-col p-0 gap-0 overflow-hidden rounded-2xl">
-                <DialogHeader className="px-5 sm:px-6 pt-5 pb-4 border-b border-border/30 flex-shrink-0 bg-gradient-to-r from-violet-500/5 to-transparent">
-                    <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500/20 to-purple-500/20 border border-violet-500/15 flex items-center justify-center shadow-sm shadow-violet-500/10">
-                            <Sparkles className="w-4.5 h-4.5 text-violet-500" />
-                        </div>
-                        <div className="min-w-0">
-                            <DialogTitle className="text-base font-bold">
-                                Ask AI about this article
-                            </DialogTitle>
-                            <DialogDescription className="text-xs text-muted-foreground/60 mt-0.5">
-                                Ask questions about this page
-                            </DialogDescription>
-                        </div>
-                    </div>
-                </DialogHeader>
-                <div className="flex flex-col gap-2 p-8">
+        <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+                {children}
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56 p-2 rounded-xl">
+                <DropdownMenuLabel className="flex items-center gap-2 pb-2">
+                    <Sparkles className="w-4 h-4 text-violet-500" />
+                    <span>Ask AI about this article</span>
+                </DropdownMenuLabel>
+                
+                <DropdownMenuSeparator />
 
-                    <Button
-                        variant="outline"
-                        className="gap-1.5 rounded-xl"
-                        onClick={() => window.open(window.location.href, "_blank")}
-                    >
-                        <Terminal className="w-4 h-4 text-violet-500" />
-                        <span className="text-sm font-semibold">Open in v0</span>
-                    </Button>
+                <DropdownMenuItem 
+                    className="gap-2 cursor-pointer py-2 rounded-lg"
+                    onClick={() => handleAskAi("https://v0.dev/chat", "v0")}
+                >
+                    <Terminal className="w-4 h-4 text-violet-500" />
+                    <span className="text-sm font-medium">Open in v0</span>
+                </DropdownMenuItem>
 
-                    <Button
-                        variant="outline"
-                        className="gap-1.5 rounded-xl"
-                        onClick={() => window.open(window.location.href, "_blank")}
-                    >
-                        <Sparkles className="w-4 h-4 text-amber-500" />
-                        <span className="text-sm font-semibold">Open in Claude</span>
-                    </Button>
+                <DropdownMenuItem 
+                    className="gap-2 cursor-pointer py-2 rounded-lg"
+                    onClick={() => handleAskAi("https://claude.ai/new", "Claude")}
+                >
+                    <Sparkles className="w-4 h-4 text-amber-500" />
+                    <span className="text-sm font-medium">Open in Claude</span>
+                </DropdownMenuItem>
 
-                    <Button
-                        variant="outline"
-                        className="gap-1.5 rounded-xl"
-                        onClick={() => window.open(window.location.href, "_blank")}
-                    >
-                        <Sparkles className="w-4 h-4 text-emerald-500" />
-                        <span className="text-sm font-semibold">Open in ChatGPT</span>
-                    </Button>
-                </div>
-            </DialogContent>
-        </Dialog>
+                <DropdownMenuItem 
+                    className="gap-2 cursor-pointer py-2 rounded-lg"
+                    onClick={() => handleAskAi("https://chatgpt.com/", "ChatGPT")}
+                >
+                    <Sparkles className="w-4 h-4 text-emerald-500" />
+                    <span className="text-sm font-medium">Open in ChatGPT</span>
+                </DropdownMenuItem>
+
+                <DropdownMenuItem 
+                    className="gap-2 cursor-pointer py-2 rounded-lg"
+                    onClick={() => handleAskAi("https://gemini.google.com/app", "Gemini")}
+                >
+                    <Sparkles className="w-4 h-4 text-blue-500" />
+                    <span className="text-sm font-medium">Open in Gemini</span>
+                </DropdownMenuItem>
+
+                <DropdownMenuItem 
+                    className="gap-2 cursor-pointer py-2 rounded-lg"
+                    onClick={() => handleAskAi("https://www.perplexity.ai/search", "Perplexity")}
+                >
+                    <Sparkles className="w-4 h-4 text-indigo-500" />
+                    <span className="text-sm font-medium">Open in Perplexity</span>
+                </DropdownMenuItem>
+            </DropdownMenuContent>
+        </DropdownMenu>
     );
 }
