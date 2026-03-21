@@ -18,7 +18,7 @@ export function StartWritingCTA() {
             </p>
             <Link
                 href="/editor/blog/new"
-                className="group mt-5 inline-flex items-center gap-1 rounded-sm bg-foreground px-5 py-2.5 text-sm font-semibold text-background transition-opacity hover:opacity-75"
+                className="group mt-5 inline-flex items-center gap-1 rounded-sm bg-foreground px-5 py-2.5 text-sm font-semibold text-background transition-opacity hover:bg-foreground/90"
             >
                 Start writing
             </Link>

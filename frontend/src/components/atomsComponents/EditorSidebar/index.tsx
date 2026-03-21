@@ -2,29 +2,28 @@
 
 import {
     ChevronDown,
+    ChevronRight,
     FileText,
-    Folder,
     Home,
     Plus,
     Trash2,
     Pencil,
+    BookOpen,
+    Layers,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { JSXElementConstructor, ReactElement, ReactNode, ReactPortal, useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
 
 import {
-    Sidebar,
-    SidebarContent,
-    SidebarFooter,
-    SidebarGroup,
-    SidebarHeader,
     SidebarMenu,
     SidebarMenuButton,
     SidebarMenuItem,
     SidebarMenuSub,
     SidebarMenuSubButton,
     SidebarMenuSubItem,
+    SidebarProvider,
 } from "@/components/shadcnUI/sidebar";
 import {
     Collapsible,
@@ -40,14 +39,13 @@ import { useAppState, useAppDispatch } from "@/hooks/ReduxHooks";
 import { DocsRTK } from "@/store/reducers/DocsReducer";
 import * as Y from "yjs";
 
-export function EditorSidebar(props: React.ComponentProps<typeof Sidebar>) {
+
+
+export function EditorSidebar() {
     const { id } = useParams() as { id: string | string[] };
     const docId = Array.isArray(id) ? id[0] : id;
     const provider = useDocsMetaProvider(docId, {
-        enabled:
-            typeof id === "string"
-                ? id.length > 0
-                : Array.isArray(id) && id.length > 0,
+        enabled: typeof id === "string" ? id.length > 0 : Array.isArray(id) && id.length > 0,
     });
     const { tree, addPage, deletePage } = useDocsTree(provider);
     const sections = tree.filter(
@@ -63,261 +61,361 @@ export function EditorSidebar(props: React.ComponentProps<typeof Sidebar>) {
     }, [docId, dispatch]);
 
     const [editingId, setEditingId] = useState<string | null>(null);
-    const [openSectionId, setOpenSectionId] = useState<string | null>(
-        Array.isArray(id) && id.length >= 2 ? id[1] : sections[0]?.id ?? null,
-    );
+    const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+    // Track open collapsible items locally for AnimatePresence
+    const [openItems, setOpenItems] = useState<Record<string, boolean>>({});
+
+    const isActiveSectionFn = (itemId: string) => {
+        return (id.length === 2 && id[1] === itemId) || (id.length === 3 && id[1] === itemId);
+    };
 
     if (!provider) return null;
 
-    const updateTitle = (id: string, title: string) => {
+    const toggleItem = (itemId: string, defaultOpen: boolean) => {
+        setOpenItems((prev) => ({
+            ...prev,
+            [itemId]: itemId in prev ? !prev[itemId] : !defaultOpen,
+        }));
+    };
+
+    const isItemOpen = (itemId: string, defaultOpen: boolean) => {
+        return itemId in openItems ? openItems[itemId] : defaultOpen;
+    };
+
+    const updateTitle = (pageId: string, title: string) => {
         const ydoc = provider.document;
         const pages = ydoc.getArray<Y.Map<any>>("pages");
 
         ydoc.transact(() => {
-            const page = pages.toArray().find((p) => p.get("id") === id);
+            const page = pages.toArray().find((p) => p.get("id") === pageId);
             if (page) {
                 page.set("title", title);
             }
         });
     };
 
+    const sectionCount = tree.length;
+
     return (
-        <Sidebar
-            {...props}
-            variant="sidebar"
-            collapsible="offcanvas"
-            className="top-14 h-[calc(100svh-56px)] bg-background text-foreground"
-        >
-            <SidebarHeader className="bg-background border-b border-border/40 px-4 py-3">
-                <div className="flex min-w-0 items-center gap-3">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-foreground text-background">
-                        <FileText className="h-4 w-4" />
-                    </div>
-                    <div className="flex min-w-0 flex-col leading-tight">
-                        <span className="text-sm font-semibold text-foreground truncate">
-                            {doc?.title || "Docs Editor"}
-                        </span>
-                    </div>
-                </div>
-            </SidebarHeader>
-
-            <SidebarContent className="custom-scroll scroll-smooth px-3 py-3 flex-1 bg-background">
-                <SidebarGroup className="px-0">
-                    <SidebarMenu className="gap-1">
-                        {/* Overview — fixed item, no edit/delete */}
-                        <SidebarMenuItem>
-                            <SidebarMenuButton
-                                asChild
-                                isActive={id.length === 1}
-                                tooltip="Overview"
-                                className="h-9 rounded-lg px-3 text-sm font-medium transition-colors data-[active=true]:bg-primary/10 hover:bg-muted"
-                            >
-                                <Link
-                                    href={`/editor/docs/${docId}`}
-                                    className="flex items-center gap-2.5"
-                                >
-                                    <Home className="h-4 w-4 shrink-0 text-foreground" />
-                                    <span className="truncate">Overview</span>
-                                </Link>
-                            </SidebarMenuButton>
-                        </SidebarMenuItem>
-
-                        {/* Separator */}
-                        <div className="h-px bg-border/50 mx-2 my-1.5" />
-
-                        {/* Tree sections */}
-                        {sections.map((item, sectionIndex) => {
-                            const hasChildren = item.children && item.children.length > 0;
-                            const isActiveSection =
-                                (id.length === 2 && id[1] === item.id) ||
-                                (id.length === 3 && id[1] === item.id);
-                            const isOpen = isActiveSection || openSectionId === item.id;
-
-                            return (
-                                <Collapsible
-                                    key={sectionIndex}
-                                    open={isOpen}
-                                    onOpenChange={(open) => {
-                                        if (isActiveSection) return; // prevent closing active section
-                                        setOpenSectionId(open ? item.id : null);
-                                    }}
-                                    className="group/collapsible"
-                                >
-                                    <SidebarMenuItem>
-                                        <div className={`flex min-w-0 items-center group/section rounded-lg transition-colors hover:bg-muted ${isActiveSection ? "bg-primary/10" : ""}`}>
-                                            {editingId === item.id ? (
-                                                <Input
-                                                    autoFocus
-                                                    defaultValue={item.title}
-                                                    onBlur={(e) => {
-                                                        updateTitle(item.id, e.target.value);
-                                                        setEditingId(null);
-                                                    }}
-                                                    onKeyDown={(e) => {
-                                                        if (e.key === "Enter") {
-                                                            updateTitle(
-                                                                item.id,
-                                                                (e.target as HTMLInputElement).value,
-                                                            );
-                                                            setEditingId(null);
-                                                        }
-                                                        if (e.key === "Escape") setEditingId(null);
-                                                    }}
-                                                    className="min-w-0 flex-1 h-9 rounded-lg border-primary/30 px-3 text-sm focus-visible:ring-primary/30"
-                                                />
-                                            ) : (
-                                                <SidebarMenuButton
-                                                    asChild
-                                                    isActive={id.length === 2 && id[1] === item.id}
-                                                    tooltip={item.title}
-                                                    className="min-w-0 flex-1 h-9 rounded-lg px-3 text-sm font-medium transition-colors data-[active=true]:text-primary data-[active=true]:bg-transparent"
-                                                >
-                                                    <Link
-                                                        href={`/editor/docs/${docId}/${item.id}`}
-                                                        className="flex min-w-0 items-center gap-2.5"
-                                                    >
-                                                        <Folder className="h-4 w-4 shrink-0 text-foreground" />
-                                                        <span className="truncate">{item.title}</span>
-                                                    </Link>
-                                                </SidebarMenuButton>
-                                            )}
-
-                                            {/* Collapse toggle + action buttons */}
-                                            <div className="ml-1 flex items-center gap-0.5 shrink-0 opacity-0 group-hover/section:opacity-100 transition-opacity">
-                                                <Button
-                                                    onClick={() => addPage(item.id)}
-                                                    variant="ghost"
-                                                    size="icon"
-                                                    className="h-8 w-8 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted"
-                                                >
-                                                    <Plus className="h-4 w-4" />
-                                                </Button>
-                                                <Button
-                                                    onClick={(e) => {
-                                                        e.preventDefault();
-                                                        setEditingId(item.id);
-                                                    }}
-                                                    variant="ghost"
-                                                    size="icon"
-                                                    className="h-8 w-8 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted"
-                                                >
-                                                    <Pencil className="h-4 w-4" />
-                                                </Button>
-                                                <Button
-                                                    onClick={() => deletePage(item.id)}
-                                                    variant="ghost"
-                                                    size="icon"
-                                                    className="h-8 w-8 rounded-full text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-                                                >
-                                                    <Trash2 className="h-4 w-4" />
-                                                </Button>
-                                            </div>
-
-                                            {hasChildren && (
-                                                <CollapsibleTrigger asChild>
-                                                    <button className="ml-0.5 p-1.5 rounded-full hover:bg-muted transition-colors shrink-0">
-                                                        <ChevronDown className="h-4 w-4 transition-transform duration-200 text-muted-foreground group-data-[state=open]/collapsible:rotate-180" />
-                                                    </button>
-                                                </CollapsibleTrigger>
-                                            )}
-                                        </div>
-
-                                        {/* Sub-items (collapsible) */}
-                                        {hasChildren && (
-                                            <CollapsibleContent>
-                                                <SidebarMenuSub className="!pr-0 mr-0 ml-4 border-l border-border/50 pl-0 mt-0.5">
-                                                    {item.children.map((sub) => {
-                                                        const isActiveSub = id.length === 3 && id[1] === item.id && id[2] === sub.id;
-                                                        return (
-                                                            <SidebarMenuSubItem key={sub.id}>
-                                                                <div className={`flex min-w-0 items-center group/sub rounded-lg transition-colors hover:bg-muted ${isActiveSub ? "bg-primary/10" : ""}`}>
-                                                                    {editingId === sub.id ? (
-                                                                        <Input
-                                                                            autoFocus
-                                                                            defaultValue={sub.title}
-                                                                            onBlur={(e) => {
-                                                                                updateTitle(sub.id, e.target.value);
-                                                                                setEditingId(null);
-                                                                            }}
-                                                                            onKeyDown={(e) => {
-                                                                                if (e.key === "Enter") {
-                                                                                    updateTitle(
-                                                                                        sub.id,
-                                                                                        (e.target as HTMLInputElement).value,
-                                                                                    );
-                                                                                    setEditingId(null);
-                                                                                }
-                                                                                if (e.key === "Escape")
-                                                                                    setEditingId(null);
-                                                                            }}
-                                                                            className="min-w-0 flex-1 h-8 rounded-lg border-primary/30 px-3 text-sm focus-visible:ring-primary/30"
-                                                                        />
-                                                                    ) : (
-                                                                        <SidebarMenuSubButton
-                                                                            asChild
-                                                                            isActive={
-                                                                                id.length === 3 &&
-                                                                                id[1] === item.id &&
-                                                                                id[2] === sub.id
-                                                                            }
-                                                                            className="min-w-0 flex-1 rounded-lg px-3 py-1.5 text-sm transition-colors data-[active=true]:bg-transparent data-[active=true]:text-primary"
-                                                                        >
-                                                                            <Link
-                                                                                href={`/editor/docs/${docId}/${item.id}/${sub.id}`}
-                                                                                className="flex min-w-0 items-center gap-2.5"
-                                                                            >
-                                                                                <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/40 shrink-0" />
-                                                                                <span className="truncate flex-1">{sub.title}</span>
-                                                                            </Link>
-                                                                        </SidebarMenuSubButton>
-                                                                    )}
-
-                                                                    {/* Sub-item action buttons */}
-                                                                    <div className="ml-1 flex items-center gap-0.5 shrink-0 opacity-0 group-hover/sub:opacity-100 transition-opacity">
-                                                                        <Button
-                                                                            onClick={(e) => {
-                                                                                e.preventDefault();
-                                                                                setEditingId(sub.id);
-                                                                            }}
-                                                                            variant="ghost"
-                                                                            size="icon"
-                                                                            className="h-7 w-7 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted"
-                                                                        >
-                                                                            <Pencil className="h-3.5 w-3.5" />
-                                                                        </Button>
-                                                                        <Button
-                                                                            onClick={() => deletePage(sub.id)}
-                                                                            variant="ghost"
-                                                                            size="icon"
-                                                                            className="h-7 w-7 rounded-full text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-                                                                        >
-                                                                            <Trash2 className="h-3.5 w-3.5" />
-                                                                        </Button>
-                                                                    </div>
-                                                                </div>
-                                                            </SidebarMenuSubItem>
-                                                        );
-                                                    })}
-                                                </SidebarMenuSub>
-                                            </CollapsibleContent>
-                                        )}
-                                    </SidebarMenuItem>
-                                </Collapsible>
-                            );
-                        })}
-                    </SidebarMenu>
-                </SidebarGroup>
-            </SidebarContent>
-
-            <SidebarFooter className="mt-auto bg-background border-t border-border/40 p-3">
-                <Button
-                    onClick={() => addPage(null)}
-                    variant="outline"
-                    className="w-full h-9 rounded-lg gap-2 text-sm font-medium border-dashed border-border hover:bg-muted hover:border-primary/30 transition-colors"
+        <SidebarProvider>
+            <div className="fixed bottom-4 left-4 z-49 flex flex-col drop-shadow-2xl" style={{ width: "300px", pointerEvents: "none" }}>
+                <motion.div
+                    initial={false}
+                    animate={{
+                        height: isSidebarOpen ? "calc(100svh - 84px)" : "60px",
+                    }}
+                    transition={{ type: "spring", stiffness: 380, damping: 32 }}
+                    className="flex bg-background flex-col w-full overflow-hidden pointer-events-auto rounded-lg border border-border"
                 >
-                    <Plus className="w-4 h-4" /> Add Section
-                </Button>
-            </SidebarFooter>
-        </Sidebar>
+                    {/* ── Header ── */}
+                    <Button
+                        onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+                        variant={"ghost"}
+                        className="group flex items-center gap-3 px-4 !py-3 h-fit cursor-pointer shrink-0 w-full text-left select-none border-b border-border"
+                        style={{ outline: "none" }}
+                    >
+                        {/* Coloured icon badge */}
+                        <span
+                            className="flex items-center justify-center shrink-0 rounded-lg"
+                            style={{
+                                width: 30,
+                                height: 30,
+                                background: "linear-gradient(135deg, hsl(var(--primary) / 0.18) 0%, hsl(var(--primary) / 0.06) 100%)",
+                                border: "1px solid hsl(var(--primary) / 0.2)",
+                            }}
+                        >
+                            <BookOpen className="h-3.5 w-3.5" style={{ color: "hsl(var(--primary))" }} />
+                        </span>
+
+                        {/* Title + meta */}
+                        <div className="flex flex-col flex-1 min-w-0">
+                            <span
+                                className="font-semibold truncate leading-tight"
+                                style={{ fontSize: "13px", color: "hsl(var(--foreground))" }}
+                            >
+                                {doc?.title || "Document"}
+                            </span>
+                            <span
+                                className="text-[10.5px] leading-tight mt-0.5 flex items-center gap-1"
+                                style={{ color: "hsl(var(--muted-foreground))" }}
+                            >
+                                <Layers className="h-2.5 w-2.5 opacity-70" />
+                                {sectionCount} {sectionCount === 1 ? "section" : "sections"}
+                            </span>
+                        </div>
+
+                        {/* Chevron */}
+                        <motion.div
+                            animate={{ rotate: isSidebarOpen ? 180 : 0 }}
+                            transition={{ type: "spring", stiffness: 400, damping: 28 }}
+                            className="shrink-0 flex"
+                        >
+                            <ChevronDown
+                                className="h-4 w-4 transition-colors"
+                                style={{ color: "hsl(var(--muted-foreground) / 0.7)" }}
+                            />
+                        </motion.div>
+                    </Button>
+
+                    {/* Divider */}
+                    <div
+                        className="shrink-0 mx-3"
+                        style={{ height: "1px", background: "hsl(var(--border) / 0.5)" }}
+                    />
+
+                    {/* ── Content ── */}
+                    <AnimatePresence initial={false}>
+                        {isSidebarOpen && (
+                            <motion.div
+                                initial={{ opacity: 0, y: -4 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: -4 }}
+                                transition={{ duration: 0.18, ease: "easeOut" }}
+                                className="flex flex-1 flex-col min-h-0 overflow-hidden"
+                            >
+                                <div className="custom-scroll px-2 flex-1 overflow-y-auto pb-16 pt-2">
+                                    {/* Overview */}
+                                    <SidebarMenu>
+                                        <SidebarMenuItem>
+                                            <SidebarMenuButton
+                                                asChild
+                                                isActive={id.length === 1}
+                                                tooltip="Overview"
+                                                className="h-9 rounded-xl text-muted-foreground data-[active=true]:text-foreground data-[active=true]:bg-muted/60 transition-colors"
+                                            >
+                                                <Link href={`/editor/docs/${docId}`}>
+                                                    <Home className="h-4 w-4 mr-2 opacity-70" />
+                                                    <span className="font-medium text-[13px]">Overview</span>
+                                                </Link>
+                                            </SidebarMenuButton>
+                                        </SidebarMenuItem>
+                                    </SidebarMenu>
+
+                                    {/* Section label */}
+                                    {tree.length > 0 && (
+                                        <div className="flex items-center gap-2 px-2 pt-3 pb-1.5">
+                                            <span
+                                                className="text-[10px] font-semibold uppercase tracking-widest"
+                                                style={{ color: "hsl(var(--muted-foreground) / 0.6)" }}
+                                            >
+                                                Sections
+                                            </span>
+                                            <div
+                                                className="flex-1"
+                                                style={{ height: "1px", background: "hsl(var(--border) / 0.4)" }}
+                                            />
+                                        </div>
+                                    )}
+
+                                    {/* Tree */}
+                                    <SidebarMenu className="gap-0.5 pb-2">
+                                        {tree.map((item) => {
+                                            const hasChildren = item.children && item.children.length > 0;
+                                            const isActiveSection = isActiveSectionFn(item.id);
+                                            const itemOpen = isItemOpen(item.id, isActiveSection);
+
+                                            return (
+                                                <Collapsible
+                                                    key={item.id}
+                                                    open={itemOpen}
+                                                    onOpenChange={() => toggleItem(item.id, isActiveSection)}
+                                                    className="group/collapsible"
+                                                >
+                                                    <SidebarMenuItem>
+                                                        <div className="flex items-center w-full group/item relative rounded-xl hover:bg-muted/40 transition-colors">
+                                                            {editingId === item.id ? (
+                                                                <Input
+                                                                    autoFocus
+                                                                    defaultValue={item.title}
+                                                                    onBlur={(e) => {
+                                                                        updateTitle(item.id, e.target.value);
+                                                                        setEditingId(null);
+                                                                    }}
+                                                                    onKeyDown={(e) => {
+                                                                        if (e.key === "Enter") {
+                                                                            updateTitle(item.id, e.currentTarget.value);
+                                                                            setEditingId(null);
+                                                                        }
+                                                                        if (e.key === "Escape") setEditingId(null);
+                                                                    }}
+                                                                    className="h-8 px-2 mx-1 w-[calc(100%-8px)] text-sm bg-background mt-0.5 mb-0.5"
+                                                                />
+                                                            ) : (
+                                                                <div className="flex w-full items-center">
+                                                                    {hasChildren && (
+                                                                        <CollapsibleTrigger asChild>
+                                                                            <Button
+                                                                                variant="ghost"
+                                                                                size="icon"
+                                                                                className="h-6 w-6 shrink-0 ml-0.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-transparent"
+                                                                            >
+                                                                                <motion.span
+                                                                                    animate={{ rotate: itemOpen ? 90 : 0 }}
+                                                                                    transition={{ type: "spring", stiffness: 400, damping: 28 }}
+                                                                                    className="flex items-center justify-center"
+                                                                                >
+                                                                                    <ChevronRight className="h-3.5 w-3.5" />
+                                                                                </motion.span>
+                                                                            </Button>
+                                                                        </CollapsibleTrigger>
+                                                                    )}
+                                                                    <SidebarMenuButton
+                                                                        asChild
+                                                                        isActive={id.length === 2 && id[1] === item.id}
+                                                                        tooltip={item.title}
+                                                                        className={`h-8 w-full rounded-xl text-[13px] text-muted-foreground data-[active=true]:text-foreground data-[active=true]:font-medium data-[active=true]:bg-muted/60 ${hasChildren ? "pl-1.5 pr-16" : "pl-3 pr-16"}`}
+                                                                    >
+                                                                        <Link href={`/editor/docs/${docId}/${item.id}`} className="flex items-center w-full">
+                                                                            {!hasChildren && <FileText className="h-3.5 w-3.5 mr-2 opacity-50 shrink-0" />}
+                                                                            <span className="truncate">{item.title}</span>
+                                                                        </Link>
+                                                                    </SidebarMenuButton>
+                                                                </div>
+                                                            )}
+
+                                                            {/* Actions */}
+                                                            {!editingId && (
+                                                                <div className="absolute right-1 flex items-center opacity-0 group-hover/item:opacity-100 transition-opacity pl-4">
+                                                                    <Button
+                                                                        onClick={(e) => { e.preventDefault(); addPage(item.id); }}
+                                                                        variant="ghost"
+                                                                        size="icon"
+                                                                        className="h-6 w-6 rounded-lg hover:bg-muted text-muted-foreground/80 hover:text-foreground"
+                                                                    >
+                                                                        <Plus className="h-3.5 w-3.5" />
+                                                                    </Button>
+                                                                    <Button
+                                                                        onClick={(e) => { e.preventDefault(); setEditingId(item.id); }}
+                                                                        variant="ghost"
+                                                                        size="icon"
+                                                                        className="h-6 w-6 rounded-lg hover:bg-muted text-muted-foreground/80 hover:text-foreground"
+                                                                    >
+                                                                        <Pencil className="h-3 w-3" />
+                                                                    </Button>
+                                                                    <Button
+                                                                        onClick={(e) => { e.preventDefault(); deletePage(item.id); }}
+                                                                        variant="ghost"
+                                                                        size="icon"
+                                                                        className="h-6 w-6 rounded-lg hover:bg-destructive/10 text-muted-foreground/80 hover:text-destructive"
+                                                                    >
+                                                                        <Trash2 className="h-3.5 w-3.5" />
+                                                                    </Button>
+                                                                </div>
+                                                            )}
+                                                        </div>
+
+                                                        {/* Animated children */}
+                                                        {hasChildren && (
+                                                            <AnimatePresence initial={false}>
+                                                                {itemOpen && (
+                                                                    <motion.div
+                                                                        key="children"
+                                                                        initial={{ height: 0, opacity: 0 }}
+                                                                        animate={{
+                                                                            height: "auto",
+                                                                            opacity: 1,
+                                                                            transition: {
+                                                                                height: { type: "spring", stiffness: 380, damping: 30 },
+                                                                                opacity: { duration: 0.18, delay: 0.06 },
+                                                                            },
+                                                                        }}
+                                                                        exit={{
+                                                                            height: 0,
+                                                                            opacity: 0,
+                                                                            transition: {
+                                                                                height: { type: "spring", stiffness: 380, damping: 30 },
+                                                                                opacity: { duration: 0.12 },
+                                                                            },
+                                                                        }}
+                                                                        style={{ overflow: "hidden" }}
+                                                                    >
+                                                                        <SidebarMenuSub className="ml-4 border-l border-border/30 pr-0 mr-0 pt-1 pb-1 gap-0.5">
+                                                                            {item.children.map((sub: { id: string | number | bigint | ((prevState: string | null) => string | null) | null | undefined; title: string | number | bigint | boolean | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | Promise<string | number | bigint | boolean | ReactPortal | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | null | undefined> | null | undefined; }) => {
+                                                                                const isActiveSub = id.length === 3 && id[1] === item.id && id[2] === sub.id;
+                                                                                return (
+                                                                                    <SidebarMenuSubItem key={sub.id}>
+                                                                                        <div className="flex items-center w-full group/sub relative rounded-xl hover:bg-muted/40 transition-colors">
+                                                                                            {editingId === sub.id ? (
+                                                                                                <Input
+                                                                                                    autoFocus
+                                                                                                    defaultValue={sub.title}
+                                                                                                    onBlur={(e) => {
+                                                                                                        updateTitle(sub.id, e.target.value);
+                                                                                                        setEditingId(null);
+                                                                                                    }}
+                                                                                                    onKeyDown={(e) => {
+                                                                                                        if (e.key === "Enter") {
+                                                                                                            updateTitle(sub.id, e.currentTarget.value);
+                                                                                                            setEditingId(null);
+                                                                                                        }
+                                                                                                        if (e.key === "Escape") setEditingId(null);
+                                                                                                    }}
+                                                                                                    className="h-7 px-2 text-sm mx-1 w-[calc(100%-8px)] bg-background"
+                                                                                                />
+                                                                                            ) : (
+                                                                                                <SidebarMenuSubButton
+                                                                                                    asChild
+                                                                                                    isActive={isActiveSub}
+                                                                                                    className="h-8 rounded-xl pr-12 text-[12.5px] text-muted-foreground data-[active=true]:text-foreground data-[active=true]:font-medium data-[active=true]:bg-muted/60"
+                                                                                                >
+                                                                                                    <Link href={`/editor/docs/${docId}/${item.id}/${sub.id}`}>
+                                                                                                        <FileText className="h-3 w-3 mr-2 opacity-50 shrink-0" />
+                                                                                                        <span className="truncate">{sub.title}</span>
+                                                                                                    </Link>
+                                                                                                </SidebarMenuSubButton>
+                                                                                            )}
+
+                                                                                            {!editingId && (
+                                                                                                <div className="absolute right-1 flex items-center opacity-0 group-hover/sub:opacity-100 transition-opacity pl-4">
+                                                                                                    <Button
+                                                                                                        onClick={(e) => { e.preventDefault(); setEditingId(sub.id); }}
+                                                                                                        variant="ghost"
+                                                                                                        size="icon"
+                                                                                                        className="h-6 w-6 rounded-lg text-muted-foreground/80 hover:text-foreground"
+                                                                                                    >
+                                                                                                        <Pencil className="h-3 w-3" />
+                                                                                                    </Button>
+                                                                                                    <Button
+                                                                                                        onClick={(e) => { e.preventDefault(); deletePage(sub.id); }}
+                                                                                                        variant="ghost"
+                                                                                                        size="icon"
+                                                                                                        className="h-6 w-6 rounded-lg text-muted-foreground/80 hover:text-destructive"
+                                                                                                    >
+                                                                                                        <Trash2 className="h-3.5 w-3.5" />
+                                                                                                    </Button>
+                                                                                                </div>
+                                                                                            )}
+                                                                                        </div>
+                                                                                    </SidebarMenuSubItem>
+                                                                                );
+                                                                            })}
+                                                                        </SidebarMenuSub>
+                                                                    </motion.div>
+                                                                )}
+                                                            </AnimatePresence>
+                                                        )}
+                                                    </SidebarMenuItem>
+                                                </Collapsible>
+                                            );
+                                        })}
+                                    </SidebarMenu>
+
+                                    {/* Footer add button */}
+                                    <div className="fixed bottom-0 left-0 right-0 mt-auto p-3" style={{ background: "hsl(var(--background) / 0.95)", borderTop: "1px solid hsl(var(--border) / 0.4)" }}>
+                                        <Button
+                                            onClick={() => addPage(null)}
+                                            variant="outline"
+                                            className="w-full h-9 rounded-xl gap-2 text-[13px] font-medium border-dashed border-border hover:bg-muted hover:border-primary/30 transition-colors"
+                                        >
+                                            <Plus className="w-4 h-4" /> Add Section
+                                        </Button>
+                                    </div>
+                                </div>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+                </motion.div>
+            </div>
+        </SidebarProvider>
     );
 }

@@ -1,5 +1,7 @@
 "use client";
 
+import { notFound } from "next/navigation";
+
 import { motion } from "framer-motion";
 
 import {
@@ -13,7 +15,7 @@ import {
 	ArticleTableContent,
 	FloatingActionBar,
 	MarkdownViewDialog,
-	AskWithAiDialog,
+	AskWithAiDropdown,
 	ArticleNotFound,
 	ArticleMobileToc,
 	ArticleHeader,
@@ -61,7 +63,6 @@ export default function BlogRenderPage({ id }: { id: string }) {
 	);
 	const [copied, setCopied] = useState(false);
 	const [viewMarkdownOpen, setViewMarkdownOpen] = useState(false);
-	const [askLlmOpen, setAskLlmOpen] = useState(false);
 
 	useEffect(() => {
 		if (!id) return;
@@ -84,14 +85,14 @@ export default function BlogRenderPage({ id }: { id: string }) {
 		}
 	}, [blog?.content]);
 
-	// ─── Loading ─────────────────────────────────
-	if (!id || loadingById[id]) {
+	// ─── Loading / initial render (before dispatch fires) ───────────────
+	if (loadingById[id] || (!errorById[id] && !blog)) {
 		return <BlogPageSkeleton />;
 	}
 
-	// ─── Not Found ───────────────────────────────
-	if (errorById[id] || !blog) {
-		return <ArticleNotFound type="post" />;
+	// ─── Not Found (explicit API error) ──────────────────────────────────
+	if (errorById[id] && !blog) {
+		notFound();
 	}
 
 	const { content, title, description, tags, coverUrl, author, createdAt, collaborators } = blog;
@@ -108,9 +109,12 @@ export default function BlogRenderPage({ id }: { id: string }) {
 			/>
 
 			{/* ─── Main Layout ─── */}
-			<div className="flex justify-center relative w-full gap-6 lg:gap-10">
+			<div className="flex justify-center relative w-full gap-6">
+				{/* ─── Left Spacer (Balances Right Sidebar for true centering) ─── */}
+				<div className="hidden lg:block shrink-0 w-56 xl:w-40" />
+
 				{/* ─── Article ─── */}
-				<article className="flex-1 min-w-0 w-full max-w-3xl px-4 sm:px-6 lg:px-2">
+				<article className="flex-1 min-w-0 w-full max-w-2xl px-4 sm:px-6 lg:px-2">
 					<motion.div
 						className="flex w-full min-w-0 flex-1 flex-col py-6 lg:py-10 text-neutral-800 dark:text-neutral-300"
 						initial="hidden"
@@ -196,8 +200,12 @@ export default function BlogRenderPage({ id }: { id: string }) {
 					{
 						icon: Sparkles,
 						label: "Ask with AI",
-						onClick: () => setAskLlmOpen(true),
 						variant: "violet",
+						wrapper: (btn) => (
+							<AskWithAiDropdown content={content} title={title}>
+								{btn}
+							</AskWithAiDropdown>
+						),
 					},
 				]}
 			/>
@@ -205,13 +213,6 @@ export default function BlogRenderPage({ id }: { id: string }) {
 			<MarkdownViewDialog
 				open={viewMarkdownOpen}
 				onOpenChange={setViewMarkdownOpen}
-				content={content}
-				title={title}
-			/>
-
-			<AskWithAiDialog
-				open={askLlmOpen}
-				onOpenChange={setAskLlmOpen}
 				content={content}
 				title={title}
 			/>

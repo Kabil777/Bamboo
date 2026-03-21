@@ -16,7 +16,7 @@ import {
 	ArticleTableContent,
 	FloatingActionBar,
 	MarkdownViewDialog,
-	AskWithAiDialog,
+	AskWithAiDropdown,
 	ArticleNotFound,
 	ArticleMobileToc,
 	ArticleHeader,
@@ -85,7 +85,6 @@ export default function DocsRenderPage({ id }: { id: string[] }) {
 	);
 	const [copied, setCopied] = useState(false);
 	const [viewMarkdownOpen, setViewMarkdownOpen] = useState(false);
-	const [askLlmOpen, setAskLlmOpen] = useState(false);
 
 	const { entities, loadingById, errorById } = useAppState(
 		(s) => s.docsReducer,
@@ -255,8 +254,12 @@ export default function DocsRenderPage({ id }: { id: string[] }) {
 					{
 						icon: Sparkles,
 						label: "Ask with AI",
-						onClick: () => setAskLlmOpen(true),
 						variant: "violet",
+						wrapper: (btn) => (
+							<AskWithAiDropdown content={md} title={title}>
+								{btn}
+							</AskWithAiDropdown>
+						),
 					},
 				]}
 			/>
@@ -264,13 +267,6 @@ export default function DocsRenderPage({ id }: { id: string[] }) {
 			<MarkdownViewDialog
 				open={viewMarkdownOpen}
 				onOpenChange={setViewMarkdownOpen}
-				content={md}
-				title={title}
-			/>
-
-			<AskWithAiDialog
-				open={askLlmOpen}
-				onOpenChange={setAskLlmOpen}
 				content={md}
 				title={title}
 			/>

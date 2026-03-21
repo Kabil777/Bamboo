@@ -10,9 +10,9 @@ export const BlogPageRtk = createAsyncThunk<
 >("/blog/page", async (id, { getState, rejectWithValue }) => {
     const cachedData = getState().blogPageReducer.entities[id];
     if (cachedData) return cachedData;
-    const URL = `${process.env.NEXT_PUBLIC_API_SERVER_URL}${process.env.NEXT_PUBLIC_API_VERSION}/blog/${id}`;
+    const path = `${process.env.NEXT_PUBLIC_API_VERSION}/blog/${id}`;
     try {
-        const res = await api.get(URL);
+        const res = await api.get(path);
         return res.data;
     } catch (r) {
         return rejectWithValue("Failed to load blog");
