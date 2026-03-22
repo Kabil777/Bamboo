@@ -5,6 +5,7 @@ import { useCallback, useEffect, useState } from "react";
 import { getUserProfile, updateUserProfile } from "@/api/userApi";
 import { Logo } from "@/components/atomsComponents";
 import { EditProfileForm } from "@/components/atomsComponents/editProfileForm";
+import { AccountSettingsDialog } from "@/components/atomsComponents/accountSettingsDialog";
 import type { userProfile } from "@/types/user/user-base";
 
 interface ProfileFormData {
@@ -114,51 +115,35 @@ export default function EditProfile() {
 	};
 
 	return (
-		<div className="relative flex min-h-svh flex-col items-center justify-center p-6 md:p-10">
-			<div className="absolute inset-0 -z-10">
-				<Image
-					src="/bg.webp"
-					alt="Background pattern"
-					fill
-					className="object-cover opacity-70"
-					priority
-				/>
-			</div>
-
-			{/* Logo */}
-			<div className="absolute top-0 left-0 z-20 p-3 md:p-6 w-full">
-				<Logo />
-			</div>
-
-			{/* Form Container */}
-			<div className="w-full max-w-4xl z-10">
-				{isLoading && !profileData ? (
-					<div className="flex items-center justify-center p-12">
-						<div className="text-center">
-							<div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto"></div>
-							<p className="mt-4 text-gray-600">Loading profile...</p>
-						</div>
+		<div className="w-full h-screen bg-[#313338]">
+			{isLoading && !profileData ? (
+				<div className="flex items-center justify-center h-full">
+					<div className="text-center">
+						<div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto"></div>
+						<p className="mt-4 text-gray-300">Loading profile...</p>
 					</div>
-				) : error ? (
-					<div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
-						<p className="text-red-600 font-medium">Error loading profile</p>
-						<p className="text-red-500 text-sm mt-2">{error}</p>
+				</div>
+			) : error ? (
+				<div className="flex items-center justify-center h-full">
+					<div className="bg-red-500/10 border border-red-500/20 rounded-lg p-6 text-center max-w-sm">
+						<p className="text-red-400 font-medium">Error loading profile</p>
+						<p className="text-red-400/80 text-sm mt-2">{error}</p>
 						<button
 							type="button"
 							onClick={fetchUserProfile}
-							className="mt-4 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+							className="mt-4 px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
 						>
 							Retry
 						</button>
 					</div>
-				) : profileData ? (
-					<EditProfileForm
-						profileData={profileData}
-						onSave={handleSave}
-						onCancel={handleCancel}
-					/>
-				) : null}
-			</div>
+				</div>
+			) : profileData ? (
+				<AccountSettingsDialog
+					profileData={profileData}
+					onSave={handleSave}
+					onCancel={handleCancel}
+				/>
+			) : null}
 		</div>
 	);
 }

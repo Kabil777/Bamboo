@@ -30,3 +30,4 @@ export { default as Popup } from "./popup";
 export { FeaturedCarousel } from "./featuredCarousel";
 export { DocsShelf } from "./DocsShelf";
 export { ZoomableImage } from "./ZoomableImage";
+export { AccountSettingsDialog } from "./accountSettingsDialog";

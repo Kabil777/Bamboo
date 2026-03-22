@@ -72,7 +72,7 @@ export default function CommentsDrawer({ children, comment }: { children: React.
             return;
         }
         const newComment: Comment = {
-            id: crypto.randomUUID(),
+            id: `comment-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
             name: "Anonymous",
             text: trimmedText,
             timestamp: new Date(),
@@ -90,7 +90,7 @@ export default function CommentsDrawer({ children, comment }: { children: React.
             return;
         }
         const newReply: CommentReply = {
-            id: crypto.randomUUID(),
+            id: `reply-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
             text: trimmedText,
             timestamp: new Date(),
         };
@@ -217,7 +217,11 @@ export default function CommentsDrawer({ children, comment }: { children: React.
                                                     <button
                                                         type="button"
                                                         onClick={() => {
-                                                            setReplyToId(comment.id);
+                                                            setReplyToId((prev) =>
+                                                                prev === comment.id
+                                                                    ? null
+                                                                    : comment.id,
+                                                            );
                                                             setReplyText("");
                                                         }}
                                                         className="rounded-full px-2 py-0.5 hover:bg-muted/50 transition"
@@ -225,52 +229,58 @@ export default function CommentsDrawer({ children, comment }: { children: React.
                                                         Reply
                                                     </button>
                                                 </div>
-                                                {replyToId === comment.id && (
-                                                    <motion.div
-                                                        key={comment.id}
-                                                        initial={{ opacity: 0, y: 12, scale: 0.98 }}
-                                                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                                                        exit={{ opacity: 0, y: -12, scale: 0.98 }}
-                                                        transition={{ duration: 0.3, ease: "easeOut" }}
-                                                        className="mt-3 rounded-xl border border-border/30 bg-background/60 p-3">
-                                                        <Textarea
-                                                            placeholder="Write a reply..."
-                                                            value={replyText}
-                                                            onChange={(e) =>
-                                                                setReplyText(e.target.value)
-                                                            }
-                                                            rows={2}
-                                                            className="focus-visible:ring-0 focus:ring-0 focus-visible:border-foreground focus-visible:border-2 resize-none rounded-xl"
-                                                        />
-                                                        <div className="flex items-center justify-between mt-2">
-                                                            <span className="text-[10px] text-muted-foreground/50">
-                                                                {replyText.length > 0 &&
-                                                                    `${replyText.length} characters`}
-                                                            </span>
-                                                            <div className="flex items-center gap-2">
-                                                                <Button
-                                                                    variant="ghost"
-                                                                    size="sm"
-                                                                    className="h-7 px-2 text-[11px]"
-                                                                    onClick={() => {
-                                                                        setReplyToId(null);
-                                                                        setReplyText("");
-                                                                    }}
-                                                                >
-                                                                    Cancel
-                                                                </Button>
-                                                                <Button
-                                                                    size="sm"
-                                                                    className="h-7 px-2 text-[11px]"
-                                                                    onClick={() => handleAddReply(comment.id)}
-                                                                    disabled={!replyText.trim()}
-                                                                >
-                                                                    Reply
-                                                                </Button>
+                                                <AnimatePresence mode="wait">
+                                                    {replyToId === comment.id && (
+                                                        <motion.div
+                                                            key={`reply-box-${comment.id}`}
+                                                            initial={{ opacity: 0, height: 0, marginTop: 0 }}
+                                                            animate={{ opacity: 1, height: "auto", marginTop: 12 }}
+                                                            exit={{ opacity: 0, height: 0, marginTop: 0 }}
+                                                            transition={{ duration: 0.2, ease: "easeOut" }}
+                                                            className="overflow-hidden"
+                                                        >
+                                                            <div className="rounded-xl border border-border/30 bg-background/60 p-3">
+                                                                <Textarea
+                                                                    autoFocus
+                                                                    placeholder="Write a reply..."
+                                                                    value={replyText}
+                                                                    onChange={(e) =>
+                                                                        setReplyText(e.target.value)
+                                                                    }
+                                                                    rows={2}
+                                                                    className="focus-visible:ring-0 focus:ring-0 focus-visible:border-foreground focus-visible:border-2 resize-none rounded-xl"
+                                                                />
+                                                                <div className="flex items-center justify-between mt-2">
+                                                                    <span className="text-[10px] text-muted-foreground/50">
+                                                                        {replyText.length > 0 &&
+                                                                            `${replyText.length} characters`}
+                                                                    </span>
+                                                                    <div className="flex items-center gap-2">
+                                                                        <Button
+                                                                            variant="ghost"
+                                                                            size="sm"
+                                                                            className="h-7 px-2 text-[11px]"
+                                                                            onClick={() => {
+                                                                                setReplyToId(null);
+                                                                                setReplyText("");
+                                                                            }}
+                                                                        >
+                                                                            Cancel
+                                                                        </Button>
+                                                                        <Button
+                                                                            size="sm"
+                                                                            className="h-7 px-2 text-[11px] disabled:bg-foreground/70 disabled:opacity-100"
+                                                                            onClick={() => handleAddReply(comment.id)}
+                                                                            disabled={!replyText.trim()}
+                                                                        >
+                                                                            Reply
+                                                                        </Button>
+                                                                    </div>
+                                                                </div>
                                                             </div>
-                                                        </div>
-                                                    </motion.div>
-                                                )}
+                                                        </motion.div>
+                                                    )}
+                                                </AnimatePresence>
                                                 {(comment.replies?.length ?? 0) > 0 && (
                                                     <motion.div
                                                         key={comment.id}
@@ -311,6 +321,7 @@ export default function CommentsDrawer({ children, comment }: { children: React.
 
                     <div className="sticky bottom-0 z-20 border-t border-border/30 bg-background/85 backdrop-blur-md px-4 py-3">
                         <Textarea
+                            autoFocus
                             placeholder="Share your thoughts..."
                             value={commentText}
                             onChange={(e) =>
@@ -325,7 +336,7 @@ export default function CommentsDrawer({ children, comment }: { children: React.
                             </span>
                             <Button
                                 size="sm"
-                                className="gap-1.5 rounded-xl text-xs h-8 shadow-sm shadow-primary/20 hover:shadow-md hover:shadow-primary/25 transition-all duration-300"
+                                className="gap-1.5 rounded-xl text-xs h-8 shadow-sm shadow-primary/20 hover:shadow-md hover:shadow-primary/25 transition-all duration-300 disabled:bg-foreground/70 disabled:opacity-100"
                                 onClick={handleAddComment}
                                 disabled={!commentText.trim()}
                             >

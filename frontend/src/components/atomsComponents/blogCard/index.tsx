@@ -143,7 +143,7 @@ export const BlogCard: React.FC<BlogHomeCard & { isOwner?: boolean }> = ({
                                     fill
                                     className={`object-cover rounded-lg transition-opacity duration-300 ${isLoaded ? "opacity-100" : "opacity-0"}`}
                                     sizes="(max-width: 640px) 100vw, 300px"
-                                    onLoadingComplete={() => setIsLoaded(true)}
+                                    onLoad={() => setIsLoaded(true)}
                                     onError={() => setImageError(true)}
                                 />
                             </div>
