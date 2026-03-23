@@ -528,9 +528,9 @@ export default function CommentsDrawer({
                                                                     Reply
                                                                 </Button>
                                                             </div>
-                                                        </motion.div>
+                                                        </div>
+                                                    </motion.div>
                                                     )}
-                                                </AnimatePresence>
                                                 {(comment.replies?.length ?? 0) > 0 && (
                                                     <motion.div
                                                         key={comment.id}
