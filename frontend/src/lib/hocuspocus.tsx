@@ -51,7 +51,9 @@ export function useHocuspocusProvider(
                     if (isWsForbidden(undefined, reason)) {
                         if (!forbiddenNotifiedRef.current) {
                             forbiddenNotifiedRef.current = true;
-                            toast.error("You do not have access to this document.");
+                            toast.error(
+                                "You do not have access to this document.",
+                            );
                         }
                         providerRef.current?.destroy();
                         router.push("/forbidden");
@@ -76,7 +78,9 @@ export function useHocuspocusProvider(
                     if (isWsForbidden(event?.code, event?.reason)) {
                         if (!forbiddenNotifiedRef.current) {
                             forbiddenNotifiedRef.current = true;
-                            toast.error("You do not have access to this document.");
+                            toast.error(
+                                "You do not have access to this document.",
+                            );
                         }
                         providerRef.current?.destroy();
                         router.push("/forbidden");

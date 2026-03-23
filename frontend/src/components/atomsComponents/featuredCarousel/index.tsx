@@ -8,7 +8,6 @@ import Link from "next/link";
 import { type CarouselApi } from "@/components/shadcnUI/carousel";
 import { useEffect, useState, useCallback } from "react";
 import Autoplay from "embla-carousel-autoplay";
-import Fade from "embla-carousel-fade";
 function formatDateLabel(createdAt: string) {
     const date = new Date(createdAt);
     if (Number.isNaN(date.getTime())) return "Fresh today";
@@ -21,11 +20,11 @@ function formatDateLabel(createdAt: string) {
 export function FeaturedCarousel({
     stories,
     onSlideChange,
-    animation = "fade",
+    animation = "slide",
 }: {
     stories: BlogHomeCard[];
     onSlideChange?: (index: number) => void;
-    animation?: "slide" | "fade" | "scale";
+    animation?: "slide" | "scale";
 }) {
     const [api, setApi] = useState<CarouselApi>();
     const [active, setActive] = useState(0);
@@ -56,10 +55,7 @@ export function FeaturedCarousel({
                 loop: true,
                 align: "start",
             }}
-            plugins={[
-                Autoplay({ delay: 5000 }),
-                ...(animation === "fade" ? [Fade()] : []),
-            ]}
+            plugins={[Autoplay({ delay: 5000 })]}
         >
             <CarouselContent className="-ml-1">
                 {stories.map((story, index) => {
@@ -69,14 +65,14 @@ export function FeaturedCarousel({
                     return (
                     <CarouselItem key={index} className="">
                         <div 
-                            className={`relative overflow-hidden rounded-xl border border-border bg-card shadow-none dark:ring-1 dark:ring-border/40 transition-all duration-500 ease-out ${
+                            className={`relative overflow-hidden rounded-xl border border-border bg-card shadow-none dark:ring-1 dark:ring-border/40 transition-all duration-500 ease-out select-none h-[408px] md:h-[340px] ${
                                 isScale ? (isSlideActive ? "scale-100 opacity-100" : "scale-[0.93] opacity-60") : ""
                             }`}
                         >
 
-                            <div className="flex flex-col md:grid md:grid-cols-[1fr_minmax(260px,0.65fr)] lg:grid-cols-[1fr_minmax(300px,0.7fr)]">
+                            <div className="flex flex-col md:grid md:grid-cols-[1fr_minmax(260px,0.65fr)] lg:grid-cols-[1fr_minmax(300px,0.7fr)] h-[408px] md:h-[340px]">
                                 {/* ── Image side — top on mobile, right on desktop ── */}
-                                <div className="relative h-52 sm:h-64 md:h-auto md:min-h-[340px] overflow-hidden order-first md:order-last border-b md:border-b-0 md:border-l border-border/50">
+                                <div className="relative h-52 sm:h-64 md:h-full overflow-hidden order-first md:order-last border-b md:border-b-0 md:border-l border-border/50">
                                     {story.coverUrl ? (
                                         <>
                                             <Image
@@ -98,7 +94,7 @@ export function FeaturedCarousel({
                                 </div>
 
                                 {/* ── Text side ── */}
-                                <div className="flex flex-col p-5 sm:p-7 lg:p-8 order-last md:order-first">
+                                <div className="flex h-full flex-col overflow-hidden p-5 sm:p-7 lg:p-8 order-last md:order-first">
                                     <div className="flex-1 space-y-3 sm:space-y-4">
                                         {/* Badge row */}
                                         <div className="flex items-center gap-2 flex-wrap">
@@ -114,11 +110,11 @@ export function FeaturedCarousel({
                                         </div>
 
                                         {/* Title + description */}
-                                        <div className="space-y-2">
-                                            <h1 className="max-w-[26ch] text-xl sm:text-2xl lg:text-[1.85rem] font-bold leading-[1.2] tracking-tight text-foreground">
+                                        <div className="space-y-2.5 h-[148px] sm:h-[156px] lg:h-[164px] overflow-hidden">
+                                            <h1 className="max-w-[26ch] text-xl sm:text-2xl lg:text-[1.85rem] font-bold leading-[1.2] tracking-tight text-foreground line-clamp-3 text-balance min-h-[72px] sm:min-h-[80px] lg:min-h-[88px]">
                                                 {story.title}
                                             </h1>
-                                            <p className="max-w-[50ch] text-sm leading-[1.72] text-muted-foreground line-clamp-3">
+                                            <p className="max-w-[50ch] text-sm leading-[1.72] text-muted-foreground line-clamp-3 min-h-[68px] sm:min-h-[72px] overflow-hidden">
                                                 {story.description}
                                             </p>
                                         </div>
@@ -139,9 +135,9 @@ export function FeaturedCarousel({
                                     </div>
 
                                     {/* bottom — written by + CTA + controls, all inside the card */}
-                                    <div className="mt-auto space-y-3 pt-4">
+                                    <div className="mt-auto space-y-3 pt-4 shrink-0">
                                         <div className="flex items-center justify-between gap-4">
-                                            <div>
+                                            <div className="min-h-[36px]">
                                                 <p className="text-[10px] uppercase tracking-[0.22em] text-foreground/28">
                                                     Written by
                                                 </p>

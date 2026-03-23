@@ -127,7 +127,7 @@ export function ArticleHeader({
 					<CalendarDays className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
 					{formatDate(createdAt)}
 				</span>
-				<CommentsDrawer comment={[]}  >
+				<CommentsDrawer contentId={idBlog} contentType={contentType}>
 					<Button variant="ghost" className="!py-0 !px-2 text-xs gap-1" >
 						<MessageCircle size={14} />
 						Comments
