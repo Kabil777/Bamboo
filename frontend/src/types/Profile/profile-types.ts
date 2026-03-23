@@ -35,12 +35,14 @@ type UserProfile = {
     social: SocialLinks;
 };
 type Profile = {
+    id?: string;
     name?: string;
     handle?: string;
     email?: string;
     description?: string;
     coverUrl: string | null;
     designation: string;
+    isFollowing?: boolean;
     profile: UserProfile;
 };
 

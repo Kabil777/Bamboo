@@ -254,7 +254,7 @@ export default function DocsRenderPage({ id }: { id: string[] }) {
 					{
 						icon: Sparkles,
 						label: "Ask with AI",
-						variant: "violet",
+						variant: "ghost",
 						wrapper: (btn) => (
 							<AskWithAiDropdown content={md} title={title}>
 								{btn}

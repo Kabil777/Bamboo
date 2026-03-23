@@ -13,7 +13,7 @@ import rehypeHighlight from "rehype-highlight";
 import { Check, Copy, SquareArrowOutUpRight } from "lucide-react";
 import { Button } from "@/components/shadcnUI/button";
 import Image from "next/image";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/shadcnUI/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/shadcnUI/dialog";
 import Link from "next/link";
 import { ZoomableImage } from "@/components/atomsComponents/ZoomableImage";
 
@@ -177,6 +177,9 @@ export const ArticleRender = ({ content }: { content: string }) => {
                                     <DialogContent showCloseButton={true} className="sm:!max-w-6xl max-h-[calc(100vh-4rem)] overflow-hidden p-0">
                                         <DialogHeader className="sr-only">
                                             <DialogTitle>{alt || "Image"}</DialogTitle>
+                                            <DialogDescription>
+                                                Full size preview of the image.
+                                            </DialogDescription>
                                         </DialogHeader>
                                         <ZoomableImage
                                             src={src}

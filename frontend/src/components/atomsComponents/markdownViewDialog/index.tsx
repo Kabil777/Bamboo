@@ -52,11 +52,9 @@ export function MarkdownViewDialog({
                                 </div>
                                 <span className="truncate">Markdown Source</span>
                             </DialogTitle>
-                            {title && (
-                                <DialogDescription className="text-xs text-muted-foreground/70 mt-1 truncate">
-                                    {title}
-                                </DialogDescription>
-                            )}
+                            <DialogDescription className={`text-xs text-muted-foreground/70 mt-1 truncate ${!title ? "sr-only" : ""}`}>
+                                {title || "View the markdown source of this document."}
+                            </DialogDescription>
                         </div>
                         <Button
                             variant="outline"

@@ -6,6 +6,7 @@ import { Button } from "@/components/shadcnUI/button";
 import {
     Dialog,
     DialogContent,
+    DialogDescription,
     DialogHeader,
     DialogTitle,
     DialogTrigger,
@@ -393,6 +394,9 @@ export const ToolBarBottom = ({
                                     <DialogTitle className="text-base font-semibold">
                                         Share this file
                                     </DialogTitle>
+                                    <DialogDescription className="sr-only">
+                                        Manage access and invite collaborators to this file.
+                                    </DialogDescription>
                                     <Button
                                         variant="ghost"
                                         size="sm"

@@ -75,7 +75,7 @@ export const DocsCard = ({
                                 Image fill + object-cover UNCHANGED.
                             */
                             className={`object-cover transition-opacity duration-500 ${imageLoaded ? "opacity-100" : "opacity-0"}`}
-                            onLoadingComplete={() => setImageLoaded(true)}
+                            onLoad={() => setImageLoaded(true)}
                             onError={() => setImageError(true)}
                         />
                         {/* time badge — UNCHANGED */}

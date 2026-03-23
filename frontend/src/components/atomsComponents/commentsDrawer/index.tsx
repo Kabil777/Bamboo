@@ -528,9 +528,9 @@ export default function CommentsDrawer({
                                                                     Reply
                                                                 </Button>
                                                             </div>
-                                                        </div>
-                                                    </motion.div>
-                                                )}
+                                                        </motion.div>
+                                                    )}
+                                                </AnimatePresence>
                                                 {(comment.replies?.length ?? 0) > 0 && (
                                                     <motion.div
                                                         key={comment.id}
@@ -573,6 +573,7 @@ export default function CommentsDrawer({
                             {formatTypingUsers(typingUsers)}
                         </div>
                         <Textarea
+                            autoFocus
                             placeholder="Share your thoughts..."
                             value={commentText}
                             onChange={(e) => {
@@ -594,7 +595,7 @@ export default function CommentsDrawer({
                             </span>
                             <Button
                                 size="sm"
-                                className="gap-1.5 rounded-xl text-xs h-8 shadow-sm shadow-primary/20 hover:shadow-md hover:shadow-primary/25 transition-all duration-300"
+                                className="gap-1.5 rounded-xl text-xs h-8 shadow-sm shadow-primary/20 hover:shadow-md hover:shadow-primary/25 transition-all duration-300 disabled:bg-foreground/70 disabled:opacity-100"
                                 onClick={handleAddComment}
                                 disabled={!commentText.trim()}
                             >

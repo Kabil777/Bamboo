@@ -3,6 +3,7 @@ import { Button } from "@/components/shadcnUI/button";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -312,6 +313,9 @@ export const ProfileEditPopOver = ({
       <DialogContent className="sm:max-w-3xl ">
         <DialogHeader className="mb-4">
           <DialogTitle className="text-2xl">Edit Profile</DialogTitle>
+          <DialogDescription>
+            Update your profile information, social links, and profile picture.
+          </DialogDescription>
         </DialogHeader>
         <div className="flex flex-col space-y-8 max-h-[75vh] overflow-y-auto px-2 custom-scroll">
           {/* Profile Image Upload */}

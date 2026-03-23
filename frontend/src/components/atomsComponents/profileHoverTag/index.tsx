@@ -16,10 +16,14 @@ import {
 } from "@/components/shadcnUI/hover-card";
 import api from "@/api/axios";
 import type { Profile } from "@/types/Profile/profile-types";
+import { followUser, unfollowUser } from "@/api/followApi";
+import { toast } from "sonner";
+import { useAppState } from "@/hooks/ReduxHooks";
 
 const profileCache = new Map<string, Profile | null>();
 
 export function ProfileHoverTag({ profileId }: { profileId?: string }) {
+	const { user } = useAppState((s) => s.userReducer);
 	const [follow, setFollow] = useState(false);
 	const [profile, setProfile] = useState<Profile | null>(null);
 	const [open, setOpen] = useState(false);
@@ -53,6 +57,7 @@ export function ProfileHoverTag({ profileId }: { profileId?: string }) {
 				if (!ignore) {
 					profileCache.set(handle, response.data);
 					setProfile(response.data);
+					setFollow(response.data.isFollowing || false);
 					setNotFound(false);
 				}
 			} catch (error: any) {
@@ -82,6 +87,41 @@ export function ProfileHoverTag({ profileId }: { profileId?: string }) {
 			</span>
 		);
 	}
+
+	const handleFollowToggle = async () => {
+		if (!user) {
+			toast.error("Please log in first");
+			return;
+		}
+		
+		const targetHandle = handle;
+		if (!targetHandle) {
+			toast.error("User handle not found");
+			return;
+		}
+		
+		try {
+			if (follow) {
+				await unfollowUser(targetHandle);
+				setFollow(false);
+				toast.success(`Unfollowed @${targetHandle}`);
+				if (profileCache.has(targetHandle)) {
+					const cached = profileCache.get(targetHandle);
+					if (cached) cached.isFollowing = false;
+				}
+			} else {
+				await followUser(targetHandle);
+				setFollow(true);
+				toast.success(`Following @${targetHandle}`);
+				if (profileCache.has(targetHandle)) {
+					const cached = profileCache.get(targetHandle);
+					if (cached) cached.isFollowing = true;
+				}
+			}
+		} catch (error) {
+			toast.error("Failed to update follow status");
+		}
+	};
 
 	return (
 		<HoverCard
@@ -151,7 +191,7 @@ export function ProfileHoverTag({ profileId }: { profileId?: string }) {
 								transition={{ type: "spring", stiffness: 400, damping: 17 }}
 							>
 								<Button
-									onClick={() => setFollow(!follow)}
+									onClick={handleFollowToggle}
 									variant={follow ? "outline" : "default"}
 									size="sm"
 									className="w-full rounded-full px-4 h-9 text-sm font-semibold shadow-md hover:shadow-lg transition-all duration-200 relative overflow-hidden group"

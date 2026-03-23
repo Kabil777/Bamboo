@@ -200,7 +200,7 @@ export default function BlogRenderPage({ id }: { id: string }) {
 					{
 						icon: Sparkles,
 						label: "Ask with AI",
-						variant: "violet",
+						variant: "",
 						wrapper: (btn) => (
 							<AskWithAiDropdown content={content} title={title}>
 								{btn}
