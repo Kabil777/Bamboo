@@ -8,7 +8,7 @@ import {
 } from "@/components/shadcnUI/sidebar"
 import { ChevronRight } from "lucide-react"
 import React, { useState, useEffect } from "react"
-import { motion, AnimatePresence, LayoutGroup } from "motion/react"
+import { motion } from "motion/react"
 import Link from "next/link"
 
 type TocItem = {
@@ -41,16 +41,16 @@ function buildTocTree(flatItems: TocItem[]): TocItem[] {
 // ─── Proper React component so hooks are legal ─────────────────────────────
 function TocItemNode({
   item,
-  activeIds,
+  activeId,
   depth = 0,
 }: {
   item: TocItem
-  activeIds: Set<string>
+  activeId: string | null
   depth?: number
 }) {
   const hasChildren = item.items && item.items.length > 0
   const [open, setOpen] = useState<boolean>(true)
-  const isActive = activeIds.has(item.id)
+  const isActive = activeId === item.id
 
   return (
     <Collapsible
@@ -61,39 +61,24 @@ function TocItemNode({
     >
       <div>
         <SidebarMenuItem className="!w-full min-w-0 !list-none">
-          <div className="flex items-center w-full min-w-0 group/tocitem relative">
-            {/* Each active item gets its own indicator — no shared layoutId
-                since multiple items can be active simultaneously */}
-            <AnimatePresence>
-              {isActive && (
-                <motion.div
-                  key={item.id}
-                  initial={{ opacity: 0, scaleY: 0.5 }}
-                  animate={{ opacity: 1, scaleY: 1 }}
-                  exit={{ opacity: 0, scaleY: 0.5 }}
-                  className="absolute left-0 top-[3px] bottom-[3px] w-[2.5px] rounded-full bg-primary"
-                  style={{ originY: 0.5 }}
-                  transition={{
-                    type: "spring",
-                    stiffness: 350,
-                    damping: 30,
-                    mass: 0.8,
-                  }}
-                />
-              )}
-            </AnimatePresence>
-
+          <div
+            className={`flex items-center w-full min-w-0 group/tocitem relative border-l-2 transition-colors ${
+              isActive
+                ? "border-primary bg-accent/70"
+                : "border-transparent hover:bg-accent/40"
+            }`}
+          >
             <SidebarMenuButton asChild className="hover:bg-transparent focus:!bg-transparent data-[active=true]:bg-transparent active:bg-transparent min-w-0 w-full !h-auto">
-              <span className="!py-[5px] !px-0 !gap-0 flex items-center min-w-0 w-full">
+              <span className="!py-[5px] !px-0 !gap-0 flex items-center min-w-0 w-full pr-1">
                 <Link
                   href={`#${item.id}`}
                   className={`
-                    block w-full text-left truncate min-w-0 flex-1
-                    transition-all duration-200 ease-out !pl-2
+                    block w-full text-left truncate min-w-0 flex-1 !pl-2
+                    transition-all duration-200 ease-out
                     ${depth === 0 ? "!text-[13px] font-semibold" : "!text-[12px] font-medium"}
                     ${isActive
-                      ? "text-primary"
-                      : "text-muted-foreground/70 hover:text-foreground"
+                      ? "text-foreground"
+                      : "text-muted-foreground/80 hover:text-foreground"
                     }
                   `}
                   title={item.value}
@@ -139,7 +124,7 @@ function TocItemNode({
               >
                 <SidebarMenuSub className="mr-0 pr-0 min-w-0 overflow-hidden !ml-2 !pl-2.5 !border-l">
                   {item.items!.map((child) => (
-                    <TocItemNode key={child.id} item={child} activeIds={activeIds} depth={depth + 1} />
+                    <TocItemNode key={child.id} item={child} activeId={activeId} depth={depth + 1} />
                   ))}
                 </SidebarMenuSub>
               </motion.div>
@@ -153,7 +138,7 @@ function TocItemNode({
 
 export const ArticleTableContent = ({ toc }: { toc: TocItem[] }) => {
   const tocTree = buildTocTree(toc)
-  const [activeIds, setActiveIds] = useState<Set<string>>(new Set())
+  const [activeId, setActiveId] = useState<string | null>(null)
 
   useEffect(() => {
     if (toc.length === 0) return
@@ -169,44 +154,27 @@ export const ArticleTableContent = ({ toc }: { toc: TocItem[] }) => {
         .map((id) => document.getElementById(id))
         .filter(Boolean) as HTMLElement[]
 
-      const next = new Set<string>()
       const vh = window.innerHeight
 
-      // Pass 1: find the last heading above the threshold (current section)
+      // Pick exactly one current section: the last heading above threshold.
       let currentSection: string | null = null
       for (const el of elements) {
         if (el.getBoundingClientRect().top <= THRESHOLD) {
           currentSection = el.id
         } else {
-          break // document order — stop once below threshold
-        }
-      }
-      if (currentSection) {
-        next.add(currentSection)
-      }
-
-      // Pass 2: add every heading visible below the threshold
-      for (const el of elements) {
-        const top = el.getBoundingClientRect().top
-        if (top > THRESHOLD && top < vh) {
-          next.add(el.id)
+          break
         }
       }
 
-      // Edge case: user is above ALL headings — activate the first visible one
-      if (next.size === 0 && elements.length > 0) {
+      // If above all headings, use the first visible heading.
+      if (!currentSection && elements.length > 0) {
         const firstTop = elements[0].getBoundingClientRect().top
         if (firstTop < vh * 0.9) {
-          next.add(elements[0].id)
+          currentSection = elements[0].id
         }
       }
 
-      // Only trigger a re-render when the set actually changed
-      setActiveIds((prev) => {
-        const same =
-          prev.size === next.size && [...next].every((id) => prev.has(id))
-        return same ? prev : next
-      })
+      setActiveId((prev) => (prev === currentSection ? prev : currentSection))
     }
 
     const onScroll = () => {
@@ -225,13 +193,11 @@ export const ArticleTableContent = ({ toc }: { toc: TocItem[] }) => {
 
   return (
     <div className="space-y-0.5 min-w-0 overflow-hidden">
-      <LayoutGroup>
-        <SidebarMenu className="min-w-0 gap-0">
-          {tocTree.map((item) => (
-            <TocItemNode key={item.id} item={item} activeIds={activeIds} />
-          ))}
-        </SidebarMenu>
-      </LayoutGroup>
+      <SidebarMenu className="min-w-0 gap-0">
+        {tocTree.map((item) => (
+          <TocItemNode key={item.id} item={item} activeId={activeId} />
+        ))}
+      </SidebarMenu>
     </div>
   )
 }

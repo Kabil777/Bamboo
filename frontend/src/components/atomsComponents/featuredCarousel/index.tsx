@@ -8,6 +8,7 @@ import Link from "next/link";
 import { type CarouselApi } from "@/components/shadcnUI/carousel";
 import { useEffect, useState, useCallback } from "react";
 import Autoplay from "embla-carousel-autoplay";
+import { motion } from "framer-motion";
 function formatDateLabel(createdAt: string) {
     const date = new Date(createdAt);
     if (Number.isNaN(date.getTime())) return "Fresh today";
@@ -145,13 +146,19 @@ export function FeaturedCarousel({
                                                     {story.author?.name?.trim() || "Bamboo Editorial"}
                                                 </p>
                                             </div>
-                                            <Link
-                                                href={`/blog/${story.id}`}
-                                                className="inline-flex shrink-0 items-center gap-1.5 rounded-sm bg-foreground px-3.5 py-2 text-xs font-semibold text-background transition-all hover:foreground/90 active:scale-99 duration-300"
+                                            <motion.div
+                                                whileTap={{ scale: 0.985 }}
+                                                transition={{ type: "spring", stiffness: 520, damping: 34 }}
+                                                className="origin-center will-change-transform"
                                             >
-                                                Read now
-                                                <ArrowRight size={11} />
-                                            </Link>
+                                                <Link
+                                                    href={`/blog/${story.id}`}
+                                                    className="inline-flex shrink-0 items-center gap-1.5 rounded-sm bg-foreground px-3.5 py-2 text-xs font-semibold text-background transition-opacity duration-150 hover:opacity-90"
+                                                >
+                                                    Read now
+                                                    <ArrowRight size={11} />
+                                                </Link>
+                                            </motion.div>
                                         </div>
 
                                         {/* Pagination controls */}

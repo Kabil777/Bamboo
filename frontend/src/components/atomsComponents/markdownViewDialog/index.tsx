@@ -42,7 +42,7 @@ export function MarkdownViewDialog({
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="max-w-4xl w-[95vw] max-h-[85vh] flex flex-col p-0 gap-0 overflow-hidden rounded-2xl">
+            <DialogContent className="w-[92vw] md:w-[58vw] max-w-none max-h-[85vh] flex flex-col p-0 gap-0 overflow-hidden rounded-2xl">
                 <DialogHeader className="px-5 sm:px-6 pt-5 pb-4 border-b border-border/30 flex-shrink-0 bg-gradient-to-r from-muted/30 to-transparent">
                     <div className="flex items-center justify-between gap-4">
                         <div className="min-w-0">

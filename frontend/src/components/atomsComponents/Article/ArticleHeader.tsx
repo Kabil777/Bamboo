@@ -128,7 +128,10 @@ export function ArticleHeader({
 					{formatDate(createdAt)}
 				</span>
 				<CommentsDrawer contentId={idBlog} contentType={contentType}>
-					<Button variant="ghost" className="!py-0 !px-2 text-xs gap-1" >
+					<Button
+						variant="ghost"
+						className="h-auto px-1.5 py-0 text-[11px] sm:text-xs gap-1.5 text-muted-foreground/80 hover:text-foreground hover:bg-transparent"
+					>
 						<MessageCircle size={14} />
 						Comments
 					</Button>

@@ -109,12 +109,12 @@ export default function BlogRenderPage({ id }: { id: string }) {
 			/>
 
 			{/* ─── Main Layout ─── */}
-			<div className="flex justify-center relative w-full gap-6">
+			<div className="flex justify-center relative w-full gap-3 xl:gap-4">
 				{/* ─── Left Spacer (Balances Right Sidebar for true centering) ─── */}
-				<div className="hidden lg:block shrink-0 w-56 xl:w-40" />
+				<div className="hidden lg:block shrink-0 w-40 xl:w-28" />
 
 				{/* ─── Article ─── */}
-				<article className="flex-1 min-w-0 w-full max-w-2xl px-4 sm:px-6 lg:px-2">
+				<article className="flex-1 min-w-0 w-full max-w-[49rem] px-4 sm:px-6 lg:px-2">
 					<motion.div
 						className="flex w-full min-w-0 flex-1 flex-col py-6 lg:py-10 text-neutral-800 dark:text-neutral-300"
 						initial="hidden"
@@ -148,7 +148,7 @@ export default function BlogRenderPage({ id }: { id: string }) {
 				</article>
 
 				{/* ─── Right Sidebar: TOC ─── */}
-				<aside className="hidden lg:block shrink-0 w-56 xl:w-64 sticky top-24 self-start max-h-[calc(100vh-7rem)] overflow-y-auto pb-8 custom-scroll">
+				<aside className="hidden lg:block shrink-0 w-48 xl:w-56 sticky top-24 self-start max-h-[calc(100vh-7rem)] overflow-y-auto pb-8 custom-scroll">
 					<div className="px-4 py-0">
 						<div className="flex items-center gap-2 sticky top-0 bg-background pt-2 pb-3 z-10">
 							<div className="w-5 h-5 rounded-md bg-primary/10 flex items-center justify-center">

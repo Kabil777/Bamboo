@@ -4,7 +4,7 @@ export function StartWritingCTA() {
     return (
         <div className="px-1">
             <div className="mb-5 flex items-center gap-3">
-                <span className="whitespace-nowrap text-[10px] font-semibold uppercase tracking-[0.22em] text-foreground/50">
+                <span className="whitespace-nowrap text-[11px] font-semibold uppercase tracking-[0.22em] text-foreground/50">
                     Publish
                 </span>
                 <div className="h-px flex-1 bg-foreground/[0.08]" />

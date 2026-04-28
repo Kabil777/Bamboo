@@ -40,6 +40,7 @@ import {
 	getProfileDetials,
 	getUserProfileByHandle,
 } from "@/store/reducers/Profile/profile.read";
+import { ProfileEditDialog } from "../profileEditDialog";
 import { SharePopover } from "../sharePopover";
 import { SectionCardsSkeleton } from "../skleton/Profile/profileCardSkleton";
 import { followUser, unfollowUser, getFollowersByHandle, getFollowingByHandle } from "@/api/followApi";
@@ -93,6 +94,7 @@ export function SectionCards({ viewingHandle }: { viewingHandle?: string }) {
 	const isOwnProfile = !viewingHandle || viewingHandle === user?.handle;
 
 	const [follow, setFollow] = useState(false);
+	const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
 	const [avatarLoaded, setAvatarLoaded] = useState(false);
 	const [gradientColors, setGradientColors] = useState({
 		start: "transparent",
@@ -173,8 +175,14 @@ export function SectionCards({ viewingHandle }: { viewingHandle?: string }) {
 		}
 	}, [dispatch, viewingHandle, user?.handle, status]);
 
-	// Only show skeleton on initial load when data is missing
-	if (!profileData && (profileLoading || profileCountsLoading)) {
+	// Show skeleton while auth is resolving, and during profile fetches.
+	const isAuthLoading = status === "loading" || status === "idle";
+	const isProfileCardLoading =
+		(!profileData && isAuthLoading) ||
+		profileLoading ||
+		(!profileData && profileCountsLoading);
+
+	if (isProfileCardLoading) {
 		return <SectionCardsSkeleton />;
 	}
 
@@ -330,7 +338,7 @@ export function SectionCards({ viewingHandle }: { viewingHandle?: string }) {
 								<Button
 									variant="outline"
 									size="sm"
-									onClick={() => router.push("/profile/editprofile")}
+									onClick={() => setIsEditProfileOpen(true)}
 									className="rounded-full px-3 h-8 text-xs gap-1.5 font-medium shadow-sm"
 								>
 									<PencilIcon size={14} />
@@ -497,6 +505,14 @@ export function SectionCards({ viewingHandle }: { viewingHandle?: string }) {
 						</div>
 					</div>
 				)}
+			<ProfileEditDialog
+				open={isEditProfileOpen}
+				onOpenChange={setIsEditProfileOpen}
+				onSaved={() => {
+					dispatch(getProfileDetials());
+					dispatch(getProfileCounts());
+				}}
+			/>
 		</div>
 	);
 }

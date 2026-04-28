@@ -15,6 +15,10 @@ export function useCommentWebSocket(
 ) {
     const router = useRouter();
     const socketRef = useRef<WebSocket | null>(null);
+    const reconnectTimerRef = useRef<number | null>(null);
+    const queuedMessagesRef = useRef<string[]>([]);
+    const reconnectAttemptRef = useRef(0);
+    const manuallyClosedRef = useRef(false);
     const [isConnected, setIsConnected] = useState(false);
     const [lastMessage, setLastMessage] = useState<string | null>(null);
     const [retryKey, setRetryKey] = useState(0);
@@ -24,6 +28,11 @@ export function useCommentWebSocket(
     useEffect(() => {
         const enabled = options?.enabled ?? true;
         if (!enabled || !room) {
+            manuallyClosedRef.current = true;
+            if (reconnectTimerRef.current) {
+                window.clearTimeout(reconnectTimerRef.current);
+                reconnectTimerRef.current = null;
+            }
             socketRef.current?.close();
             socketRef.current = null;
             setIsConnected(false);
@@ -39,6 +48,7 @@ export function useCommentWebSocket(
 
         forbiddenNotifiedRef.current = false;
         expiredNotifiedRef.current = false;
+        manuallyClosedRef.current = false;
 
         const socket = new WebSocket(
             `${wsUrl}?room=${encodeURIComponent(room)}`,
@@ -47,7 +57,13 @@ export function useCommentWebSocket(
         socketRef.current = socket;
 
         socket.onopen = () => {
+            reconnectAttemptRef.current = 0;
             setIsConnected(true);
+            if (queuedMessagesRef.current.length > 0) {
+                const pending = [...queuedMessagesRef.current];
+                queuedMessagesRef.current = [];
+                pending.forEach((message) => socket.send(message));
+            }
         };
 
         socket.onmessage = (event) => {
@@ -58,6 +74,14 @@ export function useCommentWebSocket(
 
         socket.onclose = async (event) => {
             setIsConnected(false);
+            if (reconnectTimerRef.current) {
+                window.clearTimeout(reconnectTimerRef.current);
+                reconnectTimerRef.current = null;
+            }
+
+            if (manuallyClosedRef.current) {
+                return;
+            }
 
             if (isWsForbidden(event.code, event.reason)) {
                 if (!forbiddenNotifiedRef.current) {
@@ -71,6 +95,12 @@ export function useCommentWebSocket(
             }
 
             if (!shouldRefreshWsAuth(event.code, event.reason)) {
+                const attempt = reconnectAttemptRef.current;
+                const nextDelay = Math.min(1000 * 2 ** attempt, 12000);
+                reconnectAttemptRef.current = Math.min(attempt + 1, 5);
+                reconnectTimerRef.current = window.setTimeout(() => {
+                    setRetryKey((value) => value + 1);
+                }, nextDelay);
                 return;
             }
 
@@ -87,6 +117,11 @@ export function useCommentWebSocket(
         };
 
         return () => {
+            manuallyClosedRef.current = true;
+            if (reconnectTimerRef.current) {
+                window.clearTimeout(reconnectTimerRef.current);
+                reconnectTimerRef.current = null;
+            }
             socket.close();
             socketRef.current = null;
             setIsConnected(false);
@@ -95,12 +130,23 @@ export function useCommentWebSocket(
 
     const sendMessage = useCallback((payload: unknown) => {
         const socket = socketRef.current;
-        if (!socket || socket.readyState !== WebSocket.OPEN) {
+        const serialized = JSON.stringify(payload);
+
+        if (!socket) {
             return false;
         }
 
-        socket.send(JSON.stringify(payload));
-        return true;
+        if (socket.readyState === WebSocket.OPEN) {
+            socket.send(serialized);
+            return true;
+        }
+
+        if (socket.readyState === WebSocket.CONNECTING) {
+            queuedMessagesRef.current.push(serialized);
+            return true;
+        }
+
+        return false;
     }, []);
 
     return {

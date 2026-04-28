@@ -3,7 +3,7 @@
 import { X, Moon, Sun, Bell, Github, Twitter, Monitor, Lock, Shield, Eye, Settings, Heart, Plus, Upload, Loader2, Check } from "lucide-react";
 import { FaDiscord, FaGithub, FaGlobe, FaLinkedin, FaTwitter, FaYoutube } from "react-icons/fa";
 import Image from "next/image";
-import { useState, useRef } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Button } from "@/components/shadcnUI/button";
 import { useTheme } from "next-themes";
 import { Input } from "@/components/shadcnUI/input";
@@ -88,6 +88,17 @@ export const AccountSettingsDialog = ({
 	const fileInputRef = useRef<HTMLInputElement>(null);
 
 	if (!isOpen) return null;
+
+	useEffect(() => {
+		const onKeyDown = (event: KeyboardEvent) => {
+			if (event.key === "Escape") {
+				onCancel();
+			}
+		};
+
+		window.addEventListener("keydown", onKeyDown);
+		return () => window.removeEventListener("keydown", onKeyDown);
+	}, [onCancel]);
 
 	const sidebarItems = [
 		{ section: "User Settings", items: ["My Account", "Profiles", "Content & Social", "Data & Privacy", "Authorised Apps", "Devices", "Connections", "Notifications"] },
@@ -645,57 +656,73 @@ export const AccountSettingsDialog = ({
 	}
 
 	return (
-		<div className="fixed inset-0 z-50 flex bg-background text-foreground animate-in fade-in duration-200">
-			{/* Left Sidebar */}
-			<div className="w-[30%] min-w-[240px] max-w-[320px] bg-muted/40 border-r border-border h-full flex justify-end pr-4 py-14 overflow-y-auto custom-scroll">
-				<div className="w-56">
-					{sidebarItems.map((group, i) => (
-						<div key={i} className="mb-6">
-							<h3 className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider mb-2 px-3">{group.section}</h3>
-							<div className="space-y-0.5">
-								{group.items.map((item) => (
-									<button
-										key={item}
-										type="button"
-										onClick={() => setActiveTab(item)}
-										className={`w-full text-left px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-											activeTab === item
-												? "bg-accent text-accent-foreground font-semibold"
-												: "text-muted-foreground hover:bg-accent/50 hover:text-foreground"
-										}`}
-									>
-										{item}
-										{item === "Family Centre" && (
-											<span className="ml-2 text-[9px] bg-primary text-primary-foreground px-1.5 py-0.5 rounded-sm font-bold uppercase tracking-wider shadow-sm">New</span>
+		<div className="fixed inset-0 z-50 flex items-center justify-center bg-background/70 p-3 backdrop-blur-sm animate-in fade-in duration-200 md:p-6">
+			<div className="flex h-[85vh] w-[92vw] overflow-hidden rounded-2xl border border-border bg-card text-foreground shadow-2xl md:w-[58vw]">
+				<div className="flex h-full w-full flex-col md:flex-row">
+					{/* Left Sidebar */}
+					<aside className="w-full shrink-0 border-b border-border bg-muted/40 md:h-full md:w-[270px] md:border-b-0 md:border-r">
+						<div className="h-full p-3 md:p-4">
+							<div className="h-[190px] overflow-y-auto pr-1 custom-scroll md:h-full">
+								{sidebarItems.map((group, i) => (
+									<div key={i} className="mb-5">
+										<h3 className="mb-2 px-2 text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80">
+											{group.section}
+										</h3>
+										<div className="space-y-0.5">
+											{group.items.map((item) => (
+												<button
+													key={item}
+													type="button"
+													onClick={() => setActiveTab(item)}
+													className={`w-full rounded-md px-2 py-2 text-left text-sm font-medium transition-colors ${
+														activeTab === item
+															? "bg-accent text-accent-foreground"
+															: "text-muted-foreground hover:bg-accent/60 hover:text-foreground"
+													}`}
+												>
+													{item}
+													{item === "Family Centre" && (
+														<span className="ml-2 rounded-sm bg-primary px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-primary-foreground shadow-sm">
+															New
+														</span>
+													)}
+												</button>
+											))}
+										</div>
+										{i < sidebarItems.length - 1 && (
+											<div className="mx-2 my-4 h-px bg-border" />
 										)}
-									</button>
+									</div>
 								))}
 							</div>
-							{i < sidebarItems.length - 1 && <div className="h-px bg-border/60 my-4 mx-3" />}
 						</div>
-					))}
-				</div>
-			</div>
+					</aside>
 
-			{/* Main Content */}
-			<div className="flex-1 h-full px-12 py-14 overflow-y-auto bg-background relative custom-scroll">
-				{/* Close Button */}
-				<button 
-					type="button" 
-					onClick={onCancel}
-					className="absolute top-10 right-10 flex flex-col items-center group z-10"
-				>
-					<div className="w-9 h-9 flex items-center justify-center rounded-full border-2 border-muted-foreground text-muted-foreground group-hover:bg-muted-foreground group-hover:text-background transition-colors shadow-sm">
-						<X className="w-5 h-5" />
-					</div>
-					<span className="text-[11px] font-bold text-muted-foreground mt-1.5 tracking-wider">ESC</span>
-				</button>
-
-				<div className="max-w-[740px]">
-					<h2 className="text-2xl font-bold mb-6">
-						{activeTab === "My Account" ? "My Account" : null /* Titles handled in renderTabContent */}
-					</h2>
-					{renderTabContent()}
+					{/* Main Content */}
+					<section className="relative min-h-0 flex-1 bg-background">
+						<div className="flex h-12 items-center justify-between border-b border-border px-4 md:h-14 md:px-6">
+							<div className="flex items-center gap-2">
+								<button
+									type="button"
+									onClick={onCancel}
+									className="group flex h-3 w-3 items-center justify-center rounded-full bg-red-500"
+									aria-label="Close settings"
+									title="Close (Esc)"
+								>
+									<X className="h-2.5 w-2.5 text-black/70 opacity-0 transition-opacity group-hover:opacity-100" />
+								</button>
+								<span className="h-3 w-3 rounded-full bg-yellow-400" />
+								<span className="h-3 w-3 rounded-full bg-green-500" />
+							</div>
+							<h2 className="text-sm font-semibold md:text-base">{activeTab}</h2>
+							<div className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+								Esc
+							</div>
+						</div>
+						<div className="h-[calc(100%-48px)] overflow-y-auto px-4 py-5 custom-scroll md:h-[calc(100%-56px)] md:px-8 md:py-8">
+							<div className="max-w-[760px]">{renderTabContent()}</div>
+						</div>
+					</section>
 				</div>
 			</div>
 		</div>
